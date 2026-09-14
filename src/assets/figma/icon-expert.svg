@@ -1,0 +1,8 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="worker">
+<path id="Vector" d="M14 5.95898C14 3.74983 13.5 1.95898 10 1.95898C6.5 1.95898 6 3.74983 6 5.95898" stroke="#283253" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="Vector_2" d="M6 5.95898C6 9.27271 7.79085 11.959 10 11.959C12.2092 11.959 14 9.27271 14 5.95898" stroke="#283253" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+<ellipse id="Ellipse 6480" cx="10" cy="6.5" rx="8" ry="1.5" fill="#283253" stroke="white" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="Rectangle 279336639" d="M9.5 16C8.80944 17.1869 7.53988 17.917 6.16675 17.917H4.61538L3.67845 14.4369C3.33631 13.1661 4.29363 11.917 5.60968 11.917H14.3903C15.7064 11.917 16.6637 13.1661 16.3216 14.4369L15.3846 17.917H12.3587C11.8743 17.917 11.401 17.7717 11 17.5" stroke="#283253" stroke-width="1.7" stroke-linejoin="round"/>
+</g>
+</svg>
