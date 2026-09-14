@@ -5,6 +5,8 @@ export type HistoryItem = {
   title: string
   time: string
   avatar: CharacterKey
+  /** 任务处理中：右侧显示动态圆环 */
+  processing?: boolean
   /** 点击后进入的回答详情页 */
   conversationId: string
 }
@@ -16,6 +18,7 @@ export const historyChats: HistoryItem[] = [
     title: '细数那些曾经爆红却迅速消失的应用',
     time: '',
     avatar: 'zhaoxiaoju',
+    processing: true,
     conversationId: 'vanished-apps',
   },
   {

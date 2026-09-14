@@ -99,6 +99,12 @@ export default function Sidebar() {
                   <span className="text-ink min-w-0 flex-1 truncate text-[12px] leading-[22px]">
                     {chat.title}
                   </span>
+                  {chat.processing ? (
+                    <span
+                      title="处理中"
+                      className="border-brand/25 border-t-brand size-[14px] shrink-0 animate-spin rounded-full border-[1.5px] motion-reduce:animate-none"
+                    />
+                  ) : null}
                   {chat.time ? (
                     <span className="text-sub shrink-0 text-[12px] leading-[22px]">
                       {chat.time}
