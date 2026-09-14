@@ -12,8 +12,17 @@ import {
 } from '@/data/chat'
 import { cn } from 'cn'
 
-const navItems = [
-  { to: '/', label: '新任务', icon: navIcons.newTask, end: true },
+type NavItem = {
+  to: string
+  label: string
+  icon: string
+  end?: boolean
+  /** 不显示选中态（点击后仍保持默认样式） */
+  neverActive?: boolean
+}
+
+const navItems: NavItem[] = [
+  { to: '/', label: '新任务', icon: navIcons.newTask, end: true, neverActive: true },
   { to: '/skills', label: '技能中心', icon: navIcons.skills },
   { to: '/experts', label: '专家助理', icon: navIcons.expert },
   { to: '/automation', label: '自动化任务', icon: navIcons.automation },
@@ -46,25 +55,29 @@ export default function Sidebar() {
               className={({ isActive }) =>
                 cn(
                   'flex items-center gap-[10px] overflow-hidden rounded-[12px] px-[18px] py-[10px] transition-colors',
-                  isActive
+                  isActive && !item.neverActive
                     ? 'bg-[rgba(24,94,200,0.08)]'
                     : 'hover:bg-[rgba(40,50,83,0.04)]'
                 )
               }
             >
-              {({ isActive }) => (
-                <>
-                  <FigmaIcon src={item.icon} size={20} />
-                  <span
-                    className={cn(
-                      'text-[14px] leading-[22px] whitespace-nowrap',
-                      isActive ? 'text-brand font-medium' : 'text-ink'
-                    )}
-                  >
-                    {item.label}
-                  </span>
-                </>
-              )}
+              {({ isActive }) => {
+                const active = isActive && !item.neverActive
+
+                return (
+                  <>
+                    <FigmaIcon src={item.icon} size={20} />
+                    <span
+                      className={cn(
+                        'text-[14px] leading-[22px] whitespace-nowrap',
+                        active ? 'text-brand font-medium' : 'text-ink'
+                      )}
+                    >
+                      {item.label}
+                    </span>
+                  </>
+                )
+              }}
             </NavLink>
           ))}
         </nav>
