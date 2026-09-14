@@ -14,6 +14,15 @@ npm run preview  # 预览构建产物
 npm run lint     # oxlint
 ```
 
+## 部署
+
+push 到 `main` 会触发 `.github/workflows/deploy-pages.yml`：构建时注入 `BASE_PATH=/cms-buddy/`，产物发布到 GitHub Pages（并生成 `404.html` 作为前端路由兜底）。
+
+- 线上地址：https://pmclaw.github.io/cms-buddy/
+- 代码仓库：https://github.com/pmclaw/cms-buddy
+
+本地开发不受影响：`npm run dev` 仍在根路径 http://localhost:5173/ 下运行。
+
 ## 页面结构
 
 | 路由 | 页面 | 对应设计稿 |
