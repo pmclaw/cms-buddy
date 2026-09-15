@@ -5,12 +5,13 @@ import {
   Folder,
   FolderOpen,
 } from 'lucide-react'
-import { useParams } from 'react-router'
+import { useNavigate, useParams } from 'react-router'
 
 import CharacterAvatar from '@/components/character-avatar'
 import { PhoneScreen, ScreenHeader } from '@/components/screen'
 import { findSkill, highDividendDetail as detail, skills } from '@/data/skills'
 import { cn } from '@/lib/cn'
+import { useTaskDraft } from '@/lib/task-draft'
 
 const tabs = [
   { id: 'overview', label: '概览' },
@@ -20,6 +21,8 @@ const tabs = [
 
 export function SkillDetailPage() {
   const { id } = useParams()
+  const navigate = useNavigate()
+  const { draft, patch } = useTaskDraft()
   const skill = findSkill(id ?? '') ?? skills[0]
   const [tab, setTab] = React.useState<(typeof tabs)[number]['id']>('overview')
   const [expanded, setExpanded] = React.useState(false)
@@ -34,7 +37,7 @@ export function SkillDetailPage() {
         <h1 className="text-ink text-[22px] leading-[32px] font-bold">{skill.name}</h1>
         <span className="text-ink mt-2.5 inline-flex items-center gap-2 rounded-[10px] bg-[rgba(40,50,83,0.06)] px-2.5 py-1 text-[12px]">
           <CharacterAvatar character={skill.avatar} size={16} />
-          归属 {skill.owner}
+          {skill.owner}
         </span>
         <p className="text-ink/70 mt-3 text-[13px] leading-[22px]">{skill.desc}</p>
 
@@ -209,6 +212,23 @@ export function SkillDetailPage() {
           </div>
         </div>
       </div>
+
+      <footer className="bg-page shrink-0 px-4 pt-2 pb-5">
+        <button
+          type="button"
+          onClick={() => {
+            patch({
+              skills: draft.skills.includes(skill.name)
+                ? draft.skills
+                : [...draft.skills, skill.name],
+            })
+            navigate('/')
+          }}
+          className="bg-ink flex h-[48px] w-full items-center justify-center rounded-[14px] text-[16px] text-white"
+        >
+          试一试
+        </button>
+      </footer>
     </PhoneScreen>
   )
 }

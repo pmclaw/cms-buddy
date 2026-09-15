@@ -1,4 +1,4 @@
-import { ArrowUpRight, Share2, Sparkles, UserRoundCheck } from 'lucide-react'
+import { ArrowUpRight, Sparkles, UserRoundCheck } from 'lucide-react'
 import { useNavigate, useParams } from 'react-router'
 
 import CharacterAvatar from '@/components/character-avatar'
@@ -90,24 +90,14 @@ export function ExpertDetailPage() {
       </div>
 
       <footer className="bg-page shrink-0 px-4 pt-2 pb-5">
-        <div className="flex gap-3">
-          <button
-            type="button"
-            onClick={() => toast('已复制分享链接')}
-            className="text-ink flex h-[48px] flex-1 items-center justify-center gap-2 rounded-[14px] bg-white text-[16px] ring-1 ring-[rgba(40,50,83,0.08)]"
-          >
-            <Share2 className="size-[20px]" strokeWidth={1.8} />
-            分享
-          </button>
-          <button
-            type="button"
-            onClick={summon}
-            className="bg-ink flex h-[48px] flex-1 items-center justify-center gap-2 rounded-[14px] text-[16px] text-white"
-          >
-            <Sparkles className="size-[20px]" strokeWidth={1.8} />
-            召唤
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={summon}
+          className="bg-ink flex h-[48px] w-full items-center justify-center gap-2 rounded-[14px] text-[16px] text-white"
+        >
+          <Sparkles className="size-[20px]" strokeWidth={1.8} />
+          召唤
+        </button>
       </footer>
     </PhoneScreen>
   )
