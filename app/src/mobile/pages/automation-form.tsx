@@ -181,7 +181,7 @@ export function TaskFormSheet({
                         className={cn(
                           'size-[38px] rounded-full text-[13px]',
                           active
-                            ? 'bg-brand text-white'
+                            ? 'bg-ink text-white'
                             : 'text-ink ring-1 ring-[rgba(40,50,83,0.08)] ring-inset'
                         )}
                       >
@@ -210,7 +210,7 @@ export function TaskFormSheet({
                       <span
                         className={cn(
                           'flex size-[18px] items-center justify-center rounded-[5px] border',
-                          active ? 'border-brand bg-brand' : 'border-[#c9c9d6]'
+                          active ? 'border-ink bg-ink' : 'border-[#c9c9d6]'
                         )}
                       >
                         {active ? (
@@ -244,7 +244,7 @@ export function TaskFormSheet({
                       <span
                         className={cn(
                           'size-[18px] rounded-full border',
-                          active ? 'border-brand border-[5px]' : 'border-[#c9c9d6]',
+                          active ? 'border-ink border-[5px]' : 'border-[#c9c9d6]',
                         )}
                       />
                       {option.label}
