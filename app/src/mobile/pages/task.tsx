@@ -176,7 +176,6 @@ export function TaskPage() {
         onClose={() => setPlusOpen(false)}
         onOpenSkillPicker={() => setSkillOpen(true)}
         onOpenExpertPicker={() => setExpertOpen(true)}
-        onOpenModel={() => setModelOpen(true)}
       />
       <SkillPickerSheet open={skillOpen} onClose={() => setSkillOpen(false)} />
       <ExpertPickerSheet open={expertOpen} onClose={() => setExpertOpen(false)} />

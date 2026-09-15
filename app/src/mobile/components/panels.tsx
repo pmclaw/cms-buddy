@@ -4,10 +4,8 @@ import {
   Check,
   ChevronRight,
   Clock,
-  FileText,
   FolderUp,
   Image,
-  MessageSquare,
   Search,
   Sparkles,
   Users,
@@ -28,13 +26,11 @@ export function PlusPanel({
   onClose,
   onOpenSkillPicker,
   onOpenExpertPicker,
-  onOpenModel,
 }: {
   open: boolean
   onClose: () => void
   onOpenSkillPicker: () => void
   onOpenExpertPicker: () => void
-  onOpenModel: () => void
 }) {
   const navigate = useNavigate()
   const { draft, patch } = useTaskDraft()
@@ -43,7 +39,6 @@ export function PlusPanel({
     { label: '拍照', icon: Camera },
     { label: '图片', icon: Image },
     { label: '手机文件', icon: FolderUp },
-    { label: '微信文件', icon: MessageSquare },
   ]
 
   const rows = [
@@ -71,20 +66,12 @@ export function PlusPanel({
         navigate('/automation/new')
       },
     },
-    {
-      label: '模型设置',
-      icon: FileText,
-      onClick: () => {
-        onClose()
-        onOpenModel()
-      },
-    },
   ]
 
   return (
     <BottomSheet open={open} onClose={onClose}>
       <div className="px-4 pt-1 pb-5">
-        <div className="grid grid-cols-4 gap-2.5">
+        <div className="grid grid-cols-3 gap-2.5">
           {sources.map((source) => (
             <button
               key={source.label}
