@@ -1,32 +1,34 @@
 import * as React from 'react'
-import { Plus, RefreshCw, Search, SlidersHorizontal, Sparkles } from 'lucide-react'
-import { useNavigate } from 'react-router'
+import { Plus, RefreshCw } from 'lucide-react'
+import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router'
 
 import { TaskCard } from '@/components/cards'
+import { TaskFormSheet } from '@/pages/automation-form'
 import { BottomSheet, ConfirmDialog } from '@/components/sheet'
-import { OptionSheet } from '@/components/panels'
 import { PhoneScreen, ScreenHeader, TabBar } from '@/components/screen'
 import { useToast } from '@/components/toast'
-import { taskSortOptions, type AutomationTask, type TaskFilter } from '@/data/tasks'
+import { conversations } from '@/data/chat'
+import type { AutomationTask } from '@/data/tasks'
 import { useAutomation } from '@/lib/automation-store'
 import { useDrawer } from '@/lib/drawer'
+import { cn } from '@/lib/cn'
 
 export function AutomationPage() {
+  const location = useLocation()
+  const { id } = useParams()
+  const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const toast = useToast()
   const { openDrawer } = useDrawer()
   const { tasks, remove, toggleStatus, runOnce } = useAutomation()
 
-  const [keyword, setKeyword] = React.useState('')
-  const [filter, setFilter] = React.useState<TaskFilter>('all')
-  const [filterOpen, setFilterOpen] = React.useState(false)
   const [menuTask, setMenuTask] = React.useState<AutomationTask | null>(null)
   const [deleting, setDeleting] = React.useState<AutomationTask | null>(null)
 
-  const list = tasks.filter((task) => {
-    const hitFilter = filter === 'all' ? true : task.status === filter
-    return hitFilter && task.title.toLowerCase().includes(keyword.trim().toLowerCase())
-  })
+  // 创建 / 编辑以弹层形式覆盖在列表之上（对齐设计稿 14/15）
+  const isCreate = location.pathname === '/automation/new'
+  const isEdit = location.pathname.endsWith('/edit')
+  const editingTask = isEdit ? (tasks.find((item) => item.id === id) ?? null) : null
 
   const actions = menuTask
     ? [
@@ -52,7 +54,7 @@ export function AutomationPage() {
   return (
     <PhoneScreen>
       <ScreenHeader
-        title="自动化任务"
+        title="自动化"
         onMenu={openDrawer}
         onNewTask={() => navigate('/')}
         right={
@@ -67,94 +69,66 @@ export function AutomationPage() {
         }
       />
 
-      <div className="shrink-0 px-4">
-        <div className="flex items-center gap-2">
-          <label className="flex h-[40px] min-w-0 flex-1 items-center gap-2 rounded-[12px] bg-white px-3 ring-1 ring-[rgba(40,50,83,0.06)]">
-            <Search className="text-sub size-[17px]" strokeWidth={1.8} />
-            <input
-              value={keyword}
-              onChange={(event) => setKeyword(event.target.value)}
-              placeholder="搜索任务名称"
-              className="text-ink placeholder:text-[#a6aab8] h-full flex-1 bg-transparent text-[15px] outline-none"
-            />
-          </label>
-          <button
-            type="button"
-            onClick={() => setFilterOpen(true)}
-            className="text-ink flex h-[40px] shrink-0 items-center gap-1 rounded-[12px] bg-white px-3 text-[13px] ring-1 ring-[rgba(40,50,83,0.06)]"
-          >
-            <SlidersHorizontal className="size-[15px]" strokeWidth={1.8} />
-            {taskSortOptions.find((item) => item.id === filter)?.label ?? '所有任务'}
-          </button>
-        </div>
-
-        <div className="mt-2.5 mb-3 flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => navigate('/automation/templates')}
-            className="text-ink flex h-[34px] items-center gap-1.5 rounded-full bg-white px-3 text-[13px] ring-1 ring-[rgba(40,50,83,0.06)]"
-          >
-            <Sparkles className="size-[15px]" strokeWidth={1.8} />
-            从模板创建
-          </button>
-          <button
-            type="button"
-            onClick={() => navigate('/automation/new')}
-            className="bg-ink flex h-[34px] items-center gap-1.5 rounded-full px-3 text-[13px] text-white"
-          >
-            <Plus className="size-[15px]" strokeWidth={2.2} />
-            创建任务
-          </button>
-        </div>
-      </div>
-
-      <div className="scrollbar-none min-h-0 flex-1 overflow-y-auto px-4 pb-4">
+      <div className="scrollbar-none min-h-0 flex-1 overflow-y-auto px-4 pt-1 pb-28">
         <div className="flex flex-col gap-2.5">
-          {list.map((task) => (
-            <TaskCard key={task.id} task={task} onMenu={() => setMenuTask(task)} />
+          {tasks.map((task) => (
+            <TaskCard
+              key={task.id}
+              task={task}
+              onMenu={() => setMenuTask(task)}
+              onOpenRecord={() => navigate(`/task/${executionRecordId(task.id)}`)}
+            />
           ))}
         </div>
-        {list.length === 0 ? (
-          <p className="text-sub py-20 text-center text-[13px]">
-            没有符合条件的自动化任务
-          </p>
-        ) : null}
       </div>
+
+      {/* 新建任务入口 */}
+      <button
+        type="button"
+        aria-label="创建任务"
+        onClick={() => navigate('/automation/new')}
+        className="bg-brand absolute right-4 bottom-[78px] flex size-[56px] items-center justify-center rounded-full text-white shadow-[0_10px_24px_rgba(24,94,200,0.32)]"
+      >
+        <Plus className="size-[26px]" strokeWidth={2.2} />
+      </button>
 
       <TabBar active="automation" />
 
-      <OptionSheet
-        open={filterOpen}
-        onClose={() => setFilterOpen(false)}
-        title="任务状态"
-        options={taskSortOptions.map((item) => ({ id: item.id, label: item.label }))}
-        value={filter}
-        onSelect={(id) => setFilter(id as TaskFilter)}
-      />
-
+      {/* 任务操作面板（对齐设计稿 12：标题 + 操作行 + 取消） */}
       <BottomSheet
         open={Boolean(menuTask)}
         onClose={() => setMenuTask(null)}
-        title={menuTask?.title}
+        hideHeader
+        className="pb-3"
       >
-        <div className="px-4 pb-6">
-          {actions.map((action) => (
-            <button
-              key={action.label}
-              type="button"
-              onClick={() => {
-                const run = action.onClick
-                setMenuTask(null)
-                run()
-              }}
-              className={`active:bg-ink/5 flex h-[52px] w-full items-center border-b border-[rgba(40,50,83,0.06)] text-left text-[16px] last:border-0 ${
-                action.danger ? 'text-danger' : 'text-ink'
-              }`}
-            >
-              {action.label}
-            </button>
-          ))}
+        <div className="text-sub flex h-[58px] items-center justify-center px-6 text-[17px]">
+          <span className="truncate">{menuTask?.title}</span>
         </div>
+        {actions.map((action) => (
+          <button
+            key={action.label}
+            type="button"
+            onClick={() => {
+              const run = action.onClick
+              setMenuTask(null)
+              run()
+            }}
+            className={cn(
+              'flex h-[58px] w-full items-center justify-center border-t border-[rgba(40,50,83,0.07)] text-[17px]',
+              action.danger ? 'text-danger' : 'text-ink'
+            )}
+          >
+            {action.label}
+          </button>
+        ))}
+        <div className="bg-page h-[8px]" />
+        <button
+          type="button"
+          onClick={() => setMenuTask(null)}
+          className="text-ink flex h-[58px] w-full items-center justify-center text-[17px] font-medium"
+        >
+          取消
+        </button>
       </BottomSheet>
 
       <ConfirmDialog
@@ -170,6 +144,21 @@ export function AutomationPage() {
           toast('任务已删除')
         }}
       />
+
+      {isCreate || isEdit ? (
+        <TaskFormSheet
+          task={editingTask}
+          templateId={searchParams.get('template')}
+          onClose={() => navigate('/automation')}
+        />
+      ) : null}
     </PhoneScreen>
   )
+}
+
+/** 自动化任务列表里的任务对应到执行记录（会话数据） */
+function executionRecordId(taskId: string) {
+  const list = conversations.filter((item) => item.id.startsWith('task-'))
+  const index = Number(taskId.replace(/\D/g, '')) || 0
+  return list[index % list.length].id
 }

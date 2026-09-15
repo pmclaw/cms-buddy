@@ -4,7 +4,6 @@ import { ToastProvider } from '@/components/toast'
 import { AutomationProvider } from '@/lib/automation-store'
 import { DrawerProvider } from '@/lib/drawer'
 import { TaskDraftProvider } from '@/lib/task-draft'
-import { AutomationFormPage } from '@/pages/automation-form'
 import { AutomationTemplatesPage } from '@/pages/automation-templates'
 import { AutomationPage } from '@/pages/automation'
 import { ExpertDetailPage } from '@/pages/expert-detail'
@@ -37,8 +36,8 @@ export default function MobileApp() {
                   path="/automation/templates"
                   element={<AutomationTemplatesPage />}
                 />
-                <Route path="/automation/new" element={<AutomationFormPage />} />
-                <Route path="/automation/:id/edit" element={<AutomationFormPage />} />
+                <Route path="/automation/new" element={<AutomationPage />} />
+                <Route path="/automation/:id/edit" element={<AutomationPage />} />
                 <Route path="*" element={<TaskPage />} />
                 </Routes>
               </DrawerProvider>

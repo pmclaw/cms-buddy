@@ -8,12 +8,15 @@ export function BottomSheet({
   open,
   onClose,
   title,
+  hideHeader,
   children,
   className,
 }: {
   open: boolean
   onClose: () => void
   title?: React.ReactNode
+  /** 隐藏默认的标题栏与关闭按钮（动作面板等自定义头部场景） */
+  hideHeader?: boolean
   children: React.ReactNode
   className?: string
 }) {
@@ -38,18 +41,22 @@ export function BottomSheet({
           className
         )}
       >
-        <div className="relative flex h-[56px] shrink-0 items-center justify-center">
-          <span className="bg-ink/15 absolute top-[8px] left-1/2 h-[4px] w-[36px] -translate-x-1/2 rounded-full" />
-          <h2 className="text-ink text-[16px] font-medium">{title}</h2>
-          <button
-            type="button"
-            aria-label="关闭"
-            onClick={onClose}
-            className="text-sub absolute top-[12px] right-4 flex size-8 items-center justify-center"
-          >
-            <X className="size-[18px]" strokeWidth={1.8} />
-          </button>
-        </div>
+        {hideHeader ? null : (
+          <div className="relative flex h-[56px] shrink-0 items-center justify-center">
+            <span className="bg-ink/15 absolute top-[8px] left-1/2 h-[4px] w-[36px] -translate-x-1/2 rounded-full" />
+            <h2 className="text-ink max-w-[calc(100%-88px)] truncate text-[16px] font-medium">
+              {title}
+            </h2>
+            <button
+              type="button"
+              aria-label="关闭"
+              onClick={onClose}
+              className="text-sub absolute top-[12px] right-4 flex size-8 items-center justify-center"
+            >
+              <X className="size-[18px]" strokeWidth={1.8} />
+            </button>
+          </div>
+        )}
         <div className="scrollbar-none min-h-0 flex-1 overflow-y-auto">{children}</div>
       </section>
     </div>

@@ -1,4 +1,4 @@
-import { MoreHorizontal, Play } from 'lucide-react'
+import { ChevronRight, MoreHorizontal } from 'lucide-react'
 
 import CharacterAvatar from '@/components/character-avatar'
 import FigmaIcon from '@/components/figma-icon'
@@ -89,60 +89,68 @@ export function ExpertCard({
   )
 }
 
-/** 自动化任务卡片（内容对齐 PC 端自动化任务列表） */
+/** 自动化任务卡片（布局对齐设计稿 11/12） */
 export function TaskCard({
   task,
   onMenu,
+  onOpenRecord,
 }: {
   task: AutomationTask
   onMenu: () => void
+  onOpenRecord: () => void
 }) {
   return (
-    <article className="flex flex-col gap-2 rounded-[14px] bg-white px-4 py-3.5 ring-1 ring-[rgba(0,0,0,0.04)]">
-      <div className="flex items-center gap-2">
+    <article className="rounded-[16px] bg-white px-4 py-3.5">
+      <div className="flex items-start gap-2">
+        <h3 className="text-ink min-w-0 flex-1 truncate text-[19px] leading-[27px] font-medium">
+          {task.title}
+        </h3>
         <span
           className={cn(
-            'flex items-center gap-1 rounded-[4px] px-1.5 py-[2px] text-[11px] leading-[16px]',
+            'mt-[3px] shrink-0 rounded-[6px] px-1.5 py-[2px] text-[12px] leading-[18px]',
             task.status === 'running'
               ? 'text-brand bg-[rgba(24,94,200,0.08)]'
               : 'text-sub bg-[rgba(40,50,83,0.06)]'
           )}
         >
-          <Play className="size-[9px] fill-current" strokeWidth={2} />
           {task.status === 'running' ? '运行中' : '已完成'}
         </span>
-        <h3 className="text-ink min-w-0 flex-1 truncate text-[15px] leading-[22px] font-medium">
-          {task.title}
-        </h3>
         <button
           type="button"
           aria-label="更多操作"
           onClick={onMenu}
-          className="text-sub -mr-1 flex size-7 items-center justify-center"
+          className="text-sub -mt-1 -mr-2 flex size-9 shrink-0 items-center justify-center"
         >
-          <MoreHorizontal className="size-[18px]" strokeWidth={1.8} />
+          <MoreHorizontal className="size-[20px]" strokeWidth={1.8} />
         </button>
       </div>
 
-      <p className="text-ink/60 line-clamp-2 text-[12px] leading-[19px]">{task.desc}</p>
+      <p className="text-sub mt-0.5 line-clamp-2 text-[15px] leading-[23px]">
+        {task.desc}
+      </p>
+      <p className="text-sub mt-1 text-[15px] leading-[23px]">
+        执行时间：{task.schedule}
+      </p>
 
-      <div className="text-sub flex flex-col gap-1 text-[11px] leading-[17px]">
-        <Meta label="运行计划" value={task.schedule} />
-        <Meta label="创建时间" value={task.createdAt} />
-        <Meta label="推送渠道" value={task.channel} />
-        <Meta
-          label="执行情况"
-          value={`已运行 ${task.runs} 次 · 上次 ${task.lastRun}`}
-        />
-      </div>
+      {task.runs > 0 ? (
+        <>
+          <div className="mt-3 border-t border-dashed border-[rgba(40,50,83,0.18)]" />
+          <div className="mt-3 flex items-center justify-between">
+            <span className="text-sub flex items-center gap-2 text-[14px]">
+              <span className="size-[7px] rounded-full bg-[#2ec27e]" />
+              {task.lastRun} 成功
+            </span>
+            <button
+              type="button"
+              onClick={onOpenRecord}
+              className="text-sub flex items-center text-[14px]"
+            >
+              {task.runs} 次执行
+              <ChevronRight className="size-[16px]" strokeWidth={1.8} />
+            </button>
+          </div>
+        </>
+      ) : null}
     </article>
-  )
-}
-
-function Meta({ label, value }: { label: string; value: string }) {
-  return (
-    <span>
-      {label} <span className="text-ink/70">{value}</span>
-    </span>
   )
 }
