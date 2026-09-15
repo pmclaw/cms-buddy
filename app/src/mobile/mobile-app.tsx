@@ -6,6 +6,7 @@ import { DrawerProvider } from '@/lib/drawer'
 import { TaskDraftProvider } from '@/lib/task-draft'
 import { AutomationTemplatesPage } from '@/pages/automation-templates'
 import { AutomationPage } from '@/pages/automation'
+import { AutomationDetailPage } from '@/pages/automation-detail'
 import { ExpertDetailPage } from '@/pages/expert-detail'
 import { ExpertsPage } from '@/pages/experts'
 import { SkillDetailPage } from '@/pages/skill-detail'
@@ -38,6 +39,10 @@ export default function MobileApp() {
                 />
                 <Route path="/automation/new" element={<AutomationPage />} />
                 <Route path="/automation/:id/edit" element={<AutomationPage />} />
+                <Route
+                  path="/automation/:id/detail"
+                  element={<AutomationDetailPage />}
+                />
                 <Route path="*" element={<TaskPage />} />
                 </Routes>
               </DrawerProvider>

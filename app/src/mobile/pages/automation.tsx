@@ -7,7 +7,6 @@ import { TaskFormSheet } from '@/pages/automation-form'
 import { BottomSheet, ConfirmDialog } from '@/components/sheet'
 import { PhoneScreen, ScreenHeader, TabBar } from '@/components/screen'
 import { useToast } from '@/components/toast'
-import { conversations } from '@/data/chat'
 import type { AutomationTask } from '@/data/tasks'
 import { useAutomation } from '@/lib/automation-store'
 import { useDrawer } from '@/lib/drawer'
@@ -76,7 +75,7 @@ export function AutomationPage() {
               key={task.id}
               task={task}
               onMenu={() => setMenuTask(task)}
-              onOpenRecord={() => navigate(`/task/${executionRecordId(task.id)}`)}
+              onOpenRecord={() => navigate(`/automation/${task.id}/detail`)}
             />
           ))}
         </div>
@@ -154,11 +153,4 @@ export function AutomationPage() {
       ) : null}
     </PhoneScreen>
   )
-}
-
-/** 自动化任务列表里的任务对应到执行记录（会话数据） */
-function executionRecordId(taskId: string) {
-  const list = conversations.filter((item) => item.id.startsWith('task-'))
-  const index = Number(taskId.replace(/\D/g, '')) || 0
-  return list[index % list.length].id
 }
