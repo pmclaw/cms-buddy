@@ -19,9 +19,25 @@ npm run lint     # oxlint
 push 到 `main` 会触发 `.github/workflows/deploy-pages.yml`：构建时注入 `BASE_PATH=/cms-buddy/`，产物发布到 GitHub Pages（并生成 `404.html` 作为前端路由兜底）。
 
 - 线上地址：https://pmclaw.github.io/cms-buddy/
+- 移动端（手机外壳预览）：https://pmclaw.github.io/cms-buddy/app/
 - 代码仓库：https://github.com/pmclaw/cms-buddy
 
 本地开发不受影响：`npm run dev` 仍在根路径 http://localhost:5173/ 下运行。
+
+## 移动端（app/）
+
+`app/` 是与 PC 端解耦的独立 Vite 工程（自己的 `package.json` 与构建产物），配色、图标、文案与数据均与 PC 端保持一致，布局按移动端规范重做。
+
+```bash
+cd app
+npm install
+npm run dev     # http://localhost:5174/（手机外壳预览页）
+npm run build   # 产物落到 app/dist
+```
+
+- `/`（`index.html`）：手机外壳展示页，按 iPhone 18 Pro 比例（402 × 889）内嵌移动端。
+- `/mobile.html`：移动端本体，可用真机直接打开；路由使用 hash（`#/experts`、`#/skills`、`#/automation` 等）。
+- 四个 Tab：任务 / 专家 / 技能 / 自动化；输入框去掉了语音入口。
 
 ## 页面结构
 

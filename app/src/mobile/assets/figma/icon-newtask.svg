@@ -1,0 +1,11 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Group 1912060337">
+<mask id="mask0_0_105" style="mask-type:luminance" maskUnits="userSpaceOnUse" x="0" y="0" width="20" height="20">
+<path id="favorite-chart" fill-rule="evenodd" clip-rule="evenodd" d="M0 0H20V20H0V0Z" fill="white"/>
+</mask>
+<g mask="url(#mask0_0_105)">
+<path id="Rectangle 34626990" d="M17 10V5C17 3.89543 16.1046 3 15 3H8C5.23858 3 3 5.23858 3 8V15C3 16.1046 3.89543 17 5 17H10" stroke="#283253" stroke-width="1.5"/>
+<path id="&#230;&#152;&#159;&#229;&#189;&#162; 3" fill-rule="evenodd" clip-rule="evenodd" d="M14.3075 14.0944C14.2639 14.1884 14.1884 14.2639 14.0944 14.3075L12.107 15.228C11.7689 15.3847 11.7689 15.8653 12.107 16.022L14.0944 16.9425C14.1884 16.9861 14.2639 17.0616 14.3075 17.1556L15.228 19.143C15.3847 19.4811 15.8653 19.4811 16.022 19.143L16.9425 17.1556C16.9861 17.0616 17.0616 16.9861 17.1556 16.9425L19.143 16.022C19.4811 15.8653 19.4811 15.3847 19.143 15.228L17.1556 14.3075C17.0616 14.2639 16.9861 14.1884 16.9425 14.0944L16.022 12.107C15.8653 11.7689 15.3847 11.7689 15.228 12.107L14.3075 14.0944Z" fill="#283253"/>
+</g>
+</g>
+</svg>

@@ -1,0 +1,58 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/* 与 PC 端（src/index.css）保持同一套设计 token */
+@theme inline {
+    --font-sans: 'PingFang SC', 'HarmonyOS Sans SC', system-ui, -apple-system,
+        'Helvetica Neue', sans-serif;
+
+    --color-ink: #283253;
+    --color-ink-2: #434352;
+    --color-sub: #657386;
+    --color-brand: #185ec8;
+    --color-brand-tint: #edf3fb;
+    --color-line: #d7d7e1;
+    --color-page: #f2f2f7;
+    --color-composer: #644380;
+    --color-danger: #d92d20;
+}
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    @apply text-ink font-sans;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  button {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  ::selection {
+    background: rgba(24, 94, 200, 0.16);
+  }
+}
+
+@layer utilities {
+  /* 移动端滚动区：隐藏滚动条 */
+  .scrollbar-none {
+    scrollbar-width: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  /* 任务页背景：与 PC 首页一致的点阵白底（吉祥物图片自带同色底） */
+  .bg-dot-grid {
+    background-image: radial-gradient(rgba(40, 50, 83, 0.09) 1px, transparent 1px);
+    background-size: 12px 12px;
+  }
+}
