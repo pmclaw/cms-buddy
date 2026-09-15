@@ -1,8 +1,16 @@
 import { MessageSquarePlus, Plus } from 'lucide-react'
 import { useNavigate } from 'react-router'
 
+import FigmaIcon from '@/components/figma-icon'
 import { Drawer } from '@/components/sheet'
-import { historyChats, sidebarTasks } from '@/data/chat'
+import { useToast } from '@/components/toast'
+import { assets } from '@/data/assets'
+import {
+  historyChats,
+  historyCount,
+  sidebarTaskCount,
+  sidebarTasks,
+} from '@/data/chat'
 
 /** 左上角「更多」抽屉：新建任务 + 历史对话 + 自动化任务（数据来自 PC 端） */
 export function MoreDrawer({
@@ -13,6 +21,7 @@ export function MoreDrawer({
   onClose: () => void
 }) {
   const navigate = useNavigate()
+  const toast = useToast()
 
   function go(path: string) {
     onClose()
@@ -21,7 +30,14 @@ export function MoreDrawer({
 
   return (
     <Drawer open={open} onClose={onClose}>
-      <div className="flex min-h-0 flex-1 flex-col px-4 pt-3">
+      <div className="flex min-h-0 flex-1 flex-col px-4 pt-10">
+        <div className="mb-6 flex shrink-0 items-center gap-2.5 px-1">
+          <FigmaIcon src={assets.logo} size={32} alt="小招Buddy" />
+          <span className="text-ink text-[18px] leading-[26px] font-semibold">
+            小招Buddy
+          </span>
+        </div>
+
         <button
           type="button"
           onClick={() => go('/')}
@@ -53,6 +69,13 @@ export function MoreDrawer({
               ) : null}
             </button>
           ))}
+          <button
+            type="button"
+            onClick={() => toast(`共 ${historyCount} 条历史对话`)}
+            className="text-ink/45 active:text-ink/70 flex h-[40px] w-full items-center text-left text-[13px]"
+          >
+            查看更多（{historyCount}）
+          </button>
 
           <div className="mt-4 flex items-center justify-between py-2">
             <p className="text-sub text-[13px] font-medium">自动化任务</p>
@@ -78,6 +101,13 @@ export function MoreDrawer({
               <span className="text-sub shrink-0 text-[12px]">{task.time}</span>
             </button>
           ))}
+          <button
+            type="button"
+            onClick={() => toast(`共 ${sidebarTaskCount} 个自动化任务`)}
+            className="text-ink/45 active:text-ink/70 flex h-[40px] w-full items-center text-left text-[13px]"
+          >
+            查看更多（{sidebarTaskCount}）
+          </button>
         </div>
       </div>
     </Drawer>

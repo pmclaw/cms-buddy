@@ -8,9 +8,11 @@ import { PhoneScreen, ScreenHeader, TabBar } from '@/components/screen'
 import { assets } from '@/data/assets'
 import { skillCategories, skills } from '@/data/skills'
 import { cn } from '@/lib/cn'
+import { useDrawer } from '@/lib/drawer'
 
 export function SkillsPage() {
   const navigate = useNavigate()
+  const { openDrawer } = useDrawer()
   const [keyword, setKeyword] = React.useState('')
   const [category, setCategory] = React.useState<string | null>(null)
   const [tab, setTab] = React.useState<'all' | 'featured'>('all')
@@ -27,7 +29,11 @@ export function SkillsPage() {
 
   return (
     <PhoneScreen>
-      <ScreenHeader title="技能中心" showMenu={false} />
+      <ScreenHeader
+        title="技能中心"
+        onMenu={openDrawer}
+        onNewTask={() => navigate('/')}
+      />
 
       <div className="shrink-0 px-4">
         <label className="flex h-[40px] items-center gap-2 rounded-[12px] bg-white px-3 ring-1 ring-[rgba(40,50,83,0.06)]">

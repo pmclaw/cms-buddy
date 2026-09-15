@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { ChevronLeft, Menu } from 'lucide-react'
+import { AlignLeft, ChevronLeft, MessageSquarePlus } from 'lucide-react'
 import { useNavigate } from 'react-router'
 
 import FigmaIcon from '@/components/figma-icon'
@@ -34,22 +34,23 @@ export function PhoneScreen({
 
 /**
  * 顶部栏。
- * - 默认：左侧更多图标，中间标题 + 副标题，右侧胶囊（对齐设计稿）
+ * - 默认：左侧抽屉图标，中间标题
  * - back：左侧返回箭头
+ * - onNewTask：右上角「新建任务」图标
  */
 export function ScreenHeader({
   title,
-  subtitle,
   onMenu,
   showMenu = true,
   back,
+  onNewTask,
   right,
 }: {
   title: React.ReactNode
-  subtitle?: React.ReactNode
   onMenu?: () => void
   showMenu?: boolean
   back?: boolean
+  onNewTask?: () => void
   right?: React.ReactNode
 }) {
   const navigate = useNavigate()
@@ -69,11 +70,11 @@ export function ScreenHeader({
         ) : showMenu ? (
           <button
             type="button"
-            aria-label="更多"
+            aria-label="任务列表"
             onClick={onMenu}
             className="active:bg-ink/5 -ml-1 flex size-10 items-center justify-center rounded-full"
           >
-            <Menu className="size-[22px]" strokeWidth={2} />
+            <AlignLeft className="size-[22px]" strokeWidth={2} />
           </button>
         ) : null}
       </div>
@@ -82,15 +83,20 @@ export function ScreenHeader({
         <div className="text-ink truncate px-1 text-[17px] leading-[24px] font-medium">
           {title}
         </div>
-        {subtitle ? (
-          <div className="text-sub mt-[2px] flex items-center justify-center gap-1 text-[12px] leading-[18px]">
-            {subtitle}
-          </div>
-        ) : null}
       </div>
 
       <div className="flex w-[96px] justify-end">
         {right}
+        {onNewTask ? (
+          <button
+            type="button"
+            aria-label="新建任务"
+            onClick={onNewTask}
+            className="active:bg-ink/5 -mr-1 flex size-10 items-center justify-center rounded-full"
+          >
+            <MessageSquarePlus className="size-[22px]" strokeWidth={1.9} />
+          </button>
+        ) : null}
       </div>
     </header>
   )

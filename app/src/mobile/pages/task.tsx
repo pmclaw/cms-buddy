@@ -4,7 +4,6 @@ import { useNavigate, useParams, useSearchParams } from 'react-router'
 import AnswerBlocks from '@/components/answer-blocks'
 import Composer from '@/components/composer'
 import FigmaIcon from '@/components/figma-icon'
-import { MoreDrawer } from '@/components/more-drawer'
 import {
   ExpertPickerSheet,
   ModelSheet,
@@ -22,6 +21,7 @@ import {
   type ChatMessage,
   type Conversation,
 } from '@/data/chat'
+import { useDrawer } from '@/lib/drawer'
 
 /** 输入任意问题时生成的回答骨架（与 PC 端逻辑一致） */
 function buildAnswer(question: string): AnswerBlock[] {
@@ -52,9 +52,9 @@ export function TaskPage() {
   const { id } = useParams()
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
+  const { openDrawer } = useDrawer()
   const question = searchParams.get('q')
 
-  const [drawerOpen, setDrawerOpen] = React.useState(false)
   const [plusOpen, setPlusOpen] = React.useState(false)
   const [skillOpen, setSkillOpen] = React.useState(false)
   const [expertOpen, setExpertOpen] = React.useState(false)
@@ -117,16 +117,8 @@ export function TaskPage() {
     <PhoneScreen tone={conversation ? 'grey' : 'plain'}>
       <ScreenHeader
         title="小招Buddy"
-        subtitle={
-          <>
-            <FigmaIcon src={assets.logo} size={14} />
-            <span>Tommy的MacBook</span>
-            <span className="text-ink/20">|</span>
-            <span>任务</span>
-            <span className="text-ink/30">›</span>
-          </>
-        }
-        onMenu={() => setDrawerOpen(true)}
+        onMenu={openDrawer}
+        onNewTask={conversation ? () => navigate('/') : undefined}
       />
 
       <div className="scrollbar-none min-h-0 flex-1 overflow-y-auto">
@@ -148,7 +140,7 @@ export function TaskPage() {
           </div>
         ) : (
           <div className="flex min-h-full flex-col items-center justify-center px-6">
-            <FigmaIcon src={assets.heroMascot} size={188} height="auto" />
+            <FigmaIcon src={assets.heroMascot} size={164} height="auto" />
             <h1 className="text-ink mt-5 text-[26px] leading-[38px] font-bold">
               聚心念之力，成方寸之功
             </h1>
@@ -179,7 +171,6 @@ export function TaskPage() {
       />
       <TabBar active="task" tone={conversation ? 'grey' : 'plain'} />
 
-      <MoreDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
       <PlusPanel
         open={plusOpen}
         onClose={() => setPlusOpen(false)}

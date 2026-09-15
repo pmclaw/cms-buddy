@@ -2,6 +2,7 @@ import { HashRouter, Route, Routes } from 'react-router'
 
 import { ToastProvider } from '@/components/toast'
 import { AutomationProvider } from '@/lib/automation-store'
+import { DrawerProvider } from '@/lib/drawer'
 import { TaskDraftProvider } from '@/lib/task-draft'
 import { AutomationFormPage } from '@/pages/automation-form'
 import { AutomationTemplatesPage } from '@/pages/automation-templates'
@@ -23,7 +24,8 @@ export default function MobileApp() {
         <AutomationProvider>
           <HashRouter>
             <div className="bg-page relative h-full overflow-clip">
-              <Routes>
+              <DrawerProvider>
+                <Routes>
                 <Route path="/" element={<TaskPage />} />
                 <Route path="/task/:id" element={<TaskPage />} />
                 <Route path="/experts" element={<ExpertsPage />} />
@@ -38,7 +40,8 @@ export default function MobileApp() {
                 <Route path="/automation/new" element={<AutomationFormPage />} />
                 <Route path="/automation/:id/edit" element={<AutomationFormPage />} />
                 <Route path="*" element={<TaskPage />} />
-              </Routes>
+                </Routes>
+              </DrawerProvider>
             </div>
           </HashRouter>
         </AutomationProvider>

@@ -12,9 +12,11 @@ import {
   type ExpertSort,
 } from '@/data/experts'
 import { cn } from '@/lib/cn'
+import { useDrawer } from '@/lib/drawer'
 
 export function ExpertsPage() {
   const navigate = useNavigate()
+  const { openDrawer } = useDrawer()
   const [keyword, setKeyword] = React.useState('')
   const [category, setCategory] = React.useState<string | null>(null)
   const [sort, setSort] = React.useState<ExpertSort>('all')
@@ -39,7 +41,7 @@ export function ExpertsPage() {
 
   return (
     <PhoneScreen>
-      <ScreenHeader title="专家" showMenu={false} />
+      <ScreenHeader title="专家" onMenu={openDrawer} onNewTask={() => navigate('/')} />
 
       <div className="shrink-0 px-4">
         <label className="flex h-[40px] items-center gap-2 rounded-[12px] bg-white px-3 ring-1 ring-[rgba(40,50,83,0.06)]">

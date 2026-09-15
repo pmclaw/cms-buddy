@@ -9,10 +9,12 @@ import { PhoneScreen, ScreenHeader, TabBar } from '@/components/screen'
 import { useToast } from '@/components/toast'
 import { taskSortOptions, type AutomationTask, type TaskFilter } from '@/data/tasks'
 import { useAutomation } from '@/lib/automation-store'
+import { useDrawer } from '@/lib/drawer'
 
 export function AutomationPage() {
   const navigate = useNavigate()
   const toast = useToast()
+  const { openDrawer } = useDrawer()
   const { tasks, remove, toggleStatus, runOnce } = useAutomation()
 
   const [keyword, setKeyword] = React.useState('')
@@ -51,7 +53,8 @@ export function AutomationPage() {
     <PhoneScreen>
       <ScreenHeader
         title="自动化任务"
-        showMenu={false}
+        onMenu={openDrawer}
+        onNewTask={() => navigate('/')}
         right={
           <button
             type="button"
