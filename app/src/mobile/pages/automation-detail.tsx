@@ -1,9 +1,10 @@
 import * as React from 'react'
-import { ChevronRight, Clock } from 'lucide-react'
+import { Clock } from 'lucide-react'
 import { useParams } from 'react-router'
 
 import RichText from '@/components/rich-text'
 import { PhoneScreen, ScreenHeader } from '@/components/screen'
+import ThinkingHeader from '@/components/thinking-header'
 import { conversations, findConversation, type AnswerBlock } from '@/data/chat'
 import { taskRecords } from '@/data/tasks'
 import { useAutomation } from '@/lib/automation-store'
@@ -28,6 +29,7 @@ export function AutomationDetailPage() {
   const answer = conversation?.messages.find((message) => message.role === 'assistant')
   const blocks = answer && 'blocks' in answer ? answer.blocks : []
   const steps = answer && 'steps' in answer ? (answer.steps ?? []) : []
+  const duration = answer && 'duration' in answer ? answer.duration : ''
 
   // 任务卡片上的「N 次执行」与这里展示的条数保持一致
   const runs = Math.max(1, task?.runs ?? 1)
@@ -69,25 +71,13 @@ export function AutomationDetailPage() {
               </span>
             </div>
 
-            <button
-              type="button"
-              onClick={() => setOpenSteps(openSteps === index ? null : index)}
-              className="mt-2 flex w-full items-center justify-between rounded-[8px] bg-[#f5f6f8] px-3 py-2.5"
-            >
-              <span className="text-sub text-[15px]">
-                已完成 {steps.length} 个步骤
-              </span>
-              <span className="text-ink flex items-center text-[15px]">
-                已完成
-                <ChevronRight
-                  className={cn(
-                    'size-[16px] transition-transform',
-                    openSteps === index && 'rotate-90'
-                  )}
-                  strokeWidth={1.8}
-                />
-              </span>
-            </button>
+            <div className="mt-2">
+              <ThinkingHeader
+                duration={duration}
+                open={openSteps === index}
+                onToggle={() => setOpenSteps(openSteps === index ? null : index)}
+              />
+            </div>
 
             {openSteps === index ? (
               <ol className="mt-2 flex flex-col rounded-[8px] bg-[#f5f6f8] px-3 py-2.5">

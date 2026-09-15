@@ -215,7 +215,6 @@ function MessageBubble({
   return (
     <div className="flex flex-col">
       <ThinkingTimeline
-        label={message.thinkingLabel}
         duration={message.duration}
         steps={steps ?? []}
         open={open && Boolean(steps)}

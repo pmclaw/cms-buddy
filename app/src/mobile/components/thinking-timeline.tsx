@@ -1,6 +1,5 @@
 import {
   Brain,
-  ChevronDown,
   Clock,
   GitBranch,
   ListChecks,
@@ -10,7 +9,7 @@ import {
 } from 'lucide-react'
 
 import type { StepIcon, TimelineStep } from '@/data/chat'
-import { cn } from '@/lib/cn'
+import ThinkingHeader from '@/components/thinking-header'
 
 const iconMap: Record<StepIcon, typeof Brain> = {
   think: Brain,
@@ -24,14 +23,12 @@ const iconMap: Record<StepIcon, typeof Brain> = {
 
 /** 「任务处理过程 / 已完成思考」折叠头 + 步骤清单。 */
 export default function ThinkingTimeline({
-  label,
   duration,
   steps,
   open,
   onToggle,
   visibleCount,
 }: {
-  label: string
   duration: string
   steps: TimelineStep[]
   open: boolean
@@ -42,25 +39,7 @@ export default function ThinkingTimeline({
 
   return (
     <div className="w-full">
-      <button
-        type="button"
-        onClick={onToggle}
-        className="flex w-full cursor-pointer items-center gap-3 py-1 text-left"
-      >
-        <span className="text-ink text-[15px] leading-[24px] font-semibold">
-          {label}
-        </span>
-        <span className="text-sub text-[13px] leading-[22px]">
-          总耗时 <span className="text-ink/80">{duration}</span>
-        </span>
-        <ChevronDown
-          className={cn(
-            'text-sub ml-auto size-[16px] transition-transform',
-            open ? '' : '-rotate-90'
-          )}
-          strokeWidth={1.8}
-        />
-      </button>
+      <ThinkingHeader duration={duration} open={open} onToggle={onToggle} />
 
       {open ? (
         <ol className="mt-3 flex flex-col">

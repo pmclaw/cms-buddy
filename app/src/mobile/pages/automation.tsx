@@ -55,7 +55,6 @@ export function AutomationPage() {
       <ScreenHeader
         title="自动化"
         onMenu={openDrawer}
-        onNewTask={() => navigate('/')}
         right={
           <button
             type="button"

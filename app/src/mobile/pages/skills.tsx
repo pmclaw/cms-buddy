@@ -29,11 +29,7 @@ export function SkillsPage() {
 
   return (
     <PhoneScreen>
-      <ScreenHeader
-        title="技能中心"
-        onMenu={openDrawer}
-        onNewTask={() => navigate('/')}
-      />
+      <ScreenHeader title="技能中心" onMenu={openDrawer} />
 
       <div className="shrink-0 px-4">
         <label className="flex h-[40px] items-center gap-2 rounded-[12px] bg-white px-3 ring-1 ring-[rgba(40,50,83,0.06)]">
