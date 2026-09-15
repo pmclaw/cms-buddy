@@ -87,7 +87,7 @@ export function AutomationPage() {
         type="button"
         aria-label="创建任务"
         onClick={() => navigate('/automation/new')}
-        className="bg-brand absolute right-4 bottom-[78px] flex size-[56px] items-center justify-center rounded-full text-white shadow-[0_10px_24px_rgba(24,94,200,0.32)]"
+        className="bg-ink absolute right-4 bottom-[78px] flex size-[56px] items-center justify-center rounded-full text-white shadow-[0_10px_24px_rgba(40,50,83,0.28)]"
       >
         <Plus className="size-[26px]" strokeWidth={2.2} />
       </button>

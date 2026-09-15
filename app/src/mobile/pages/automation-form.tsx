@@ -86,7 +86,7 @@ export function TaskFormSheet({
               <button
                 type="button"
                 onClick={() => navigate('/automation/templates')}
-                className="text-brand ring-brand/40 flex h-[36px] items-center gap-1.5 rounded-[10px] px-3 text-[14px] ring-1"
+                className="text-ink flex h-[36px] items-center gap-1.5 rounded-[10px] bg-white px-3 text-[14px] ring-1 ring-[rgba(40,50,83,0.08)]"
               >
                 <Sparkles className="size-[16px]" strokeWidth={1.8} />
                 从模板创建
@@ -278,14 +278,14 @@ export function TaskFormSheet({
             <button
               type="button"
               onClick={onClose}
-              className="text-ink h-[50px] flex-1 rounded-[14px] bg-[#f2f2f7] text-[16px]"
+              className="text-ink h-[48px] flex-1 rounded-[14px] bg-[#f2f2f7] text-[16px]"
             >
               取消
             </button>
             <button
               type="button"
               onClick={submit}
-              className="bg-brand h-[50px] flex-1 rounded-[14px] text-[16px] text-white"
+              className="bg-ink h-[48px] flex-1 rounded-[14px] text-[16px] text-white"
             >
               {editing ? '保存' : '创建'}
             </button>
