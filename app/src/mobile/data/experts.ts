@@ -57,6 +57,20 @@ export const smartAssistants: SmartAssistant[] = [
     slogan: '你的办公助手，通过 AI 助力你的高效办公！',
     placeholder: '输入 @ 或 / 选择技能，有问题尽管问我~',
   },
+  {
+    name: '营销助理',
+    avatar: 'image17',
+    title: 'Hi，我是营销助理！',
+    slogan: '找客户、找素材、找活动，营销的事交给我',
+    placeholder: '问客户、问活动、问素材、问投放…',
+  },
+  {
+    name: '招小研',
+    avatar: 'xiaoyan',
+    title: 'Hi，我是招小研！',
+    slogan: '你的研究小助手，帮你把研究做深做透',
+    placeholder: '问个股、问研报、问数据、问观点…',
+  },
 ]
 
 export const experts: Expert[] = [
