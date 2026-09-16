@@ -36,8 +36,12 @@ jobs:
           BASE_PATH: /cms-buddy/
 
       # 单页应用：深链接交给 404.html 兜底，交给前端路由处理
+      # 站点根 404.html 是唯一生效的 404 页：主站深链接沿用主站 index.html 原样恢复；
+      # admin 深链接由注入脚本分发（写 sessionStorage 后跳 /cms-buddy/admin/，admin 启动时精确恢复路由）
       - name: Prepare SPA fallback
-        run: cp dist/index.html dist/404.html && touch dist/.nojekyll
+        run: |
+          cp dist/index.html dist/404.html && touch dist/.nojekyll
+          node admin/scripts/inject-admin-404.mjs dist/404.html
 
       # 移动端是独立的 Vite 工程（app/），产物发布到同一站点的 /app/ 子目录
       - name: Build mobile app
