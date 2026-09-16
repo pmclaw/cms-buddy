@@ -24,6 +24,13 @@ export const expertCategories = [
   { id: 'docs', label: '文档与创作' },
 ]
 
+/** 移动端专家列表顶部的智能助理入口（头像 + 名称） */
+export const smartAssistants: Array<{ name: string; avatar: CharacterKey }> = [
+  { name: '招小顾', avatar: 'zhaoxiaogu' },
+  { name: '招小数', avatar: 'xiaoshu' },
+  { name: '招小聚', avatar: 'zhaoxiaoju' },
+]
+
 export const experts: Expert[] = [
   {
     id: 'stock-qa',

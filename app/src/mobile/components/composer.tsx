@@ -2,7 +2,7 @@ import * as React from 'react'
 import { ArrowUp, ChevronDown, CircleGauge, Plus, X } from 'lucide-react'
 
 import CharacterAvatar from '@/components/character-avatar'
-import { experts } from '@/data/experts'
+import { experts, smartAssistants } from '@/data/experts'
 import { cn } from '@/lib/cn'
 import { useTaskDraft } from '@/lib/task-draft'
 
@@ -38,7 +38,10 @@ export default function Composer({
     area.style.height = `${Math.min(area.scrollHeight, 132)}px`
   }, [draft.text])
 
-  const expert = experts.find((item) => item.name === draft.expert)
+  // 召唤的可能是专家列表里的专家，也可能是智能助理入口里的助理
+  const summoned =
+    experts.find((item) => item.name === draft.expert) ??
+    smartAssistants.find((item) => item.name === draft.expert)
 
   function submit() {
     if (!canSend) return
@@ -52,7 +55,7 @@ export default function Composer({
       <div className="flex flex-col rounded-[24px] bg-white px-4 py-3 shadow-[0_8px_28px_rgba(40,50,83,0.12)]">
         {draft.attachments.length > 0 ||
         draft.skills.length > 0 ||
-        expert ? (
+        summoned ? (
           <div className="mb-2 flex flex-wrap items-center gap-2">
             {draft.attachments.map((name) => (
               <span
@@ -92,13 +95,13 @@ export default function Composer({
               </span>
             ))}
 
-            {expert ? (
+            {summoned ? (
               <span className="text-ink flex items-center gap-1.5 rounded-[8px] bg-[rgba(40,50,83,0.06)] py-1 pr-2 pl-1.5 text-[13px]">
-                <CharacterAvatar character={expert.avatar} size={20} />
-                {expert.name}
+                <CharacterAvatar character={summoned.avatar} size={20} />
+                {summoned.name}
                 <button
                   type="button"
-                  aria-label={`移除 ${expert.name}`}
+                  aria-label={`移除 ${summoned.name}`}
                   onClick={() => patch({ expert: null })}
                 >
                   <X className="text-sub size-[13px]" strokeWidth={2} />
