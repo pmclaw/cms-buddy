@@ -15,16 +15,14 @@ export function SkillsPage() {
   const { openDrawer } = useDrawer()
   const [keyword, setKeyword] = React.useState('')
   const [category, setCategory] = React.useState<string | null>(null)
-  const [tab, setTab] = React.useState<'all' | 'featured'>('all')
 
   const list = skills.filter((skill) => {
     const hitKeyword =
       skill.name.toLowerCase().includes(keyword.trim().toLowerCase()) ||
       skill.desc.toLowerCase().includes(keyword.trim().toLowerCase()) ||
       skill.owner.toLowerCase().includes(keyword.trim().toLowerCase())
-    const hitTab = tab === 'all' ? true : Boolean(skill.featured)
     const hitCategory = category ? skill.category === category : true
-    return hitKeyword && hitTab && hitCategory
+    return hitKeyword && hitCategory
   })
 
   return (
@@ -42,35 +40,15 @@ export function SkillsPage() {
           />
         </label>
 
-        <div className="mt-3 flex items-center gap-5">
-          {(
-            [
-              { id: 'all' as const, label: '全部' },
-              { id: 'featured' as const, label: '官方精选' },
-            ]
-          ).map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => setTab(item.id)}
-              className={cn(
-                'text-[15px]',
-                tab === item.id ? 'text-brand font-medium' : 'text-ink'
-              )}
-            >
-              {item.label}
-            </button>
-          ))}
-        </div>
-
         <div className="scrollbar-none mt-3 flex gap-2 overflow-x-auto pb-1">
-          {skillCategories.map((item) => {
-            const active = category === item.id
+          {[{ id: 'all', label: '全部' }, ...skillCategories].map((item) => {
+            const active =
+              item.id === 'all' ? category === null : category === item.id
             return (
               <button
                 key={item.id}
                 type="button"
-                onClick={() => setCategory(active ? null : item.id)}
+                onClick={() => setCategory(item.id === 'all' ? null : item.id)}
                 className={cn(
                   'shrink-0 rounded-full px-3.5 py-1.5 text-[13px] whitespace-nowrap',
                   active
