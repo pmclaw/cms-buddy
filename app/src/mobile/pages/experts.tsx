@@ -3,19 +3,24 @@ import { Search } from 'lucide-react'
 import { useNavigate } from 'react-router'
 
 import { ExpertCard } from '@/components/cards'
+import AssistantChatbot from '@/components/assistant-chatbot'
 import CharacterAvatar from '@/components/character-avatar'
 import { PhoneScreen, ScreenHeader, TabBar } from '@/components/screen'
-import { expertCategories, experts, smartAssistants } from '@/data/experts'
+import {
+  expertCategories,
+  experts,
+  smartAssistants,
+  type SmartAssistant,
+} from '@/data/experts'
 import { cn } from '@/lib/cn'
 import { useDrawer } from '@/lib/drawer'
-import { useTaskDraft } from '@/lib/task-draft'
 
 export function ExpertsPage() {
   const navigate = useNavigate()
   const { openDrawer } = useDrawer()
-  const { patch } = useTaskDraft()
   const [keyword, setKeyword] = React.useState('')
   const [category, setCategory] = React.useState<string | null>(null)
+  const [assistant, setAssistant] = React.useState<SmartAssistant | null>(null)
 
   const list = experts.filter((expert) => {
     const hitKeyword =
@@ -36,10 +41,7 @@ export function ExpertsPage() {
             <button
               key={assistant.name}
               type="button"
-              onClick={() => {
-                patch({ expert: assistant.name })
-                navigate('/')
-              }}
+              onClick={() => setAssistant(assistant)}
               className="flex w-[98px] shrink-0 flex-col items-center gap-1.5"
             >
               <CharacterAvatar character={assistant.avatar} size={52} />
@@ -98,6 +100,13 @@ export function ExpertsPage() {
       </div>
 
       <TabBar active="expert" />
+
+      {assistant ? (
+        <AssistantChatbot
+          assistant={assistant}
+          onClose={() => setAssistant(null)}
+        />
+      ) : null}
     </PhoneScreen>
   )
 }

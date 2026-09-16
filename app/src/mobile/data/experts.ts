@@ -24,11 +24,39 @@ export const expertCategories = [
   { id: 'docs', label: '文档与创作' },
 ]
 
-/** 移动端专家列表顶部的智能助理入口（头像 + 名称） */
-export const smartAssistants: Array<{ name: string; avatar: CharacterKey }> = [
-  { name: '招小顾', avatar: 'zhaoxiaogu' },
-  { name: '招小数', avatar: 'xiaoshu' },
-  { name: '招小聚', avatar: 'zhaoxiaoju' },
+export type SmartAssistant = {
+  name: string
+  avatar: CharacterKey
+  /** chatbot 弹层里的欢迎语与标语 */
+  title: string
+  slogan: string
+  /** 输入框占位文案 */
+  placeholder: string
+}
+
+/** 移动端专家列表顶部的智能助理入口（头像 + 名称），点击打开各自的 chatbot 弹层 */
+export const smartAssistants: SmartAssistant[] = [
+  {
+    name: '招小顾',
+    avatar: 'zhaoxiaogu',
+    title: 'Hi，我是招小顾！',
+    slogan: '找服务、找助手，就找招小顾',
+    placeholder: '问知识、问个股、问热点、问客户…',
+  },
+  {
+    name: '招小数',
+    avatar: 'xiaoshu',
+    title: 'Hi，我是招小数！',
+    slogan: '我是你的智能数据小助理，可以为您解答各种数据问题',
+    placeholder: '找数据、找报表、找数据表、找数据标签、查数据口径',
+  },
+  {
+    name: '招小聚',
+    avatar: 'zhaoxiaoju',
+    title: 'Hi，我是招小聚',
+    slogan: '你的办公助手，通过 AI 助力你的高效办公！',
+    placeholder: '输入 @ 或 / 选择技能，有问题尽管问我~',
+  },
 ]
 
 export const experts: Expert[] = [

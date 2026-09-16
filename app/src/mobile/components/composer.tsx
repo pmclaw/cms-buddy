@@ -2,7 +2,7 @@ import * as React from 'react'
 import { ArrowUp, ChevronDown, CircleGauge, Plus, X } from 'lucide-react'
 
 import CharacterAvatar from '@/components/character-avatar'
-import { experts, smartAssistants } from '@/data/experts'
+import { experts } from '@/data/experts'
 import { cn } from '@/lib/cn'
 import { useTaskDraft } from '@/lib/task-draft'
 
@@ -38,10 +38,7 @@ export default function Composer({
     area.style.height = `${Math.min(area.scrollHeight, 132)}px`
   }, [draft.text])
 
-  // 召唤的可能是专家列表里的专家，也可能是智能助理入口里的助理
-  const summoned =
-    experts.find((item) => item.name === draft.expert) ??
-    smartAssistants.find((item) => item.name === draft.expert)
+  const summoned = experts.find((item) => item.name === draft.expert)
 
   function submit() {
     if (!canSend) return
