@@ -24,6 +24,9 @@ jobs:
         with:
           node-version: 22
           cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            admin/package-lock.json
 
       - run: npm ci
 
@@ -45,6 +48,19 @@ jobs:
 
       - name: Merge mobile app into dist
         run: mkdir -p dist/app && cp -R app/dist/. dist/app/
+
+      # PC 后台管理是独立的 Vite 工程（admin/），产物发布到同一站点的 /admin/ 子目录
+      - name: Build admin console
+        working-directory: admin
+        run: |
+          npm ci
+          npm run build
+          cp dist/index.html dist/404.html
+        env:
+          BASE_PATH: /cms-buddy/admin/
+
+      - name: Merge admin console into dist
+        run: mkdir -p dist/admin && cp -R admin/dist/. dist/admin/
 
       - uses: actions/configure-pages@v5
 
