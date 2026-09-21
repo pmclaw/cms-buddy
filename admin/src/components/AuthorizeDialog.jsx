@@ -9,8 +9,13 @@ import { openScopes, orgUsers, userGroups, orgDepartments } from '../data/mock.j
 import { flattenDepartments } from '../pages/user-groups/OrgTree.jsx';
 import { groupMembers, usersOfDept, getDept } from '../pages/user-groups/utils.js';
 
+// 单个空间下的用户授权空值：各空间独立保存一份
+export const EMPTY_USER_AUTH = {
+  groupIds: [], deptIds: [], userIds: [], excludedUserIds: [],
+};
+
 // 计算已授权用户清单：用户组(展开成员) ∪ 部门(直属用户) ∪ 单个用户，去重并记录来源；排除名单仅作用于组/部门派生用户
-function calcAuthorizedUsers(userAuth) {
+export function calcAuthorizedUsers(userAuth) {
   const { groupIds = [], deptIds = [], userIds = [], excludedUserIds = [] } = userAuth || {};
   const excluded = new Set(excludedUserIds);
   const map = new Map();

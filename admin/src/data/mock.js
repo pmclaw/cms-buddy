@@ -608,7 +608,12 @@ export const skills = [
     mcpToolMap: { M001: ['get_stock_quote', 'get_fund_info', 'search_research_report'] },
     openScope: 'all',
     openTenants: [],
-    userAuth: { groupIds: [], deptIds: ['D1011'], userIds: ['U006'], excludedUserIds: [] },
+    userAuth: {
+      byTenant: {
+        T001: { groupIds: ['G001'], deptIds: [], userIds: ['U006'], excludedUserIds: [] },
+        T002: { groupIds: [], deptIds: ['D1022'], userIds: ['U012'], excludedUserIds: [] },
+      },
+    },
     remark: '',
     creator: '赵明',
     updateTime: '2026-08-04 10:15',
@@ -625,7 +630,11 @@ export const skills = [
     mcpToolMap: { M001: ['get_stock_quote', 'get_fund_info', 'search_research_report'] },
     openScope: 'tenant',
     openTenants: [],
-    userAuth: { groupIds: ['G004'], deptIds: [], userIds: ['U002'], excludedUserIds: [] },
+    userAuth: {
+      byTenant: {
+        T001: { groupIds: ['G004'], deptIds: [], userIds: ['U002'], excludedUserIds: [] },
+      },
+    },
     remark: '',
     creator: '王强',
     updateTime: '2026-08-01 09:42',
@@ -806,6 +815,12 @@ export const skills = [
     mcpToolMap: { M001: ['get_stock_quote', 'get_fund_info', 'search_research_report'] },
     openScope: 'all',
     openTenants: [],
+    userAuth: {
+      byTenant: {
+        T001: { groupIds: ['G001'], deptIds: [], userIds: ['U001', 'U011'], excludedUserIds: [] },
+        T002: { groupIds: ['G003'], deptIds: [], userIds: [], excludedUserIds: [] },
+      },
+    },
     remark: '本空间自建技能，仅限招小顾使用',
     creator: '林依然',
     creatorTenant: 'T001',
@@ -954,7 +969,12 @@ export const experts = [
     businessOwner: '数字化办公室',
     openScope: 'tenant',
     openTenants: ['T001', 'T004'],
-    userAuth: { groupIds: ['G001'], deptIds: [], userIds: ['U006'], excludedUserIds: [] },
+    userAuth: {
+      byTenant: {
+        T001: { groupIds: ['G001'], deptIds: [], userIds: ['U006'], excludedUserIds: [] },
+        T004: { groupIds: [], deptIds: ['D2011'], userIds: [], excludedUserIds: [] },
+      },
+    },
     tags: ['财富管家', '高净值', '资产配置'],
     description: '面向高净值客户的一对一智能财富管家，深耕资产配置与组合诊断领域。',
     instruction: '请以专业、亲切、富有人文关怀的语气回答用户关于资产配置、组合管理、市场解读等财富相关的问题。',
@@ -984,7 +1004,12 @@ export const experts = [
     businessOwner: '机构业务部',
     openScope: 'all',
     openTenants: [],
-    userAuth: { groupIds: [], deptIds: ['D1022'], userIds: [], excludedUserIds: [] },
+    userAuth: {
+      byTenant: {
+        T001: { groupIds: [], deptIds: ['D1022'], userIds: ['U012'], excludedUserIds: [] },
+        T002: { groupIds: ['G003'], deptIds: [], userIds: ['U013'], excludedUserIds: [] },
+      },
+    },
     tags: ['研报撰写', '数据洞察', '可视化'],
     description: '聚焦数据驱动的研究助手，可一键产出行业研报、公司深度研究、事件点评。',
     instruction: '根据用户提供的主题、要求时长和数据来源，生成结构清晰的研报或研究报告。',
@@ -1108,6 +1133,12 @@ export const experts = [
     businessOwner: '财富管理部',
     openScope: 'all',
     openTenants: [],
+    userAuth: {
+      byTenant: {
+        T001: { groupIds: ['G001', 'G002'], deptIds: [], userIds: ['U006'], excludedUserIds: [] },
+        T002: { groupIds: ['G003'], deptIds: ['D202'], userIds: ['U013'], excludedUserIds: [] },
+      },
+    },
     tags: ['持仓诊断', '投资建议', '组合管理'],
     description: '本空间专属投顾助手，结合客户持仓数据提供个性化投资建议与组合管理服务。',
     instruction: '基于客户持仓与风险偏好，提供个性化的投资建议和组合调整方案。',
