@@ -1,30 +1,17 @@
 import * as React from 'react'
-import {
-  ChevronDown,
-  FileText,
-  Folder,
-  FolderOpen,
-} from 'lucide-react'
+import { ChevronDown, Folder } from 'lucide-react'
 import { useNavigate, useParams } from 'react-router'
 
-import CharacterAvatar from '@/components/character-avatar'
 import { PhoneScreen, ScreenHeader } from '@/components/screen'
 import { findSkill, highDividendDetail as detail, skills } from '@/data/skills'
 import { cn } from '@/lib/cn'
 import { useTaskDraft } from '@/lib/task-draft'
-
-const tabs = [
-  { id: 'overview', label: '概览' },
-  { id: 'files', label: '文件' },
-  { id: 'versions', label: '版本' },
-] as const
 
 export function SkillDetailPage() {
   const { id } = useParams()
   const navigate = useNavigate()
   const { draft, patch } = useTaskDraft()
   const skill = findSkill(id ?? '') ?? skills[0]
-  const [tab, setTab] = React.useState<(typeof tabs)[number]['id']>('overview')
   const [expanded, setExpanded] = React.useState(false)
 
   const steps = expanded ? detail.steps : detail.steps.slice(0, 3)
@@ -35,32 +22,15 @@ export function SkillDetailPage() {
 
       <div className="scrollbar-none min-h-0 flex-1 overflow-y-auto px-4 pb-8">
         <h1 className="text-ink text-[22px] leading-[32px] font-bold">{skill.name}</h1>
-        <span className="text-ink mt-2.5 inline-flex items-center gap-2 rounded-[10px] bg-[rgba(40,50,83,0.06)] px-2.5 py-1 text-[12px]">
-          <CharacterAvatar character={skill.avatar} size={16} />
-          {skill.owner}
-        </span>
         <p className="text-ink/70 mt-3 text-[13px] leading-[22px]">{skill.desc}</p>
 
-        <div className="scrollbar-none mt-4 flex gap-4 overflow-x-auto">
-          {tabs.map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => setTab(item.id)}
-              className={cn(
-                'shrink-0 pb-1 text-[15px]',
-                tab === item.id
-                  ? 'text-brand border-brand border-b-2 font-medium'
-                  : 'text-ink'
-              )}
-            >
-              {item.label}
-            </button>
-          ))}
+        <div className="mt-4 flex gap-4">
+          <span className="text-brand border-brand border-b-2 pb-1 text-[15px] font-medium">
+            使用说明
+          </span>
         </div>
 
-        {tab === 'overview' ? (
-          <article className="mt-4 rounded-[14px] bg-white px-4 py-5 ring-1 ring-[rgba(0,0,0,0.04)]">
+        <article className="mt-4 rounded-[14px] bg-white px-4 py-5 ring-1 ring-[rgba(0,0,0,0.04)]">
             <span className="text-sub rounded-[4px] bg-[rgba(40,50,83,0.05)] px-1.5 py-[2px] text-[11px]">
               来源：{detail.source}
             </span>
@@ -147,51 +117,7 @@ export function SkillDetailPage() {
                 {expanded ? '收起全文' : '展开全文'}
               </button>
             </div>
-          </article>
-        ) : null}
-
-        {tab === 'files' ? (
-          <div className="mt-4 rounded-[14px] bg-white px-4 py-4 ring-1 ring-[rgba(0,0,0,0.04)]">
-            {detail.files.folders.map((folder) => (
-              <div
-                key={folder}
-                className="text-ink flex items-center gap-2 border-b border-[rgba(0,0,0,0.05)] py-2.5 text-[14px] last:border-0"
-              >
-                <FolderOpen className="size-[16px] text-[#e0b34a]" strokeWidth={1.7} />
-                {folder}
-              </div>
-            ))}
-            {detail.files.items.map((file) => (
-              <div
-                key={file.name}
-                className="text-ink flex items-center gap-2 border-b border-[rgba(0,0,0,0.05)] py-2.5 text-[14px] last:border-0"
-              >
-                <FileText className="text-sub size-[16px]" strokeWidth={1.7} />
-                <span className="flex-1 truncate">{file.name}</span>
-                <span className="text-sub text-[12px]">{file.size}</span>
-              </div>
-            ))}
-          </div>
-        ) : null}
-
-        {tab === 'versions' ? (
-          <div className="mt-4 rounded-[14px] bg-white px-4 py-2 ring-1 ring-[rgba(0,0,0,0.04)]">
-            {[
-              { version: detail.meta[0].value, at: '2026-07-14 07:08', note: '三维框架 + 多 agent 编排' },
-              { version: 'v20260620.0315', at: '2026-06-20 03:15', note: '补充港股标的池' },
-              { version: 'v20260502.1902', at: '2026-05-02 19:02', note: '首次发布' },
-            ].map((item) => (
-              <div
-                key={item.version}
-                className="flex flex-col gap-1 border-b border-[rgba(0,0,0,0.05)] py-3 last:border-0"
-              >
-                <span className="text-brand font-mono text-[12px]">{item.version}</span>
-                <span className="text-ink text-[14px]">{item.note}</span>
-                <span className="text-sub text-[12px]">{item.at}</span>
-              </div>
-            ))}
-          </div>
-        ) : null}
+        </article>
 
         <div className="mt-4 flex flex-col gap-3 rounded-[14px] bg-white px-4 py-4 ring-1 ring-[rgba(0,0,0,0.04)]">
           {detail.meta.map((item) => (

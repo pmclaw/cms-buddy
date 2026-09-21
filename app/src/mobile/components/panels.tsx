@@ -3,14 +3,12 @@ import {
   Camera,
   Check,
   ChevronRight,
-  Clock,
   FolderUp,
   Image,
   Search,
   Sparkles,
   Users,
 } from 'lucide-react'
-import { useNavigate } from 'react-router'
 
 import CharacterAvatar from '@/components/character-avatar'
 import { BottomSheet } from '@/components/sheet'
@@ -32,7 +30,6 @@ export function PlusPanel({
   onOpenSkillPicker: () => void
   onOpenExpertPicker: () => void
 }) {
-  const navigate = useNavigate()
   const { draft, patch } = useTaskDraft()
 
   const sources = [
@@ -56,14 +53,6 @@ export function PlusPanel({
       onClick: () => {
         onClose()
         onOpenExpertPicker()
-      },
-    },
-    {
-      label: '定时任务',
-      icon: Clock,
-      onClick: () => {
-        onClose()
-        navigate('/automation/new')
       },
     },
   ]

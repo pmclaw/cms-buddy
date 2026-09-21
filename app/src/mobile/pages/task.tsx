@@ -124,7 +124,6 @@ export function TaskPage() {
       <div className="scrollbar-none min-h-0 flex-1 overflow-y-auto">
         {conversation ? (
           <div className="flex flex-col gap-4 px-4 pt-2 pb-6">
-            <p className="text-sub text-center text-[12px]">内容由 AI 生成</p>
             {conversation.messages.map((message) => (
               <MessageBubble
                 key={message.id}
