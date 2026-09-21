@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Modal } from './Overlay.jsx';
-import { UserAuthPanel, calcAuthorizedUsers, EMPTY_USER_AUTH } from './AuthorizeDialog.jsx';
+import { UserAuthPanel, EMPTY_USER_AUTH } from './AuthorizeDialog.jsx';
 import { useRole } from '../contexts/RoleContext.jsx';
 import { useStore } from '../contexts/StoreContext.jsx';
 
@@ -89,58 +89,26 @@ export function AuthorizeUserDialog({ resource, resourceType, onClose, onSubmit 
           }}>
             {spaceOptions.map((t) => {
               const active = t.id === activeId;
-              const count = calcAuthorizedUsers(byTenant[t.id] || EMPTY_USER_AUTH).length;
               return (
                 <div
                   key={t.id}
                   title={`${t.brandName}（${t.nickname}）`}
                   onClick={() => setActiveId(t.id)}
                   style={{
-                    display: 'flex', alignItems: 'center', gap: 7,
+                    display: 'flex', alignItems: 'center',
                     padding: '9px 18px', cursor: 'pointer', fontSize: 13.5,
                     fontWeight: 500, marginBottom: -2, transition: 'all 0.2s',
                     color: active ? '#E89E57' : '#6B7280',
                     borderBottom: active ? '2px solid #E89E57' : '2px solid transparent',
                   }}
                 >
-                  <img
-                    src={t.logo}
-                    alt=""
-                    style={{ width: 18, height: 18, borderRadius: 4, flexShrink: 0 }}
-                  />
                   <span>{t.brandName}</span>
-                  <span
-                    title={`该空间已授权 ${count} 人`}
-                    style={{
-                      fontSize: 11, lineHeight: 1, padding: '2px 7px', borderRadius: 9,
-                      flexShrink: 0,
-                      background: count > 0 ? '#FBF1E5' : '#F2F4F7',
-                      color: count > 0 ? '#B87136' : '#9CA3AF',
-                    }}
-                  >
-                    {count}
-                  </span>
                 </div>
               );
             })}
             <span style={{ marginLeft: 'auto', fontSize: 12, color: '#9CA3AF', paddingBottom: 8 }}>
               共 {spaceOptions.length} 个空间
             </span>
-          </div>
-
-          {/* ===== 当前空间说明 ===== */}
-          <div style={{
-            display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12,
-            fontSize: 12, color: '#6B7280',
-          }}>
-            <span style={{ width: 3, height: 12, background: '#E89E57', borderRadius: 2, flexShrink: 0 }} />
-            正在设置：
-            <strong style={{ color: '#B87136', fontWeight: 500 }}>
-              {(() => {
-                const t = spaceOptions.find((x) => x.id === activeId);
-                return t ? `${t.brandName}（${t.nickname}）` : '—';
-              })()}
-            </strong>
           </div>
 
           {/* ===== 授权给用户（当前空间，独立表单） ===== */}
