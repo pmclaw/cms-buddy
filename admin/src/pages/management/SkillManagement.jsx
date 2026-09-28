@@ -91,14 +91,20 @@ export function SkillManagement() {
         // 授权给我的：其他主体（系统/其他空间）创建并显式授权给本空间的技能
         list = list.filter((s) => (s.openTenants || []).includes(user.tenantId) && s.creatorTenant !== user.tenantId);
       } else {
-        // Skill技能库：展示平台所有已上架/启用的技能（含未授权给本空间的平台开放资源）；
-        // 「仅限本空间可见」且属于其他空间创建的技能对当前空间不可见
-        list = list.filter(
-          (s) =>
-            s.enabled !== false &&
-            s.status !== '已下架' &&
-            !(s.spaceOnlyVisible && s.creatorTenant && s.creatorTenant !== user.tenantId)
-        );
+        // Skill技能库：展示平台所有已上架/启用的技能（含未授权给本空间的平台开放资源）。
+        // 可见性口径（按技能创建主体区分）：
+        //  1) 系统（平台）创建：天然入驻技能库，全部空间可见、可测试；
+        //  2) 本管理员所辖空间自建：始终可见；
+        //  3) 其他空间自建：仅当该技能「入驻到技能库」（inSkillLibrary）时才对全空间可见、可测试，
+        //     未入驻的技能不展示；兼容存量「仅限本空间可见」（spaceOnlyVisible）标记，仍按不可见处理。
+        const myTenantIds = user.managedTenants || (user.tenantId ? [user.tenantId] : []);
+        list = list.filter((s) => {
+          if (s.enabled === false || s.status === '已下架') return false;
+          if (!s.creatorTenant) return true;
+          if (myTenantIds.includes(s.creatorTenant)) return true;
+          if (s.spaceOnlyVisible) return false;
+          return s.inSkillLibrary === true;
+        });
       }
     }
     return list;
@@ -636,6 +642,7 @@ function SkillEditDialog({ initial, isPlatform, onClose, onSubmit, readOnly }) {
     mcpIds: [],
     mcpToolMap: {},
     spaceOnlyVisible: false,
+    inSkillLibrary: false,
     allowSysAuth: true,
     ...initial,
   }));
@@ -839,6 +846,27 @@ function SkillEditDialog({ initial, isPlatform, onClose, onSubmit, readOnly }) {
                   )}
                 </div>
               </Field>
+              {/* 是否入驻到技能库：与上架状态并列一行（右列）。
+                  仅空间管理员可设置；开启后所有空间管理员在「技能库」中均可查看、可测试该技能。 */}
+              {!isPlatform && (
+                <Field label="是否入驻到技能库">
+                  <div style={{ display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap' }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: readOnly ? 'default' : 'pointer' }}>
+                      <Toggle
+                        checked={!!form.inSkillLibrary}
+                        onChange={(v) => set('inSkillLibrary', v)}
+                        disabled={readOnly}
+                      />
+                      <span style={{ fontSize: 13, color: '#4B5563' }}>
+                        {form.inSkillLibrary ? '已入驻' : '未入驻'}
+                      </span>
+                    </label>
+                    <span style={{ fontSize: 12, color: '#9CA3AF' }}>
+                      入驻后，所有空间管理员可在「技能库」中查看并测试该技能
+                    </span>
+                  </div>
+                </Field>
+              )}
               {/* 所属空间：与上架状态并列一行；查看详情（readOnly）时不展示，仅编辑时保留 */}
               {!isPlatform && !readOnly && (
                 <Field label="所属空间">
