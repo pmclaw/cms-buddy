@@ -39,6 +39,7 @@ export function SkillManagement() {
   const [category, setCategory] = useState('');
   const [sourceFilter, setSourceFilter] = useState('');
   const [spaceFilter, setSpaceFilter] = useState(''); // 「所属空间」筛选：''=全部 / 'system'=系统 / 其余为空间 ID
+  const [authSpaceFilter, setAuthSpaceFilter] = useState(''); // 「授权空间」筛选：''=全部 / 其余为空间 ID（归属该空间 或 被授权给该空间）
   const [editing, setEditing] = useState(null);
   const [spaceAuthTarget, setSpaceAuthTarget] = useState(null); // 授权空间弹窗目标技能
   const [userAuthTarget, setUserAuthTarget] = useState(null); // 授权用户弹窗目标技能
@@ -81,13 +82,22 @@ export function SkillManagement() {
     const k = keyword.trim().toLowerCase();
     // 需求1：来源渠道为 Agenthub 的技能，一律不在任何技能管理列表中展示（覆盖全部页签与两种角色）
     // 需求2：「所属空间」筛选：'' = 全部；'system' = 系统（无 creatorTenant）；其余为空间 ID
+    // 需求4：「授权空间」筛选：'' = 全部；其余为空间 ID。
+    //   选中某空间 T 后，保留「归属于 T」（creatorTenant === T）或「已授权给 T」的技能；
+    //   已授权口径与列表「授权空间」列展示严格一致：全局开放（openScope 非 tenant）视为对所有空间开放，
+    //   指定空间（openScope === 'tenant'）则以 openTenants 是否包含 T 判定。
     let list = skills.filter((s) => {
       if (s.source === 'Agenthub') return false;
       const matchK = !k || s.name.toLowerCase().includes(k);
       const matchC = !category || s.category === category;
       const matchS = !sourceFilter || s.source === sourceFilter;
       const matchT = !spaceFilter || (spaceFilter === 'system' ? !s.creatorTenant : s.creatorTenant === spaceFilter);
-      return matchK && matchC && matchS && matchT;
+      const matchG = !authSpaceFilter || (
+        s.creatorTenant === authSpaceFilter ||
+        s.openScope === 'all' || s.openScope === 'private' ||
+        (s.openTenants || []).includes(authSpaceFilter)
+      );
+      return matchK && matchC && matchS && matchT && matchG;
     });
 
     if (!isPlatform) {
@@ -113,7 +123,7 @@ export function SkillManagement() {
       }
     }
     return list;
-  }, [skills, keyword, category, sourceFilter, spaceFilter, isPlatform, viewTab, user]);
+  }, [skills, keyword, category, sourceFilter, spaceFilter, authSpaceFilter, isPlatform, viewTab, user]);
 
   const total = filtered.length;
   const paged = filtered.slice((page - 1) * pageSize, page * pageSize);
@@ -185,6 +195,12 @@ export function SkillManagement() {
               <option value="system">系统</option>
               {managedTenants.map((t) => <option key={t.id} value={t.id}>{t.brandName}</option>)}
             </select>
+            {/* 需求4：授权空间筛选。下拉选项为全部 Buddy 空间（不做角色收敛）；
+                选中某空间后，展示「归属于该空间」或「已授权给该空间」的技能。 */}
+            <select className="select" value={authSpaceFilter} onChange={(e) => { setAuthSpaceFilter(e.target.value); setPage(1); }} style={{ maxWidth: 160 }}>
+              <option value="">授权空间</option>
+              {tenants.map((t) => <option key={t.id} value={t.id}>{t.brandName}</option>)}
+            </select>
             {isPlatform && (
               <select className="select" value={sourceFilter} onChange={(e) => { setSourceFilter(e.target.value); setPage(1); }} style={{ maxWidth: 140 }}>
                 <option value="">全部来源</option>
@@ -198,7 +214,7 @@ export function SkillManagement() {
               onChange={(e) => { setKeyword(e.target.value); setPage(1); }}
               style={{ maxWidth: 240 }}
             />
-            <button className="btn btn-default" onClick={() => { setKeyword(''); setCategory(''); setSourceFilter(''); setSpaceFilter(''); setPage(1); }}>
+            <button className="btn btn-default" onClick={() => { setKeyword(''); setCategory(''); setSourceFilter(''); setSpaceFilter(''); setAuthSpaceFilter(''); setPage(1); }}>
               <Icon name="refresh" size={12} />
               重置
             </button>
