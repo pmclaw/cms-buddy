@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { Modal } from './Overlay.jsx';
-import { Icon, Confirm } from './Common.jsx';
+import { Icon } from './Common.jsx';
 import { Tag } from './Tag.jsx';
 import { Pagination } from './Pagination.jsx';
 import { MultiSelectDropdown } from './MultiSelectDropdown.jsx';
@@ -54,9 +54,8 @@ export function calcAuthorizedUsers(userAuth) {
 export function UserAuthPanel({ resourceType, value, onChange, tenantId }) {
   const [authPage, setAuthPage] = useState(1);
   const [authPageSize, setAuthPageSize] = useState(10);
-  const [confirmRemove, setConfirmRemove] = useState(null);
 
-  // 授权清单变化（渠道勾选/移出）后回到第一页
+  // 授权清单变化（渠道勾选）后回到第一页
   useEffect(() => {
     setAuthPage(1);
   }, [value]);
@@ -90,19 +89,8 @@ export function UserAuthPanel({ resourceType, value, onChange, tenantId }) {
     setAuthPage(p);
   };
 
-  // 移出已授权用户：从手动指定中移除 + 加入排除名单（防止从用户组/部门再次派生）
-  const removeAuthorized = (u) => {
-    const next = { ...value };
-    if ((value.userIds || []).includes(u.id)) {
-      next.userIds = value.userIds.filter((x) => x !== u.id);
-    }
-    const excluded = value.excludedUserIds || [];
-    if (!excluded.includes(u.id)) {
-      next.excludedUserIds = [...excluded, u.id];
-    }
-    onChange(next);
-    setConfirmRemove(null);
-  };
+  // 已授权用户清单为只读结果：不允许在清单中单独移出某个用户
+  // （如需变更，请通过上方「按用户组 / 按部门 / 指定用户」三个授权渠道调整）
 
   // 三个授权渠道（全部展开，各为一行下拉多选）
   const channels = [
@@ -177,13 +165,12 @@ export function UserAuthPanel({ resourceType, value, onChange, tenantId }) {
           <>
             <div style={{ border: '1px solid #E5E7EB', borderRadius: 6, overflow: 'hidden' }}>
               <div className="table-wrap">
-                <table className="table" style={{ minWidth: 560 }}>
+                <table className="table" style={{ minWidth: 480 }}>
                   <thead>
                     <tr>
                       <th style={{ width: 100 }}>用户</th>
                       <th style={{ width: 160 }}>所属部门</th>
                       <th>授权来源</th>
-                      <th style={{ width: 70 }}>操作</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -197,13 +184,6 @@ export function UserAuthPanel({ resourceType, value, onChange, tenantId }) {
                               <Tag key={s} color="info" style={{ fontSize: 11 }}>{s}</Tag>
                             ))}
                           </div>
-                        </td>
-                        <td>
-                          <span
-                            style={{ color: '#EF4444', cursor: 'pointer', fontSize: 13 }}
-                            onClick={() => setConfirmRemove(u)}
-                            title="从已授权用户中移出"
-                          >移出</span>
                         </td>
                       </tr>
                     ))}
@@ -222,27 +202,6 @@ export function UserAuthPanel({ resourceType, value, onChange, tenantId }) {
           </>
         )}
       </div>
-
-      {/* 移出确认 */}
-      <Confirm
-        open={!!confirmRemove}
-        title="移出授权用户"
-        content={
-          <div>
-            确定将 <strong style={{ color: '#E89E57' }}>{confirmRemove?.name}</strong> 从已授权用户中移出吗？
-            <div style={{
-              background: '#FFFBEB', border: '1px solid #FCD34D',
-              padding: 10, borderRadius: 6, fontSize: 12, color: '#92400E', marginTop: 12
-            }}>
-              移出后该用户将不再拥有该{resourceType}的使用权限；
-              若其来自用户组或部门，仅移除当前用户，不影响该渠道其他用户。
-            </div>
-          </div>
-        }
-        danger
-        onOk={() => removeAuthorized(confirmRemove)}
-        onCancel={() => setConfirmRemove(null)}
-      />
     </div>
   );
 }
