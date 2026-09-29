@@ -17,7 +17,8 @@ export function TenantSkills() {
   const [detail, setDetail] = useState(null);
 
   // 假定：所有技能都可被Buddy空间查看（演示）
-  const associatedSkills = skills.slice(0, 10);
+  // 来源渠道为 Agenthub 的技能一律不在任何技能列表中展示（与技能中心口径一致）
+  const associatedSkills = skills.filter((s) => s.source !== 'Agenthub').slice(0, 10);
 
   const filtered = associatedSkills.filter((s) => {
     if (filters.category && s.category !== filters.category) return false;

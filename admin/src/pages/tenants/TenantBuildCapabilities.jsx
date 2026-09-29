@@ -42,7 +42,7 @@ export function TenantBuildCapabilities() {
   };
 
   const availableMcps = mcps.filter((m) => m.status === '已上架' && !isSpacePrivate(m));
-  const availableSkills = skills.filter((s) => !isSpacePrivate(s)); // skills 默认全部展示（含未上架，供管理侧）
+  const availableSkills = skills.filter((s) => s.source !== 'Agenthub' && !isSpacePrivate(s)); // skills 默认全部展示（含未上架，供管理侧）；来源渠道为 Agenthub 的技能不在任何技能列表中展示
   const availableTemplates = templates.filter((t) => t.status === '已启用' || t.status === '已上架');
   const availableExperts = experts.filter((e) => e.status === '已上架');
 

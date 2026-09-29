@@ -38,6 +38,7 @@ export function SkillManagement() {
   const [keyword, setKeyword] = useState('');
   const [category, setCategory] = useState('');
   const [sourceFilter, setSourceFilter] = useState('');
+  const [spaceFilter, setSpaceFilter] = useState(''); // 「所属空间」筛选：''=全部 / 'system'=系统 / 其余为空间 ID
   const [editing, setEditing] = useState(null);
   const [spaceAuthTarget, setSpaceAuthTarget] = useState(null); // 授权空间弹窗目标技能
   const [userAuthTarget, setUserAuthTarget] = useState(null); // 授权用户弹窗目标技能
@@ -78,11 +79,15 @@ export function SkillManagement() {
 
   const filtered = useMemo(() => {
     const k = keyword.trim().toLowerCase();
+    // 需求1：来源渠道为 Agenthub 的技能，一律不在任何技能管理列表中展示（覆盖全部页签与两种角色）
+    // 需求2：「所属空间」筛选：'' = 全部；'system' = 系统（无 creatorTenant）；其余为空间 ID
     let list = skills.filter((s) => {
+      if (s.source === 'Agenthub') return false;
       const matchK = !k || s.name.toLowerCase().includes(k);
       const matchC = !category || s.category === category;
       const matchS = !sourceFilter || s.source === sourceFilter;
-      return matchK && matchC && matchS;
+      const matchT = !spaceFilter || (spaceFilter === 'system' ? !s.creatorTenant : s.creatorTenant === spaceFilter);
+      return matchK && matchC && matchS && matchT;
     });
 
     if (!isPlatform) {
@@ -108,7 +113,7 @@ export function SkillManagement() {
       }
     }
     return list;
-  }, [skills, keyword, category, sourceFilter, isPlatform, viewTab, user]);
+  }, [skills, keyword, category, sourceFilter, spaceFilter, isPlatform, viewTab, user]);
 
   const total = filtered.length;
   const paged = filtered.slice((page - 1) * pageSize, page * pageSize);
@@ -174,10 +179,16 @@ export function SkillManagement() {
               <option value="">技能分类</option>
               {skillCategories.map((c) => <option key={c}>{c}</option>)}
             </select>
+            {/* 需求2：所属空间筛选。系统管理员 = 系统 + 全部空间；空间管理员 = 系统 + 其在管的空间 */}
+            <select className="select" value={spaceFilter} onChange={(e) => { setSpaceFilter(e.target.value); setPage(1); }} style={{ maxWidth: 160 }}>
+              <option value="">所属空间</option>
+              <option value="system">系统</option>
+              {managedTenants.map((t) => <option key={t.id} value={t.id}>{t.brandName}</option>)}
+            </select>
             {isPlatform && (
               <select className="select" value={sourceFilter} onChange={(e) => { setSourceFilter(e.target.value); setPage(1); }} style={{ maxWidth: 140 }}>
                 <option value="">全部来源</option>
-                {[...platformSources, 'Agenthub'].map((s) => <option key={s}>{s}</option>)}
+                {platformSources.map((s) => <option key={s}>{s}</option>)}
               </select>
             )}
             <input
@@ -187,7 +198,7 @@ export function SkillManagement() {
               onChange={(e) => { setKeyword(e.target.value); setPage(1); }}
               style={{ maxWidth: 240 }}
             />
-            <button className="btn btn-default" onClick={() => { setKeyword(''); setCategory(''); setSourceFilter(''); setPage(1); }}>
+            <button className="btn btn-default" onClick={() => { setKeyword(''); setCategory(''); setSourceFilter(''); setSpaceFilter(''); setPage(1); }}>
               <Icon name="refresh" size={12} />
               重置
             </button>
@@ -230,18 +241,15 @@ export function SkillManagement() {
                     <td><Tag color="info">{s.category}</Tag></td>
                     {(isPlatform || viewTab === 'mine') && (
                       <td>
-                        {isPlatform && s.creatorTenant ? (
-                          // 系统管理员视角：空间管理员创建的技能仅文字展示上下架状态
-                          <span style={{ color: s.enabled === false ? '#9CA3AF' : '#15803D', fontSize: 13 }}>
-                            {s.enabled === false ? '已下架' : '已上架'}
-                          </span>
-                        ) : (
-                          <Toggle
-                            checked={s.enabled}
-                            disabled={s.source === 'Agenthub' && s.status === '已下架'}
-                            onChange={() => upsertSkill({ ...s, enabled: !s.enabled })}
-                          />
-                        )}
+                        {/* 需求3：列表中出现的技能均可直接操作上下架（系统管理员覆盖系统平台技能与空间技能）。
+                            上下架同时同步 enabled 与 status，避免 status 残留导致其它口径（技能库可见性、可复制判定）判断失真。 */}
+                        <Toggle
+                          checked={s.enabled}
+                          onChange={() => {
+                            const next = !s.enabled;
+                            upsertSkill({ ...s, enabled: next, status: next ? '已上架' : '未上架' });
+                          }}
+                        />
                       </td>
                     )}
                     <td>
