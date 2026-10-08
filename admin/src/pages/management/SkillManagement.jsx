@@ -658,6 +658,18 @@ export function EnableScopeDialog({ resource, resourceType, managedTenants, tool
   );
 }
 
+// 技能编码已从表单移除（用户不可见/不可填），提交时由系统按技能名称自动生成：
+// 名称含英文数字 → 取英文 slug（如 hot_news）；纯中文名称 → 直接沿用名称（与「技能所在目录」根节点口径一致）
+// Agenthub 同步的技能仍沿用其原始编码
+function genSkillCode(name) {
+  const raw = String(name || '').trim();
+  if (!raw) return `skill_${Date.now().toString(36)}`;
+  // 纯 ASCII 名称 → 转下划线 slug；含中文等非 ASCII 字符 → 直接沿用名称，避免只截出零散英文片段
+  if (!/^[\x20-\x7E]+$/.test(raw)) return raw;
+  const slug = raw.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+  return slug || raw;
+}
+
 // ========== 添加/编辑技能弹窗 ==========
 function SkillEditDialog({ initial, isPlatform, onClose, onSubmit, readOnly }) {
   const { user } = useRole();
@@ -786,7 +798,7 @@ function SkillEditDialog({ initial, isPlatform, onClose, onSubmit, readOnly }) {
     addDictItem(businessOwners, form.businessOwner);
     onSubmit({
       ...form,
-      code: form.code || form.name.toLowerCase().replace(/\s+/g, '_'),
+      code: form.code || genSkillCode(form.name),
       updateTime: new Date().toISOString().slice(0, 16).replace('T', ' '),
     });
     return true;
@@ -855,9 +867,6 @@ function SkillEditDialog({ initial, isPlatform, onClose, onSubmit, readOnly }) {
               </Field>
               <Field label="技能名称" required>
                 <input className="input" value={form.name || ''} onChange={(e) => set('name', e.target.value)} disabled={readOnly} />
-              </Field>
-              <Field label="技能编码" required>
-                <input className="input" value={form.code || ''} onChange={(e) => set('code', e.target.value)} placeholder="例如 hot_news" disabled={readOnly} />
               </Field>
               <Field label="所属分类" required>
                 <select className="select" value={form.category} onChange={(e) => set('category', e.target.value)} disabled={readOnly}>
