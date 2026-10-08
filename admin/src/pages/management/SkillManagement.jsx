@@ -14,6 +14,7 @@ import { AuthSettingsSection } from '../../components/AuthSettingsSection.jsx';
 import { Pagination } from '../../components/Pagination.jsx';
 import { SelectCombobox } from '../../components/SelectCombobox.jsx';
 import { Tooltip } from '../../components/Tooltip.jsx';
+import { RoleSwitcher } from '../../components/RoleSwitcher.jsx';
 import { skillCategories, platformSources, businessOwners, addDictItem } from '../../data/mock.js';
 
 export function SkillManagement() {
@@ -134,6 +135,18 @@ export function SkillManagement() {
     setEditing(null);
   };
 
+  // 页面内切换管理员角色后：重置该页视图状态，避免沿用上一个角色的页签/筛选/页码
+  const handleRoleChange = useCallback(() => {
+    setViewTab('center');
+    setPage(1);
+    setKeyword('');
+    setCategory('');
+    setSourceFilter('');
+    setSpaceFilter('');
+    setAuthSpaceFilter('');
+    setOpenMenuId(null);
+  }, []);
+
   return (
     <div className="fade-enter">
       <div className="page-body">
@@ -147,6 +160,8 @@ export function SkillManagement() {
             </div>
           </div>
           <div className="page-actions">
+            {/* 角色切换：位于主操作按钮左侧（Header 中的切换入口后续统一移除） */}
+            <RoleSwitcher onChange={handleRoleChange} />
             <button className="btn btn-primary" onClick={() => setEditing({})}>
               <Icon name="plus" size={14} />
               添加技能
