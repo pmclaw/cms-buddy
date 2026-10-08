@@ -18,7 +18,6 @@ export function AgentHubSkillSelect({
   const [kw, setKw] = useState('');
   const ref = useRef(null);
 
-  const searching = !!kw.trim();
   const showClear = !disabled && !!value;
   const list = useMemo(() => {
     const k = kw.trim().toLowerCase();
@@ -94,15 +93,6 @@ export function AgentHubSkillSelect({
           background: '#fff', border: '1px solid #E5E7EB', borderRadius: 6, marginTop: 4,
           maxHeight: 264, overflow: 'auto', boxShadow: '0 6px 18px -8px rgba(0,0,0,0.18)',
         }}>
-          <div style={{
-            padding: '6px 12px', fontSize: 12, color: '#9CA3AF',
-            background: '#FBFCFD', borderBottom: '1px solid #F2F4F7',
-            position: 'sticky', top: 0,
-          }}>
-            {searching
-              ? `检索到 ${list.length} 个 Agenthub 技能`
-              : `Agenthub 同步最新 ${list.length} 个技能`}
-          </div>
           {list.length === 0 ? (
             <div style={{ padding: '10px 12px', fontSize: 12, color: '#9CA3AF' }}>
               无匹配的 Agenthub 技能
