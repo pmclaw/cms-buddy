@@ -32,6 +32,7 @@ export default function Composer({
   className,
   value,
   onValueChange,
+  initialSkills,
 }: {
   size?: 'lg' | 'sm'
   placeholder?: string
@@ -42,9 +43,11 @@ export default function Composer({
   /** 受控文本（不传则内部自管理） */
   value?: string
   onValueChange?: (value: string) => void
+  /** 初始已选技能（例如技能中心「试一试」带过来的技能） */
+  initialSkills?: string[]
 }) {
   const [innerText, setInnerText] = React.useState('')
-  const [skills, setSkills] = React.useState<string[]>([])
+  const [skills, setSkills] = React.useState<string[]>(initialSkills ?? [])
   const [expert, setExpert] = React.useState<string | null>(null)
   const [model, setModel] = React.useState(models[0])
   const [attachments, setAttachments] = React.useState<string[]>([])

@@ -1,16 +1,18 @@
-import { useNavigate } from 'react-router'
-
 import FigmaIcon from '@/components/figma-icon'
 import { cardIcons } from '@/data/assets'
 import { skillCategoryLabel, type Skill } from '@/data/skills'
 
-export default function SkillCard({ skill }: { skill: Skill }) {
-  const navigate = useNavigate()
-
+export default function SkillCard({
+  skill,
+  onOpen,
+}: {
+  skill: Skill
+  onOpen: () => void
+}) {
   return (
     <button
       type="button"
-      onClick={() => navigate(`/skills/${skill.id}`)}
+      onClick={onOpen}
       className="flex cursor-pointer flex-col gap-[10px] rounded-[8px] bg-white px-5 py-2.5 text-left ring-1 ring-[rgba(0,0,0,0.05)] transition-shadow hover:shadow-[0_8px_24px_rgba(40,50,83,0.08)]"
     >
       <div className="flex flex-col pt-2">

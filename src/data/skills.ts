@@ -34,6 +34,8 @@ export type Skill = {
   bookmarks: number
   downloads: number
   category: string
+  /** 是否已安装启用（未启用时详情弹窗显示「启用安装」开关） */
+  installed: boolean
   featured?: boolean
   avatar: CharacterKey
 }
@@ -49,6 +51,7 @@ export const skills: Skill[] = [
     bookmarks: 23,
     downloads: 6,
     category: 'knowledge-qa',
+    installed: true,
     featured: true,
     avatar: 'zhaoxiaoju',
   },
@@ -62,6 +65,7 @@ export const skills: Skill[] = [
     bookmarks: 37,
     downloads: 8,
     category: 'market-news',
+    installed: true,
     featured: true,
     avatar: 'xiaoshu',
   },
@@ -75,6 +79,7 @@ export const skills: Skill[] = [
     bookmarks: 42,
     downloads: 7,
     category: 'product-qa',
+    installed: false,
     featured: true,
     avatar: 'zhaoxiaogu',
   },
@@ -88,6 +93,7 @@ export const skills: Skill[] = [
     bookmarks: 15,
     downloads: 5,
     category: 'market-news',
+    installed: false,
     avatar: 'xiaoyan',
   },
   {
@@ -100,6 +106,7 @@ export const skills: Skill[] = [
     bookmarks: 29,
     downloads: 9,
     category: 'daily-office',
+    installed: false,
     featured: true,
     avatar: 'image17',
   },
@@ -113,6 +120,7 @@ export const skills: Skill[] = [
     bookmarks: 33,
     downloads: 3,
     category: 'daily-office',
+    installed: true,
     avatar: 'zhaoxiaoju',
   },
   {
@@ -125,6 +133,7 @@ export const skills: Skill[] = [
     bookmarks: 27,
     downloads: 4,
     category: 'content-creation',
+    installed: false,
     avatar: 'xiaoshu',
   },
   {
@@ -137,6 +146,7 @@ export const skills: Skill[] = [
     bookmarks: 21,
     downloads: 6,
     category: 'customer-service',
+    installed: true,
     avatar: 'zhaoxiaogu',
   },
   {
@@ -149,6 +159,7 @@ export const skills: Skill[] = [
     bookmarks: 18,
     downloads: 6,
     category: 'daily-office',
+    installed: false,
     avatar: 'xiaoyan',
   },
   {
@@ -161,6 +172,7 @@ export const skills: Skill[] = [
     bookmarks: 25,
     downloads: 7,
     category: 'customer-service',
+    installed: false,
     avatar: 'image17',
   },
   {
@@ -173,6 +185,7 @@ export const skills: Skill[] = [
     bookmarks: 30,
     downloads: 3,
     category: 'market-news',
+    installed: false,
     avatar: 'zhaoxiaoju',
   },
   {
@@ -185,6 +198,7 @@ export const skills: Skill[] = [
     bookmarks: 15,
     downloads: 6,
     category: 'product-qa',
+    installed: false,
     avatar: 'xiaoshu',
   },
   {
@@ -197,6 +211,7 @@ export const skills: Skill[] = [
     bookmarks: 22,
     downloads: 5,
     category: 'content-creation',
+    installed: false,
     avatar: 'zhaoxiaogu',
   },
   {
@@ -209,6 +224,7 @@ export const skills: Skill[] = [
     bookmarks: 19,
     downloads: 4,
     category: 'investment-research',
+    installed: false,
     avatar: 'xiaoyan',
   },
   {
@@ -221,6 +237,7 @@ export const skills: Skill[] = [
     bookmarks: 26,
     downloads: 8,
     category: 'investment-research',
+    installed: false,
     avatar: 'image17',
   },
   {
@@ -233,6 +250,7 @@ export const skills: Skill[] = [
     bookmarks: 14,
     downloads: 3,
     category: 'staff-growth',
+    installed: false,
     avatar: 'zhaoxiaoju',
   },
   {
@@ -245,6 +263,7 @@ export const skills: Skill[] = [
     bookmarks: 12,
     downloads: 0,
     category: 'investment-research',
+    installed: true,
     avatar: 'zhaoxiaoju',
   },
 ]

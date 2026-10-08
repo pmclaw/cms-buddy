@@ -1,4 +1,3 @@
-import * as React from 'react'
 import {
   ChevronDown,
   ChevronLeft,
@@ -9,16 +8,13 @@ import {
 import { Link, useParams } from 'react-router'
 
 import CharacterAvatar from '@/components/character-avatar'
+import SkillUsage from '@/components/skill-usage'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { findSkill, highDividendDetail as detail, skills } from '@/data/skills'
-import { cn } from 'cn'
 
 export default function SkillDetailPage() {
   const { id } = useParams()
   const skill = findSkill(id ?? '') ?? skills[0]
-  const [expanded, setExpanded] = React.useState(false)
-
-  const steps = expanded ? detail.steps : detail.steps.slice(0, 3)
 
   return (
     <div className="scrollbar-slim h-full overflow-y-auto bg-page">
@@ -58,105 +54,7 @@ export default function SkillDetailPage() {
           <TabsContent value="overview" className="mt-4">
             <div className="grid grid-cols-[minmax(0,1fr)_360px] items-start gap-6">
               <article className="rounded-[12px] bg-white px-8 py-7 ring-1 ring-[rgba(0,0,0,0.05)]">
-                <span className="text-sub rounded-[4px] bg-[rgba(40,50,83,0.05)] px-1.5 py-[2px] text-[11px] leading-[18px]">
-                  来源：{detail.source}
-                </span>
-
-                <h2 className="text-ink mt-4 text-[24px] leading-[36px] font-bold">
-                  {detail.heading}
-                </h2>
-
-                <h3 className="text-ink mt-8 text-[18px] leading-[30px] font-semibold">
-                  {detail.definitionTitle}
-                </h3>
-                <p className="text-ink/85 mt-3 text-[14px] leading-[26px]">
-                  {detail.definition}
-                </p>
-
-                <div className="border-brand/40 mt-4 rounded-r-[6px] border-l-2 bg-[rgba(24,94,200,0.05)] px-4 py-3">
-                  <p className="text-ink text-[14px] leading-[26px]">{detail.callout}</p>
-                </div>
-
-                <h3 className="text-ink mt-8 text-[18px] leading-[30px] font-semibold">
-                  {detail.tableTitle}
-                </h3>
-                <div className="mt-3 overflow-hidden rounded-[8px] ring-1 ring-[rgba(0,0,0,0.06)]">
-                  <table className="w-full border-collapse text-left">
-                    <thead>
-                      <tr className="bg-[#f7f8fa]">
-                        {['维度', '分值', '权重', '核心概念', '子项'].map((head) => (
-                          <th
-                            key={head}
-                            className="text-ink px-4 py-3 text-[13px] leading-[22px] font-medium"
-                          >
-                            {head}
-                          </th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {detail.table.map((row) => (
-                        <tr
-                          key={row.dimension}
-                          className="border-t border-[rgba(0,0,0,0.06)] align-top"
-                        >
-                          <td className="text-ink px-4 py-3 text-[13px] leading-[22px]">
-                            {row.dimension}
-                          </td>
-                          <td className="text-ink px-4 py-3 text-[13px] leading-[22px] whitespace-nowrap">
-                            {row.score}
-                          </td>
-                          <td className="text-ink px-4 py-3 text-[13px] leading-[22px] whitespace-nowrap">
-                            {row.weight}
-                          </td>
-                          <td className="text-ink px-4 py-3 text-[13px] leading-[22px]">
-                            {row.concept}
-                          </td>
-                          <td className="text-ink/70 px-4 py-3 text-[13px] leading-[22px]">
-                            {row.items}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-
-                <p className="mt-4 text-[13px] leading-[24px]">
-                  <span className="text-sub">{detail.thresholdTitle}：</span>
-                  <span className="text-ink/85">{detail.threshold}</span>
-                </p>
-
-                <h3 className="text-ink mt-8 text-[18px] leading-[30px] font-semibold">
-                  {detail.stepsTitle}
-                </h3>
-                <div className="mt-3 flex flex-col gap-1 rounded-[8px] bg-[#f7f8fa] px-4 py-4">
-                  {steps.map((step) => (
-                    <p
-                      key={step.label}
-                      className="text-[12px] leading-[24px] font-mono"
-                    >
-                      <span className="text-brand font-semibold">{step.label}</span>{' '}
-                      <span className="text-ink/85">{step.text}</span>
-                    </p>
-                  ))}
-                </div>
-
-                <div className="mt-6 flex justify-center">
-                  <button
-                    type="button"
-                    onClick={() => setExpanded((value) => !value)}
-                    className="text-ink flex cursor-pointer items-center gap-1 rounded-full bg-white px-5 py-1.5 text-[13px] shadow-[0_6px_20px_rgba(40,50,83,0.12)] ring-1 ring-[rgba(0,0,0,0.05)]"
-                  >
-                    <ChevronDown
-                      className={cn(
-                        'size-[14px] transition-transform',
-                        expanded ? 'rotate-180' : ''
-                      )}
-                      strokeWidth={1.8}
-                    />
-                    {expanded ? '收起全文' : '展开全文'}
-                  </button>
-                </div>
+                <SkillUsage />
               </article>
 
               <aside className="flex flex-col gap-4">

@@ -1,17 +1,25 @@
 import * as React from 'react'
+import { useNavigate } from 'react-router'
 
 import FigmaIcon from '@/components/figma-icon'
 import SearchInput from '@/components/search-input'
 import SkillCard from '@/components/skill-card'
+import SkillDetailDialog from '@/components/skill-detail-dialog'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { assets } from '@/data/assets'
-import { skillCategories, skills } from '@/data/skills'
+import { skillCategories, skills, type Skill } from '@/data/skills'
 import { cn } from 'cn'
 
 export default function SkillsPage() {
+  const navigate = useNavigate()
   const [keyword, setKeyword] = React.useState('')
   const [tab, setTab] = React.useState('all')
   const [category, setCategory] = React.useState<string | null>(null)
+  const [activeSkill, setActiveSkill] = React.useState<Skill | null>(null)
+  /** 安装启用状态：以数据初始值为准，本次会话内可切换 */
+  const [installedMap, setInstalledMap] = React.useState<Record<string, boolean>>(
+    () => Object.fromEntries(skills.map((skill) => [skill.id, skill.installed]))
+  )
 
   const list = skills.filter((skill) => {
     const matchKeyword =
@@ -69,7 +77,11 @@ export default function SkillsPage() {
         {list.length > 0 ? (
           <div className="grid grid-cols-[repeat(auto-fill,minmax(272px,1fr))] gap-2.5">
             {list.map((skill) => (
-              <SkillCard key={skill.id} skill={skill} />
+              <SkillCard
+                key={skill.id}
+                skill={skill}
+                onOpen={() => setActiveSkill(skill)}
+              />
             ))}
           </div>
         ) : (
@@ -83,6 +95,22 @@ export default function SkillsPage() {
           </div>
         )}
       </div>
+
+      {activeSkill ? (
+        <SkillDetailDialog
+          skill={activeSkill}
+          installed={Boolean(installedMap[activeSkill.id])}
+          onEnable={() =>
+            setInstalledMap((map) => ({ ...map, [activeSkill.id]: true }))
+          }
+          onTry={() => {
+            const name = activeSkill.name
+            setActiveSkill(null)
+            navigate('/', { state: { skill: name } })
+          }}
+          onClose={() => setActiveSkill(null)}
+        />
+      ) : null}
     </div>
   )
 }

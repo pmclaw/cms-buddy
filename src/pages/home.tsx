@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { useNavigate } from 'react-router'
+import { useLocation, useNavigate } from 'react-router'
 
 import Composer, { type ComposerSubmit } from '@/components/composer'
 import FigmaIcon from '@/components/figma-icon'
@@ -16,8 +16,12 @@ const chipRows = [
 
 export default function HomePage() {
   const navigate = useNavigate()
+  const location = useLocation()
   const toast = useToast()
   const [draft, setDraft] = React.useState('')
+
+  // 技能中心「试一试」带过来的技能
+  const presetSkill = (location.state as { skill?: string } | null)?.skill
 
   function submit(payload: ComposerSubmit) {
     navigate(`/buddy?q=${encodeURIComponent(payload.text)}`)
@@ -69,6 +73,7 @@ export default function HomePage() {
           className="mt-16 w-full max-w-[900px]"
           value={draft}
           onValueChange={setDraft}
+          initialSkills={presetSkill ? [presetSkill] : undefined}
           onSend={submit}
         />
       </div>
