@@ -15,7 +15,8 @@ import { Pagination } from '../../components/Pagination.jsx';
 import { SelectCombobox } from '../../components/SelectCombobox.jsx';
 import { Tooltip } from '../../components/Tooltip.jsx';
 import { RoleSwitcher } from '../../components/RoleSwitcher.jsx';
-import { skillCategories, platformSources, businessOwners, addDictItem } from '../../data/mock.js';
+import { AgentHubSkillSelect } from '../../components/AgentHubSkillSelect.jsx';
+import { skillCategories, platformSources, businessOwners, addDictItem, agenthubSyncedSkills } from '../../data/mock.js';
 
 export function SkillManagement() {
   const { user } = useRole();
@@ -694,6 +695,44 @@ function SkillEditDialog({ initial, isPlatform, onClose, onSubmit, readOnly }) {
   const isSkillhub = form.source === 'Agenthub';
   // Agenthub 已下架技能：上架状态锁定，不可编辑
   const skillOffline = isSkillhub && form.status === '已下架';
+
+  // 「通过AgentHub创建」：编辑已有技能时禁用（复制新建视为新增，可修改）
+  const isEdit = !!initial?.id && !initial?.__copy;
+  // Agenthub 技能仓库：按更新时间倒序，最新的排在最前
+  const agenthubSkills = useMemo(
+    () => [...agenthubSyncedSkills].sort(
+      (a, b) => String(b.updateTime || '').localeCompare(String(a.updateTime || ''))
+    ),
+    []
+  );
+  // 当前选中项：优先取本次选择的 Agenthub 技能；历史 Agenthub 技能（无该字段）回显自身名称
+  const selectedHubSkill = useMemo(() => {
+    if (form.agenthubSkillId) {
+      const hit = agenthubSkills.find((s) => s.id === form.agenthubSkillId);
+      if (hit) return hit;
+    }
+    if (isSkillhub && form.name) return { id: form.id || 'self', name: form.name };
+    return null;
+  }, [form.agenthubSkillId, form.id, form.name, isSkillhub, agenthubSkills]);
+
+  // 选中 Agenthub 技能后：回填下方表单字段（来源渠道自动选中 Agenthub）
+  const applyHubSkill = (s) => {
+    if (!s) return;
+    setForm((f) => ({
+      ...f,
+      agenthubSkillId: s.id,
+      name: s.name || '',
+      code: s.code || f.code,
+      category: s.category || f.category,
+      source: 'Agenthub',
+      businessOwner: s.businessOwner || f.businessOwner,
+      desc: s.desc || '',
+      remark: s.desc || '', // 技能使用说明回显技能描述内容
+      mcpIds: (s.mcpIds && s.mcpIds.length) ? s.mcpIds : f.mcpIds,
+      mcpToolMap: s.mcpToolMap || f.mcpToolMap,
+    }));
+  };
+
   const tabs = [
     { k: 'base', label: '基础信息' },
     { k: 'edit', label: '技能编辑' },
@@ -774,6 +813,21 @@ function SkillEditDialog({ initial, isPlatform, onClose, onSubmit, readOnly }) {
         <div style={{ flex: 1, padding: 16, maxHeight: 480, overflow: 'auto' }}>
           {activeTab === 'base' && (
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px 18px' }}>
+              {/* 通过AgentHub创建：独占一行，位于基本信息表单上方 */}
+              <Field label="通过AgentHub创建" full>
+                <AgentHubSkillSelect
+                  value={selectedHubSkill}
+                  options={agenthubSkills}
+                  defaultCount={6}
+                  disabled={readOnly || isEdit}
+                  onChange={applyHubSkill}
+                />
+                <div style={{ fontSize: 12, color: '#9CA3AF', marginTop: 4 }}>
+                  {isEdit
+                    ? '编辑已有技能时不可修改'
+                    : '默认展示 Agenthub 同步的最新 6 个技能，支持按关键词检索；选中后下方字段自动回填。'}
+                </div>
+              </Field>
               <Field label="技能名称" required>
                 <input className="input" value={form.name || ''} onChange={(e) => set('name', e.target.value)} disabled={readOnly} />
               </Field>

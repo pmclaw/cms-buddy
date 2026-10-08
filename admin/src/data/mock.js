@@ -906,6 +906,84 @@ export const skills = [
   },
 ];
 
+// Agenthub 技能仓库（供技能表单「通过AgentHub创建」选择）
+// 模拟从 Agenthub 同步过来的技能目录：前端按 updateTime 倒序取最新 6 个默认展示，
+// 并支持按关键词在全部条目中检索。选中后由前端回填技能表单字段。
+export const agenthubSyncedSkills = [
+  {
+    id: 'AH001', name: '招小顾智能选股助手', code: 'zg_smart_stock_picker', category: '投顾服务',
+    desc: '结合客户风险偏好与市场热点，输出个性化选股建议与买卖时点提示，支持回测校验。',
+    tags: ['选股', '投顾', '智能'],
+    businessOwner: '财富管理部',
+    mcpIds: ['M001'],
+    mcpToolMap: { M001: ['get_stock_quote', 'get_fund_info', 'search_research_report'] },
+    creator: 'Agenthub', updateTime: '2026-10-06 09:30', version: 'v3.1.0', downloads: 25680, rating: 4.9,
+  },
+  {
+    id: 'AH002', name: '智能研报速读', code: 'research_report_reader', category: '投研服务',
+    desc: '自动抓取并速读券商研报，提炼核心结论、盈利预测与目标价，输出结构化摘要。',
+    tags: ['研报', '摘要', '投研'],
+    businessOwner: '机构业务部',
+    mcpIds: ['M001'],
+    mcpToolMap: { M001: ['search_research_report', 'get_stock_quote'] },
+    creator: 'Agenthub', updateTime: '2026-10-04 16:12', version: 'v2.4.0', downloads: 21980, rating: 4.8,
+  },
+  {
+    id: 'AH003', name: '基金产品对比分析', code: 'fund_compare_analysis', category: '投研服务',
+    desc: '对多只基金进行业绩、持仓风格、费率与风险指标的多维对比，输出对比分析报告。',
+    tags: ['基金', '对比', '分析'],
+    businessOwner: '财富管理部',
+    mcpIds: ['M001'],
+    mcpToolMap: { M001: ['get_fund_info', 'search_research_report'] },
+    creator: 'Agenthub', updateTime: '2026-10-02 11:05', version: 'v2.0.4', downloads: 18420, rating: 4.7,
+  },
+  {
+    id: 'AH004', name: '客户流失预警分析', code: 'churn_risk_alert', category: '营销服务',
+    desc: '基于资产变动、交易频次与登录活跃度识别流失风险客户，输出预警清单与挽留建议。',
+    tags: ['流失', '预警', '客群'],
+    businessOwner: '零售业务部',
+    mcpIds: ['M001'],
+    mcpToolMap: { M001: ['get_stock_quote', 'get_fund_info'] },
+    creator: 'Agenthub', updateTime: '2026-09-30 14:40', version: 'v1.8.2', downloads: 15360, rating: 4.6,
+  },
+  {
+    id: 'AH005', name: '企业微信会话质检', code: 'wecom_chat_qc', category: '系统工具',
+    desc: '对企业微信客户会话进行合规与服务质量质检，识别敏感表述、承诺收益等风险话术。',
+    tags: ['质检', '合规', '会话'],
+    businessOwner: '数字化办公室',
+    mcpIds: ['M001'],
+    mcpToolMap: { M001: ['search_research_report'] },
+    creator: 'Agenthub', updateTime: '2026-09-27 10:20', version: 'v1.2.3', downloads: 8940, rating: 4.5,
+  },
+  {
+    id: 'AH006', name: '基金运营待办助手', code: 'fund_ops_todo_assistant', category: '综合服务',
+    desc: '汇总净值复核、头寸核对、资金划拨失败排查等基金运营高频待办，按优先级生成待办清单。',
+    tags: ['运营', '待办', '托管'],
+    businessOwner: '托管业务部',
+    mcpIds: ['M001'],
+    mcpToolMap: { M001: ['get_fund_info', 'search_research_report'] },
+    creator: 'Agenthub', updateTime: '2026-09-24 17:15', version: 'v1.5.6', downloads: 11270, rating: 4.7,
+  },
+  {
+    id: 'AH007', name: '高净值客户服务报告', code: 'hnw_service_report', category: '投顾服务',
+    desc: '为高净值客户生成季度/年度专属服务报告，含资产配置诊断、市场展望与个性化建议。',
+    tags: ['高净值', '报告', '专属'],
+    businessOwner: '财富管理部',
+    mcpIds: ['M001'],
+    mcpToolMap: { M001: ['get_stock_quote', 'get_fund_info', 'search_research_report'] },
+    creator: 'Agenthub', updateTime: '2026-09-18 09:05', version: 'v2.2.0', downloads: 19750, rating: 4.8,
+  },
+  {
+    id: 'AH008', name: '上市公司公告精读', code: 'announcement_reader', category: '投研服务',
+    desc: '精读上市公司公告，识别业绩预告、股权变动、重大合同等关键信息并提示影响。',
+    tags: ['公告', '精读', '风控'],
+    businessOwner: '机构业务部',
+    mcpIds: ['M001'],
+    mcpToolMap: { M001: ['search_research_report', 'get_stock_quote'] },
+    creator: 'Agenthub', updateTime: '2026-09-12 15:50', version: 'v1.9.1', downloads: 13380, rating: 4.6,
+  },
+];
+
 // 自动任务模板
 export const taskTemplates = [
   {
