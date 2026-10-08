@@ -130,9 +130,10 @@ export function ExpertList() {
         {!isPlatform && (
           <div style={{ display: 'flex', gap: 0, marginBottom: 16, borderBottom: '2px solid #F2F4F7' }}>
             {[
-              { k: 'center', label: '专家助理库' },
-              { k: 'granted', label: '授权给我的' },
+              // 按需求：「管理空间专家助理」与第一个页签互换位置
               { k: 'mine', label: '管理空间专家助理' },
+              { k: 'granted', label: '授权给我的' },
+              { k: 'center', label: '专家助理库' },
             ].map((t) => (
               <div
                 key={t.k}
