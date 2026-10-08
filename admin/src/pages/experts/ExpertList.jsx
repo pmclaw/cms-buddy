@@ -10,6 +10,7 @@ import { Pagination } from '../../components/Pagination.jsx';
 import { ChatbotDialog } from '../../components/ChatbotDialog.jsx';
 import { AuthorizeSpaceDialog } from '../../components/AuthorizeSpaceDialog.jsx';
 import { AuthorizeUserDialog } from '../../components/AuthorizeUserDialog.jsx';
+import { RoleSwitcher } from '../../components/RoleSwitcher.jsx';
 export function ExpertList() {
   const navigate = useNavigate();
   const { user } = useRole();
@@ -91,6 +92,14 @@ export function ExpertList() {
     return () => document.removeEventListener('mousedown', handler);
   }, [openMenuId]);
 
+  // 页面内切换管理员角色后：重置该页视图状态，避免沿用上一个角色的页签/筛选/页码
+  const handleRoleChange = () => {
+    setViewTab('center');
+    setPage(1);
+    setFilters({ keyword: '', businessOwner: '' });
+    setOpenMenuId(null);
+  };
+
   return (
     <div className="fade-enter">
       <div className="page-body">
@@ -104,6 +113,8 @@ export function ExpertList() {
             </div>
           </div>
           <div className="page-actions">
+            {/* 角色切换：与技能管理页一致（文字链），位于操作按钮左侧 */}
+            <RoleSwitcher onChange={handleRoleChange} />
             <button className="btn btn-default">
               <Icon name="refresh" size={14} />
               刷新

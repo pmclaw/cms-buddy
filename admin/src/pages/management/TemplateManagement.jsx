@@ -9,6 +9,7 @@ import { Modal } from '../../components/Overlay.jsx';
 import { EnableScopeDialog } from './SkillManagement.jsx';
 import { AuthorizeDialog } from '../../components/AuthorizeDialog.jsx';
 import { Pagination } from '../../components/Pagination.jsx';
+import { RoleSwitcher } from '../../components/RoleSwitcher.jsx';
 import { platformSources } from '../../data/mock.js';
 
 const MODELS = ['DeepSeekV4', 'GPT-4o', 'Claude 3.5', 'Qwen-Max', 'Hunyuan-Pro'];
@@ -79,6 +80,14 @@ export function TemplateManagement() {
   const total = filtered.length;
   const paged = filtered.slice((page - 1) * pageSize, page * pageSize);
 
+  // 页面内切换管理员角色后：重置该页视图状态，避免沿用上一个角色的页签/筛选/页码
+  const handleRoleChange = () => {
+    setViewTab('center');
+    setPage(1);
+    setKeyword('');
+    setSourceFilter('');
+  };
+
   return (
     <div className="fade-enter">
       <div className="page-body">
@@ -92,6 +101,8 @@ export function TemplateManagement() {
             </div>
           </div>
           <div className="page-actions">
+            {/* 角色切换：与技能管理页一致（文字链），位于主操作按钮左侧 */}
+            <RoleSwitcher onChange={handleRoleChange} />
             <button className="btn btn-primary" onClick={() => setEditing({})}>
               <Icon name="plus" size={14} />
               添加模板

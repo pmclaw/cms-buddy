@@ -11,6 +11,7 @@ import { AuthorizeSpaceDialog } from '../../components/AuthorizeSpaceDialog.jsx'
 import { AuthSettingsSection } from '../../components/AuthSettingsSection.jsx';
 import { Pagination } from '../../components/Pagination.jsx';
 import { SelectCombobox } from '../../components/SelectCombobox.jsx';
+import { RoleSwitcher } from '../../components/RoleSwitcher.jsx';
 import { platformSources, addDictItem } from '../../data/mock.js';
 
 const MCP_CATEGORIES = ['投研服务', '投顾服务', '系统工具', '数据服务', '资讯舆情'];
@@ -107,6 +108,15 @@ export function MCPManagement() {
     return <Tag color="info">{t ? t.brandName : '—'}</Tag>;
   };
 
+  // 页面内切换管理员角色后：重置该页视图状态，避免沿用上一个角色的页签/筛选/页码
+  const handleRoleChange = () => {
+    setViewTab('center');
+    setPage(1);
+    setKeyword('');
+    setCategory('');
+    setSourceFilter('');
+  };
+
   return (
     <div className="fade-enter">
       <div className="page-body">
@@ -120,6 +130,8 @@ export function MCPManagement() {
             </div>
           </div>
           <div className="page-actions">
+            {/* 角色切换：与技能管理页一致（文字链），位于主操作按钮左侧 */}
+            <RoleSwitcher onChange={handleRoleChange} />
             <button className="btn btn-primary" onClick={() => setEditing({})}>
               <Icon name="plus" size={14} />
               注册 MCP

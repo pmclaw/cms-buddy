@@ -37,7 +37,7 @@ function findBreadcrumb(path, tenants) {
 
 export function Header({ onToggleSidebar, collapsed }) {
   const location = useLocation();
-  const { user, switchUser, setRole, activeTenantId, setActiveTenantId } = useRole();
+  const { user, activeTenantId, setActiveTenantId } = useRole();
   const { tenants } = useStore();
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const crumbs = findBreadcrumb(location.pathname, tenants);
@@ -69,26 +69,7 @@ export function Header({ onToggleSidebar, collapsed }) {
 
       <div style={{ flex: 1 }} />
 
-      {/* 角色切换（演示用） */}
-      <div style={{
-        display: 'flex', alignItems: 'center', gap: 6,
-        padding: '4px 10px', border: '1px solid #E5E7EB',
-        borderRadius: 16, fontSize: 12, cursor: 'pointer'
-      }}>
-        <span style={{
-          width: 6, height: 6, borderRadius: 999,
-          background: user.role === 'system_admin' ? '#10B981' : '#E89E57'
-        }} />
-        <span style={{ color: '#4B5563' }}>
-          {user.role === 'system_admin' ? '系统管理员视角' : 'Buddy空间管理员视角'}
-        </span>
-        <button
-          className="btn btn-text"
-          style={{ fontSize: 12 }}
-          onClick={switchUser}
-          title="演示用：点击切换"
-        >切换</button>
-      </div>
+      {/* 角色切换已下放到各管理页面（RoleSwitcher），Header 不再提供入口 */}
 
       {/* Buddy空间切换 - Buddy空间管理员视角下显示 */}
       {user.role === 'tenant_admin' && (
