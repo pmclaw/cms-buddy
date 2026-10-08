@@ -715,21 +715,50 @@ function SkillEditDialog({ initial, isPlatform, onClose, onSubmit, readOnly }) {
     return null;
   }, [form.agenthubSkillId, form.id, form.name, isSkillhub, agenthubSkills]);
 
+  // 选中前的表单快照：清除已选技能时用于「回到默认状态」
+  const hubBaseRef = useRef(null);
+
   // 选中 Agenthub 技能后：回填下方表单字段（来源渠道自动选中 Agenthub）
   const applyHubSkill = (s) => {
     if (!s) return;
+    setForm((f) => {
+      if (!hubBaseRef.current) {
+        hubBaseRef.current = {
+          name: f.name || '',
+          code: f.code || '',
+          category: f.category,
+          source: f.source,
+          businessOwner: f.businessOwner,
+          desc: f.desc || '',
+          remark: f.remark || '',
+          mcpIds: f.mcpIds || [],
+          mcpToolMap: f.mcpToolMap || {},
+        };
+      }
+      return {
+        ...f,
+        agenthubSkillId: s.id,
+        name: s.name || '',
+        code: s.code || f.code,
+        category: s.category || f.category,
+        source: 'Agenthub',
+        businessOwner: s.businessOwner || f.businessOwner,
+        desc: s.desc || '',
+        remark: s.desc || '', // 技能使用说明回显技能描述内容
+        mcpIds: (s.mcpIds && s.mcpIds.length) ? s.mcpIds : f.mcpIds,
+        mcpToolMap: s.mcpToolMap || f.mcpToolMap,
+      };
+    });
+  };
+
+  // 清除已选 Agenthub 技能：还原选中前的表单内容，选择器回到默认（未选择）状态
+  const clearHubSkill = () => {
+    const base = hubBaseRef.current;
+    hubBaseRef.current = null;
     setForm((f) => ({
       ...f,
-      agenthubSkillId: s.id,
-      name: s.name || '',
-      code: s.code || f.code,
-      category: s.category || f.category,
-      source: 'Agenthub',
-      businessOwner: s.businessOwner || f.businessOwner,
-      desc: s.desc || '',
-      remark: s.desc || '', // 技能使用说明回显技能描述内容
-      mcpIds: (s.mcpIds && s.mcpIds.length) ? s.mcpIds : f.mcpIds,
-      mcpToolMap: s.mcpToolMap || f.mcpToolMap,
+      ...(base || {}),
+      agenthubSkillId: null,
     }));
   };
 
@@ -821,12 +850,8 @@ function SkillEditDialog({ initial, isPlatform, onClose, onSubmit, readOnly }) {
                   defaultCount={6}
                   disabled={readOnly || isEdit}
                   onChange={applyHubSkill}
+                  onClear={clearHubSkill}
                 />
-                <div style={{ fontSize: 12, color: '#9CA3AF', marginTop: 4 }}>
-                  {isEdit
-                    ? '编辑已有技能时不可修改'
-                    : '默认展示 Agenthub 同步的最新 6 个技能，支持按关键词检索；选中后下方字段自动回填。'}
-                </div>
               </Field>
               <Field label="技能名称" required>
                 <input className="input" value={form.name || ''} onChange={(e) => set('name', e.target.value)} disabled={readOnly} />

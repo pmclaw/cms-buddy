@@ -1,13 +1,15 @@
 // 「通过AgentHub创建」技能选择器：可搜索的下拉列表。
 // - 未输入关键词：默认展示最新的 defaultCount 个 Agenthub 同步技能
 // - 输入关键词：在全部 Agenthub 技能中检索（匹配 技能名称 / 编码 / 描述）
-// - 选项为技能对象本身，选中后由调用方回填技能表单字段
+// - 选项仅展示技能名称，选中后由调用方回填技能表单字段
+// - 已选中时可通过输入框右侧「×」或 Backspace 清除，回到默认状态
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 export function AgentHubSkillSelect({
   value,
   options = [],
   onChange,
+  onClear,
   disabled,
   placeholder = '请选择 Agenthub 同步的技能',
   defaultCount = 6,
@@ -17,6 +19,7 @@ export function AgentHubSkillSelect({
   const ref = useRef(null);
 
   const searching = !!kw.trim();
+  const showClear = !disabled && !!value;
   const list = useMemo(() => {
     const k = kw.trim().toLowerCase();
     if (!k) return options.slice(0, defaultCount);
@@ -40,17 +43,51 @@ export function AgentHubSkillSelect({
     setKw('');
   };
 
+  // 清除已选技能（回到默认状态）
+  const clear = () => {
+    if (disabled) return;
+    if (onClear) onClear();
+    setKw('');
+    setOpen(false);
+  };
+
+  const onKeyDown = (e) => {
+    if (e.key === 'Escape') { setOpen(false); return; }
+    // 未输入关键词时按 Backspace 清除已选项
+    if (e.key === 'Backspace' && !kw && value && !disabled) {
+      e.preventDefault();
+      clear();
+    }
+  };
+
   return (
     <div ref={ref} style={{ position: 'relative' }}>
-      <input
-        className="input"
-        value={open ? kw : (value ? value.name : '')}
-        placeholder={placeholder}
-        disabled={disabled}
-        onChange={(e) => { setKw(e.target.value); setOpen(true); }}
-        onFocus={() => { setKw(''); setOpen(true); }}
-        onBlur={() => setTimeout(() => setOpen(false), 120)}
-      />
+      <div style={{ position: 'relative' }}>
+        <input
+          className="input"
+          value={open ? kw : (value ? value.name : '')}
+          placeholder={placeholder}
+          disabled={disabled}
+          onChange={(e) => { setKw(e.target.value); setOpen(true); }}
+          onFocus={() => { setKw(''); setOpen(true); }}
+          onBlur={() => setTimeout(() => setOpen(false), 120)}
+          onKeyDown={onKeyDown}
+          style={showClear ? { paddingRight: 30 } : undefined}
+        />
+        {showClear && (
+          <span
+            title="清除已选技能"
+            onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); clear(); }}
+            onMouseEnter={(e) => { e.currentTarget.style.color = '#B87136'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.color = '#9CA3AF'; }}
+            style={{
+              position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)',
+              width: 16, height: 16, lineHeight: '16px', textAlign: 'center',
+              fontSize: 14, color: '#9CA3AF', cursor: 'pointer', userSelect: 'none',
+            }}
+          >×</span>
+        )}
+      </div>
       {open && !disabled && (
         <div style={{
           position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 30,
@@ -80,24 +117,13 @@ export function AgentHubSkillSelect({
                   onMouseEnter={(e) => { e.currentTarget.style.background = '#F7F8FA'; }}
                   onMouseLeave={(e) => { e.currentTarget.style.background = active ? '#FBF1E5' : 'transparent'; }}
                   style={{
-                    padding: '8px 12px', cursor: 'pointer',
+                    padding: '8px 12px', cursor: 'pointer', fontSize: 13,
+                    color: active ? '#B87136' : '#1F2937',
                     background: active ? '#FBF1E5' : 'transparent',
                     borderBottom: '1px solid #F7F8FA',
                   }}
                 >
-                  <div style={{ fontSize: 13, color: '#1F2937', display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <span>{s.name}</span>
-                    {s.version && (
-                      <span style={{
-                        fontSize: 11, color: '#B87136', background: '#FBF1E5',
-                        border: '1px solid #F7E3CC', borderRadius: 4, padding: '0 4px',
-                      }}>{s.version}</span>
-                    )}
-                    {active && <span style={{ color: '#E89E57' }}>✓</span>}
-                  </div>
-                  <div style={{ fontSize: 11, color: '#9CA3AF', marginTop: 2 }}>
-                    {[s.category, s.businessOwner, `更新 ${s.updateTime || '—'}`].filter(Boolean).join(' · ')}
-                  </div>
+                  {s.name}
                 </div>
               );
             })
