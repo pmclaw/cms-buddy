@@ -1,7 +1,5 @@
 import * as React from 'react'
 import {
-  AlignLeft,
-  ChevronLeft,
   CircleAlert,
   MoreHorizontal,
   Pause,
@@ -39,6 +37,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   initialTasks,
   taskSortOptions,
@@ -65,6 +64,12 @@ export default function AutomationPage() {
       .includes(keyword.trim().toLowerCase())
     return matchFilter && matchKeyword
   })
+
+  const templateList = templates.filter(
+    (template) =>
+      template.name.toLowerCase().includes(keyword.trim().toLowerCase()) ||
+      template.desc.toLowerCase().includes(keyword.trim().toLowerCase())
+  )
 
   function toggleStatus(task: AutomationTask) {
     const next = task.status === 'running' ? 'done' : 'running'
@@ -118,13 +123,13 @@ export default function AutomationPage() {
 
   return (
     <div className="scrollbar-slim flex h-full flex-col overflow-y-auto bg-page">
-      {view === 'list' ? (
-        <>
-          <header className="flex h-[80px] shrink-0 items-center justify-between px-8">
-            <h1 className="text-ink text-[22px] leading-[32px] font-bold">
-              自动化任务
-            </h1>
-            <div className="flex items-center gap-3">
+      <header className="flex h-[80px] shrink-0 items-center justify-between px-8">
+        <h1 className="text-ink text-[22px] leading-[32px] font-bold">
+          自动化任务
+        </h1>
+        <div className="flex items-center gap-3">
+          {view === 'list' ? (
+            <>
               <button
                 type="button"
                 aria-label="刷新"
@@ -148,32 +153,40 @@ export default function AutomationPage() {
                   ))}
                 </SelectContent>
               </Select>
-              <SearchInput
-                value={keyword}
-                onValueChange={setKeyword}
-                placeholder="搜索任务名称"
-                className="h-[36px] w-[220px] text-[13px]"
-                inputClassName="text-[13px]"
-              />
-              <button
-                type="button"
-                onClick={() => setView('templates')}
-                className="text-ink flex cursor-pointer items-center gap-2 rounded-full bg-white px-4 py-2 text-[13px] ring-1 ring-[rgba(40,50,83,0.08)]"
-              >
-                <AlignLeft className="size-[15px]" strokeWidth={1.8} />
-                从模板创建
-              </button>
-              <button
-                type="button"
-                onClick={() => setCreating({ ...emptyTaskForm })}
-                className="bg-ink flex cursor-pointer items-center gap-2 rounded-full px-4 py-2 text-[13px] text-white"
-              >
-                <Plus className="size-[15px]" strokeWidth={2} />
-                创建任务
-              </button>
-            </div>
-          </header>
+            </>
+          ) : null}
+          <SearchInput
+            value={keyword}
+            onValueChange={setKeyword}
+            placeholder={view === 'list' ? '搜索任务名称' : '搜索模板名称'}
+            className="h-[36px] w-[220px] text-[13px]"
+            inputClassName="text-[13px]"
+          />
+          <button
+            type="button"
+            onClick={() => setCreating({ ...emptyTaskForm })}
+            className="bg-ink flex cursor-pointer items-center gap-2 rounded-full px-4 py-2 text-[13px] text-white"
+          >
+            <Plus className="size-[15px]" strokeWidth={2} />
+            创建任务
+          </button>
+        </div>
+      </header>
 
+      <div className="px-8 pb-4">
+        <Tabs
+          value={view}
+          onValueChange={(next) => setView(next as 'list' | 'templates')}
+        >
+          <TabsList>
+            <TabsTrigger value="list">我的自动化任务</TabsTrigger>
+            <TabsTrigger value="templates">自动化任务模板</TabsTrigger>
+          </TabsList>
+        </Tabs>
+      </div>
+
+      {view === 'list' ? (
+        <>
           <div className="flex min-h-0 flex-1 flex-col gap-2.5 px-8 pb-8">
             {list.map((task) => (
               <article
@@ -263,21 +276,8 @@ export default function AutomationPage() {
         </>
       ) : (
         <>
-          <header className="flex h-[80px] shrink-0 items-center gap-2 px-8">
-            <button
-              type="button"
-              onClick={() => setView('list')}
-              className="text-ink-2 hover:text-brand flex cursor-pointer items-center gap-1 text-[14px]"
-            >
-              <ChevronLeft className="size-[16px]" strokeWidth={1.8} />
-              自动化任务
-            </button>
-            <span className="text-sub text-[14px]">/</span>
-            <span className="text-ink text-[16px] font-medium">从模板添加</span>
-          </header>
-
           <div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-2.5 px-8 pb-8">
-            {templates.map((template) => (
+            {templateList.map((template) => (
               <button
                 key={template.id}
                 type="button"
