@@ -3,6 +3,7 @@ import { Copy } from 'lucide-react'
 import { useLocation, useParams, useSearchParams } from 'react-router'
 
 import AnswerBlocks from '@/components/answer-blocks'
+import CharacterAvatar from '@/components/character-avatar'
 import Composer from '@/components/composer'
 import FileTypeIcon from '@/components/file-type-icon'
 import FigmaIcon from '@/components/figma-icon'
@@ -16,6 +17,7 @@ import {
   type AnswerBlock,
   type ChatMessage,
 } from '@/data/chat'
+import { findExpertByName } from '@/data/experts'
 
 /** 提问时间：9月21日 15:41 */
 function formatAskTime(date = new Date()) {
@@ -78,6 +80,7 @@ function ConversationDetail({
   const preset = location.state as { files?: string[]; skills?: string[] } | null
   const presetFiles = preset?.files
   const presetSkills = preset?.skills
+  const presetExpert = (location.state as { expert?: string | null } | null)?.expert ?? null
 
   // 带 ?q= 进来时视为「新提出的一轮问题」，独立成一条会话，不并入历史记录
   const base = React.useMemo(
@@ -97,7 +100,7 @@ function ConversationDetail({
   const bootstrapped = React.useRef(false)
 
   const ask = React.useCallback(
-    (text: string, files: string[] = [], skills: string[] = []) => {
+    (text: string, files: string[] = [], skills: string[] = [], expert: string | null = null) => {
       const stamp = Date.now()
       setMessages((list) => [
         ...list,
@@ -110,6 +113,7 @@ function ConversationDetail({
           steps: longTimeline,
           blocks: buildAnswer(text),
           disclaimer: true,
+          expert: expert ?? undefined,
         },
       ])
       setStreamingId(`a-${stamp}`)
@@ -123,8 +127,8 @@ function ConversationDetail({
   React.useEffect(() => {
     if (!question || bootstrapped.current) return
     bootstrapped.current = true
-    ask(question, presetFiles, presetSkills)
-  }, [ask, presetFiles, presetSkills, question])
+    ask(question, presetFiles, presetSkills, presetExpert)
+  }, [ask, presetExpert, presetFiles, presetSkills, question])
 
   React.useEffect(() => {
     if (!streamingId) return
@@ -218,6 +222,18 @@ function ConversationDetail({
 
             return (
               <div key={message.id} className="flex flex-col">
+                {message.expert ? (
+                  <div className="mb-2 flex items-center gap-2">
+                    <CharacterAvatar
+                      character={findExpertByName(message.expert)?.avatar ?? 'zhaoxiaogu'}
+                      size={24}
+                      className="shrink-0"
+                    />
+                    <span className="text-ink text-[14px] leading-[22px] font-medium">
+                      {message.expert}
+                    </span>
+                  </div>
+                ) : null}
                 <ThinkingTimeline
                   label={message.thinkingLabel}
                   duration={message.duration}
@@ -253,7 +269,9 @@ function ConversationDetail({
         <Composer
           size="sm"
           className="mx-auto w-full max-w-[874px]"
-          onSend={(payload) => ask(payload.text, payload.attachments, payload.skills)}
+          onSend={(payload) =>
+            ask(payload.text, payload.attachments, payload.skills, payload.expert)
+          }
         />
       </div>
     </div>

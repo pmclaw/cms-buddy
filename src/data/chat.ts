@@ -117,6 +117,8 @@ export type ChatMessage =
       steps?: TimelineStep[]
       blocks: AnswerBlock[]
       disclaimer?: boolean
+      /** 指定专家助理时，回答上方展示「头像 + 专家名称」 */
+      expert?: string
     }
 
 /** 「任务处理过程」折叠面板里的步骤（自动化任务类回答共用） */

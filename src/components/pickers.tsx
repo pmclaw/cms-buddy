@@ -130,7 +130,7 @@ export function ExpertPicker({
     <Popover>
       <PopoverTrigger className={triggerClass}>
         <FigmaIcon src={navIcons.expert} size={16} />
-        {selected ?? '专家'}
+        专家
         <ChevronDown className="size-[14px] opacity-70" strokeWidth={2} />
       </PopoverTrigger>
       <PopoverContent side="top" align="start" className="w-[336px] p-2">

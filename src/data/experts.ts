@@ -207,6 +207,11 @@ export const experts: Expert[] = [
   },
 ]
 
+/** 按名称取专家（会话里只存了名称，展示头像时需要反查） */
+export function findExpertByName(name: string) {
+  return experts.find((expert) => expert.name === name)
+}
+
 /** 专家详情弹窗里的「典型场景提问与问题示例」 */
 export const expertExamples = [
   '事件查询：「招商银行最近有什么大事，帮我梳理一下」',

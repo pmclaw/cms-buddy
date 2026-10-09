@@ -1,6 +1,7 @@
 import * as React from 'react'
 import { ArrowUp, ChevronDown, CircleGauge, Paperclip, X } from 'lucide-react'
 
+import CharacterAvatar from '@/components/character-avatar'
 import FileTypeIcon from '@/components/file-type-icon'
 import { ExpertPicker, SkillPicker } from '@/components/pickers'
 import {
@@ -9,6 +10,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { findExpertByName } from '@/data/experts'
 import { cn } from 'cn'
 
 const models = ['DeepSeek V4', 'DeepSeek V3', 'Qwen3-Max', 'GLM-4.6']
@@ -178,6 +180,24 @@ export default function Composer({
         </div>
 
         <div className="flex items-center gap-3">
+          {expert ? (
+            <span className="text-ink flex items-center gap-1.5 rounded-[6px] bg-[rgba(40,50,83,0.06)] py-1 pr-2 pl-1 text-[12px]">
+              <CharacterAvatar
+                character={findExpertByName(expert)?.avatar ?? 'zhaoxiaogu'}
+                size={16}
+                className="shrink-0"
+              />
+              {expert}
+              <button
+                type="button"
+                aria-label={`移除 ${expert}`}
+                onClick={() => setExpert(null)}
+                className="text-sub hover:text-ink cursor-pointer"
+              >
+                <X className="size-[12px]" strokeWidth={2} />
+              </button>
+            </span>
+          ) : null}
           <DropdownMenu>
             <DropdownMenuTrigger className="text-ink flex cursor-pointer items-center gap-[6px] text-[13px] whitespace-nowrap">
               <CircleGauge className="size-[16px]" strokeWidth={1.7} />
