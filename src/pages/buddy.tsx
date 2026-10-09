@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { Copy } from 'lucide-react'
 import { useParams, useSearchParams } from 'react-router'
 
 import AnswerBlocks from '@/components/answer-blocks'
@@ -14,6 +15,12 @@ import {
   type AnswerBlock,
   type ChatMessage,
 } from '@/data/chat'
+
+/** 提问时间：9月21日 15:41 */
+function formatAskTime(date = new Date()) {
+  const pad = (value: number) => String(value).padStart(2, '0')
+  return `${date.getMonth() + 1}月${date.getDate()}日 ${pad(date.getHours())}:${pad(date.getMinutes())}`
+}
 
 /** 输入任意问题时，用一套通用回答骨架即时生成回复（前端演示数据）。 */
 function buildAnswer(question: string): AnswerBlock[] {
@@ -87,7 +94,7 @@ function ConversationDetail({
     const stamp = Date.now()
     setMessages((list) => [
       ...list,
-      { id: `u-${stamp}`, role: 'user', text },
+      { id: `u-${stamp}`, role: 'user', text, time: formatAskTime() },
       {
         id: `a-${stamp}`,
         role: 'assistant',
@@ -147,10 +154,32 @@ function ConversationDetail({
           {messages.map((message) => {
             if (message.role === 'user') {
               return (
-                <div key={message.id} className="flex justify-end pt-2">
+                <div
+                  key={message.id}
+                  className="group flex flex-col items-end pt-2"
+                >
                   <p className="text-ink max-w-[70%] rounded-[12px] bg-[rgba(40,50,83,0.06)] px-4 py-2.5 text-[15px] leading-[24px]">
                     {message.text}
                   </p>
+                  <div className="mt-1.5 flex h-[20px] items-center gap-2 pr-1 opacity-0 transition-opacity group-hover:opacity-100">
+                    <span className="text-sub text-[12px] leading-[20px]">
+                      {message.time}
+                    </span>
+                    <button
+                      type="button"
+                      aria-label="复制提问内容"
+                      title="复制提问内容"
+                      onClick={() => {
+                        void navigator.clipboard.writeText(message.text).then(
+                          () => toast('已复制提问内容'),
+                          () => toast('复制失败，请手动选择文本')
+                        )
+                      }}
+                      className="text-sub hover:text-ink cursor-pointer transition-colors"
+                    >
+                      <Copy className="size-[14px]" strokeWidth={1.7} />
+                    </button>
+                  </div>
                 </div>
               )
             }

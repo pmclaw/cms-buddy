@@ -101,7 +101,7 @@ export type AnswerBlock =
   | { kind: 'events'; items: { at: string; text: string }[] }
 
 export type ChatMessage =
-  | { id: string; role: 'user'; text: string }
+  | { id: string; role: 'user'; text: string; time?: string }
   | {
       id: string
       role: 'assistant'
@@ -238,6 +238,7 @@ function taskConversation(
   id: string,
   title: string,
   prompt: string,
+  time: string,
   duration: string,
   blocks: AnswerBlock[]
 ): Conversation {
@@ -245,7 +246,7 @@ function taskConversation(
     id,
     title,
     messages: [
-      { id: 'u1', role: 'user', text: prompt },
+      { id: 'u1', role: 'user', text: prompt, time },
       {
         id: 'a1',
         role: 'assistant',
@@ -263,13 +264,16 @@ export const conversations: Conversation[] = [
   {
     id: 'chart-styles',
     title: '列举所有的图表样式',
-    messages: [{ id: 'u1', role: 'user', text: '列举所有的图表样式' }, chartAnswer],
+    messages: [
+      { id: 'u1', role: 'user', text: '列举所有的图表样式', time: '9月21日 15:12' },
+      chartAnswer,
+    ],
   },
   {
     id: 'pre-market',
     title: '帮我生成今日最新的盘前小结',
     messages: [
-      { id: 'u1', role: 'user', text: '帮我生成今日最新的盘前小结' },
+      { id: 'u1', role: 'user', text: '帮我生成今日最新的盘前小结', time: '9月21日 09:12' },
       {
         id: 'a1',
         role: 'assistant',
@@ -315,6 +319,7 @@ export const conversations: Conversation[] = [
     'task-daily-hotspot',
     '每日热点资讯',
     '每天推送当日热点资讯，覆盖政策、行业与市场三条线',
+    '9月21日 08:30',
     '3m12s',
     [
       { kind: 'heading', text: '一、今日热点速览' },
@@ -338,6 +343,7 @@ export const conversations: Conversation[] = [
     'task-a-share-news',
     '每日A股新闻速递',
     '整理昨日 A 股收盘后的重要公告与新闻',
+    '9月20日 17:20',
     '2m47s',
     [
       { kind: 'heading', text: '一、公告精选' },
@@ -360,6 +366,7 @@ export const conversations: Conversation[] = [
     'task-auto-report',
     '自动日报整理',
     '把今天的会议纪要、数据看板整理成一份日报',
+    '9月20日 19:45',
     '4m05s',
     [
       { kind: 'heading', text: '一、今日进展' },
@@ -382,6 +389,7 @@ export const conversations: Conversation[] = [
     'task-weekly-summary',
     '每周任务自动总结',
     '总结本周所有自动化任务的执行情况',
+    '9月19日 18:00',
     '6m18s',
     [
       { kind: 'heading', text: '一、执行概览' },
@@ -404,6 +412,7 @@ export const conversations: Conversation[] = [
     'task-project-scan',
     '项目自动扫描',
     '扫描项目里的待办与风险项',
+    '9月18日 21:10',
     '1m56s',
     [
       { kind: 'heading', text: '一、扫描结果' },
@@ -426,7 +435,12 @@ export const conversations: Conversation[] = [
     id: 'heat-drop',
     title: '用户流失背后的真相：APP热度骤降原因解析',
     messages: [
-      { id: 'u1', role: 'user', text: '用户流失背后的真相：APP热度骤降原因解析' },
+      {
+        id: 'u1',
+        role: 'user',
+        text: '用户流失背后的真相：APP热度骤降原因解析',
+        time: '9月20日 16:05',
+      },
       {
         id: 'a1',
         role: 'assistant',
@@ -457,7 +471,12 @@ export const conversations: Conversation[] = [
     id: 'competition',
     title: '市场竞争加剧，APP如何保持长期活力？',
     messages: [
-      { id: 'u1', role: 'user', text: '市场竞争加剧，APP如何保持长期活力？' },
+      {
+        id: 'u1',
+        role: 'user',
+        text: '市场竞争加剧，APP如何保持长期活力？',
+        time: '9月18日 10:23',
+      },
       {
         id: 'a1',
         role: 'assistant',
@@ -482,7 +501,12 @@ export const conversations: Conversation[] = [
     id: 'vanished-apps',
     title: '细数那些曾经爆红却迅速消失的应用',
     messages: [
-      { id: 'u1', role: 'user', text: '细数那些曾经爆红却迅速消失的应用' },
+      {
+        id: 'u1',
+        role: 'user',
+        text: '细数那些曾经爆红却迅速消失的应用',
+        time: '9月21日 15:41',
+      },
       {
         id: 'a1',
         role: 'assistant',
@@ -513,7 +537,12 @@ export const conversations: Conversation[] = [
     id: 'follow-trend',
     title: '创新还是跟风？APP生命周期的关键转折点',
     messages: [
-      { id: 'u1', role: 'user', text: '创新还是跟风？APP生命周期的关键转折点' },
+      {
+        id: 'u1',
+        role: 'user',
+        text: '创新还是跟风？APP生命周期的关键转折点',
+        time: '9月16日 11:08',
+      },
       {
         id: 'a1',
         role: 'assistant',
