@@ -142,11 +142,6 @@ export default function ExpertsPage() {
                   <DialogTitle className="text-[20px] leading-[30px]">
                     {active.name}
                   </DialogTitle>
-                  <div className="mt-2 flex items-center gap-3">
-                    <span className="text-sub text-[12px]">🔥 {active.uses}</span>
-                    <span className="text-sub text-[12px]">📄 {active.likes}</span>
-                    <span className="text-sub text-[12px]">⬇ {active.downloads}</span>
-                  </div>
                 </div>
                 <button
                   type="button"
@@ -188,27 +183,34 @@ export default function ExpertsPage() {
                 ))}
               </ol>
 
-              <div className="mt-6 flex justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={() => setActive(null)}
-                  className="text-ink cursor-pointer rounded-[8px] border border-[#e6e6ef] bg-white px-4 py-2 text-[13px]"
-                >
-                  取消
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    navigate(
-                      `/buddy?q=${encodeURIComponent(
-                        `结合${active.name}技能，帮我做一次完整分析`
-                      )}`
-                    )
-                  }}
-                  className="bg-ink cursor-pointer rounded-[8px] px-4 py-2 text-[13px] text-white"
-                >
-                  立即召唤
-                </button>
+              <div className="mt-6 flex items-center justify-between gap-3">
+                <div className="text-sub flex items-center gap-4 text-[12px]">
+                  <span>🔥 {active.uses}</span>
+                  <span>📄 {active.likes}</span>
+                  <span>⬇ {active.downloads}</span>
+                </div>
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setActive(null)}
+                    className="text-ink cursor-pointer rounded-[8px] border border-[#e6e6ef] bg-white px-4 py-2 text-[13px]"
+                  >
+                    取消
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      navigate(
+                        `/buddy?q=${encodeURIComponent(
+                          `结合${active.name}技能，帮我做一次完整分析`
+                        )}`
+                      )
+                    }}
+                    className="bg-ink cursor-pointer rounded-[8px] px-4 py-2 text-[13px] text-white"
+                  >
+                    召唤专家
+                  </button>
+                </div>
               </div>
             </>
           ) : null}
