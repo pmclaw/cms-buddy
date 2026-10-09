@@ -100,8 +100,8 @@ export default function SkillsPage() {
         <SkillDetailDialog
           skill={activeSkill}
           installed={Boolean(installedMap[activeSkill.id])}
-          onEnable={() =>
-            setInstalledMap((map) => ({ ...map, [activeSkill.id]: true }))
+          onToggleInstalled={(next) =>
+            setInstalledMap((map) => ({ ...map, [activeSkill.id]: next }))
           }
           onTry={() => {
             const name = activeSkill.name

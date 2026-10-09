@@ -1,23 +1,25 @@
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { Switch } from '@/components/ui/switch'
-import SkillUsage from '@/components/skill-usage'
+// 技能使用说明的示例问法与专家助理保持一致
+import { expertExamples } from '@/data/experts'
 import type { Skill } from '@/data/skills'
 
 /**
  * 技能中心「查看详情」弹窗：规格与样式对齐专家助理弹窗。
- * 内容为：技能名称 + 试一试（未启用时显示「启用安装」开关）+ 能力描述 + 技能使用说明。
+ * 内容为：技能名称 + 试一试 + 能力描述 + 技能使用说明（示例问法）；
+ * 右上角为「启用 / 禁用」开关与关闭按钮。
  */
 export default function SkillDetailDialog({
   skill,
   installed,
   onTry,
-  onEnable,
+  onToggleInstalled,
   onClose,
 }: {
   skill: Skill
   installed: boolean
   onTry: () => void
-  onEnable: () => void
+  onToggleInstalled: (installed: boolean) => void
   onClose: () => void
 }) {
   return (
@@ -28,31 +30,29 @@ export default function SkillDetailDialog({
             <DialogTitle className="text-[20px] leading-[30px]">
               {skill.name}
             </DialogTitle>
-
-            {installed ? (
-              <button
-                type="button"
-                onClick={onTry}
-                className="bg-ink mt-2 cursor-pointer rounded-[8px] px-4 py-2 text-[13px] text-white"
-              >
-                试一试
-              </button>
-            ) : (
-              <label className="mt-2 flex cursor-pointer items-center gap-3">
-                <Switch checked={false} onCheckedChange={onEnable} />
-                <span className="text-ink text-[13px] leading-[22px]">启用安装</span>
-              </label>
-            )}
+            <button
+              type="button"
+              onClick={onTry}
+              className="bg-ink mt-2 cursor-pointer rounded-[8px] px-4 py-2 text-[13px] text-white"
+            >
+              试一试
+            </button>
           </div>
 
-          <button
-            type="button"
-            onClick={onClose}
-            className="text-sub hover:text-ink cursor-pointer text-[18px] leading-none"
-            aria-label="关闭"
-          >
-            ✕
-          </button>
+          <div className="flex shrink-0 items-center gap-2 pt-1">
+            <span className="text-sub text-[13px] leading-[22px]">
+              {installed ? '已启用' : '已禁用'}
+            </span>
+            <Switch checked={installed} onCheckedChange={onToggleInstalled} />
+            <button
+              type="button"
+              onClick={onClose}
+              className="text-sub hover:text-ink ml-1 cursor-pointer text-[18px] leading-none"
+              aria-label="关闭"
+            >
+              ✕
+            </button>
+          </div>
         </div>
 
         <p className="text-ink/80 mt-5 text-[13px] leading-[24px]">{skill.desc}</p>
@@ -60,9 +60,17 @@ export default function SkillDetailDialog({
         <h3 className="text-ink mt-6 text-[15px] leading-[26px] font-semibold">
           技能使用说明
         </h3>
-        <div className="mt-3">
-          <SkillUsage />
-        </div>
+        <ol className="mt-3 flex flex-col gap-2">
+          {expertExamples.map((example, index) => (
+            <li
+              key={example}
+              className="text-ink/80 flex gap-2 text-[13px] leading-[24px]"
+            >
+              <span className="text-sub">{index + 1}.</span>
+              <span>{example}</span>
+            </li>
+          ))}
+        </ol>
       </DialogContent>
     </Dialog>
   )
