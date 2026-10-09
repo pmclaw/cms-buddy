@@ -210,6 +210,7 @@ function ConversationDetail({
                     <AnswerBlocks
                       blocks={message.blocks}
                       disclaimer={message.disclaimer}
+                      title={base.title}
                     />
                   </div>
                 )}
