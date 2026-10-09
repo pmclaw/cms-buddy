@@ -274,7 +274,6 @@ export function findSkill(id: string) {
 
 /** 技能详情页（概览 Tab）的正文内容 */
 export const highDividendDetail = {
-  source: 'SKILL.md',
   heading: '/high-dividend-scoring — 高股息定性评分系统',
   definitionTitle: '一句话定义',
   definition:

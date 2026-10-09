@@ -31,11 +31,7 @@ export function SkillDetailPage() {
         </div>
 
         <article className="mt-4 rounded-[14px] bg-white px-4 py-5 ring-1 ring-[rgba(0,0,0,0.04)]">
-            <span className="text-sub rounded-[4px] bg-[rgba(40,50,83,0.05)] px-1.5 py-[2px] text-[11px]">
-              来源：{detail.source}
-            </span>
-
-            <h2 className="text-ink mt-3 text-[20px] leading-[30px] font-bold">
+            <h2 className="text-ink text-[20px] leading-[30px] font-bold">
               {detail.heading}
             </h2>
 

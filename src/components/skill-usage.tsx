@@ -14,11 +14,7 @@ export default function SkillUsage() {
 
   return (
     <>
-      <span className="text-sub rounded-[4px] bg-[rgba(40,50,83,0.05)] px-1.5 py-[2px] text-[11px] leading-[18px]">
-        来源：{detail.source}
-      </span>
-
-      <h3 className="text-ink mt-4 text-[22px] leading-[34px] font-bold">
+      <h3 className="text-ink text-[22px] leading-[34px] font-bold">
         {detail.heading}
       </h3>
 
