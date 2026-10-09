@@ -177,9 +177,6 @@ export default function Composer({
           <SkillPicker selected={skills} onToggle={toggleSkill} />
           <span className="text-ink/30 text-[13px]">|</span>
           <ExpertPicker selected={expert} onSelect={setExpert} />
-        </div>
-
-        <div className="flex items-center gap-3">
           {expert ? (
             <span className="text-ink flex items-center gap-1.5 rounded-[6px] bg-[rgba(40,50,83,0.06)] py-1 pr-2 pl-1 text-[12px]">
               <CharacterAvatar
@@ -198,6 +195,9 @@ export default function Composer({
               </button>
             </span>
           ) : null}
+        </div>
+
+        <div className="flex items-center gap-3">
           <DropdownMenu>
             <DropdownMenuTrigger className="text-ink flex cursor-pointer items-center gap-[6px] text-[13px] whitespace-nowrap">
               <CircleGauge className="size-[16px]" strokeWidth={1.7} />
