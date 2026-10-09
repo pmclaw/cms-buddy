@@ -40,9 +40,6 @@ export default function SkillDetailDialog({
           </div>
 
           <div className="flex shrink-0 items-center gap-2 pt-1">
-            <span className="text-sub text-[13px] leading-[22px]">
-              {installed ? '已启用' : '已禁用'}
-            </span>
             <Switch checked={installed} onCheckedChange={onToggleInstalled} />
             <button
               type="button"
