@@ -1,6 +1,7 @@
 import * as React from 'react'
 import { ArrowUp, ChevronDown, CircleGauge, Paperclip, X } from 'lucide-react'
 
+import FileTypeIcon from '@/components/file-type-icon'
 import { ExpertPicker, SkillPicker } from '@/components/pickers'
 import {
   DropdownMenu,
@@ -109,8 +110,9 @@ export default function Composer({
           {attachments.map((name) => (
             <span
               key={name}
-              className="text-ink flex items-center gap-2 rounded-[6px] bg-[rgba(40,50,83,0.06)] px-2 py-1 text-[12px]"
+              className="text-ink flex items-center gap-1.5 rounded-[6px] bg-[rgba(40,50,83,0.06)] py-1 pr-2 pl-1 text-[12px]"
             >
+              <FileTypeIcon name={name} size={16} className="shrink-0" />
               {name}
               <button
                 type="button"

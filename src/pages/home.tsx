@@ -24,7 +24,9 @@ export default function HomePage() {
   const presetSkill = (location.state as { skill?: string } | null)?.skill
 
   function submit(payload: ComposerSubmit) {
-    navigate(`/buddy?q=${encodeURIComponent(payload.text)}`)
+    navigate(`/buddy?q=${encodeURIComponent(payload.text)}`, {
+      state: { files: payload.attachments },
+    })
   }
 
   return (

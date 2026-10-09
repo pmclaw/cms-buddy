@@ -1,9 +1,10 @@
 import * as React from 'react'
 import { Copy } from 'lucide-react'
-import { useParams, useSearchParams } from 'react-router'
+import { useLocation, useParams, useSearchParams } from 'react-router'
 
 import AnswerBlocks from '@/components/answer-blocks'
 import Composer from '@/components/composer'
+import FileTypeIcon from '@/components/file-type-icon'
 import FigmaIcon from '@/components/figma-icon'
 import ThinkingTimeline from '@/components/thinking-timeline'
 import { useToast } from '@/components/toast'
@@ -72,6 +73,9 @@ function ConversationDetail({
   question: string | null
 }) {
   const toast = useToast()
+  const location = useLocation()
+  // 首页提交时带过来的附件（文件名），随提问一起进会话
+  const presetFiles = (location.state as { files?: string[] } | null)?.files
 
   // 带 ?q= 进来时视为「新提出的一轮问题」，独立成一条会话，不并入历史记录
   const base = React.useMemo(
@@ -90,11 +94,11 @@ function ConversationDetail({
   const bottomRef = React.useRef<HTMLDivElement>(null)
   const bootstrapped = React.useRef(false)
 
-  const ask = React.useCallback((text: string) => {
+  const ask = React.useCallback((text: string, files: string[] = []) => {
     const stamp = Date.now()
     setMessages((list) => [
       ...list,
-      { id: `u-${stamp}`, role: 'user', text, time: formatAskTime() },
+      { id: `u-${stamp}`, role: 'user', text, time: formatAskTime(), files },
       {
         id: `a-${stamp}`,
         role: 'assistant',
@@ -114,8 +118,8 @@ function ConversationDetail({
   React.useEffect(() => {
     if (!question || bootstrapped.current) return
     bootstrapped.current = true
-    ask(question)
-  }, [ask, question])
+    ask(question, presetFiles)
+  }, [ask, presetFiles, question])
 
   React.useEffect(() => {
     if (!streamingId) return
@@ -158,9 +162,20 @@ function ConversationDetail({
                   key={message.id}
                   className="group flex flex-col items-end pt-2"
                 >
-                  <p className="text-ink max-w-[70%] rounded-[12px] bg-[rgba(40,50,83,0.06)] px-4 py-2.5 text-[15px] leading-[24px]">
-                    {message.text}
-                  </p>
+                  <div className="flex max-w-[70%] flex-wrap items-center gap-x-2 gap-y-1.5 rounded-[12px] bg-[rgba(40,50,83,0.06)] px-4 py-2.5">
+                    {message.files?.map((name) => (
+                      <span
+                        key={name}
+                        className="text-ink flex items-center gap-1.5 rounded-full bg-[rgba(40,50,83,0.08)] py-[3px] pr-2.5 pl-1 text-[13px] leading-[20px]"
+                      >
+                        <FileTypeIcon name={name} size={16} className="shrink-0" />
+                        {name}
+                      </span>
+                    ))}
+                    <span className="text-ink text-[15px] leading-[24px]">
+                      {message.text}
+                    </span>
+                  </div>
                   <div className="mt-1.5 flex h-[20px] items-center gap-2 pr-1 opacity-0 transition-opacity group-hover:opacity-100">
                     <span className="text-sub text-[12px] leading-[20px]">
                       {message.time}
@@ -225,7 +240,7 @@ function ConversationDetail({
         <Composer
           size="sm"
           className="mx-auto w-full max-w-[874px]"
-          onSend={(payload) => ask(payload.text)}
+          onSend={(payload) => ask(payload.text, payload.attachments)}
         />
       </div>
     </div>

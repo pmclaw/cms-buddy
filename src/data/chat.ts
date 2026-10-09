@@ -101,7 +101,7 @@ export type AnswerBlock =
   | { kind: 'events'; items: { at: string; text: string }[] }
 
 export type ChatMessage =
-  | { id: string; role: 'user'; text: string; time?: string }
+  | { id: string; role: 'user'; text: string; time?: string; files?: string[] }
   | {
       id: string
       role: 'assistant'
