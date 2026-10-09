@@ -7,7 +7,7 @@ import { TaskFormSheet } from '@/pages/automation-form'
 import { BottomSheet, ConfirmDialog } from '@/components/sheet'
 import { PhoneScreen, ScreenHeader, TabBar } from '@/components/screen'
 import { useToast } from '@/components/toast'
-import type { AutomationTask } from '@/data/tasks'
+import { templates, type AutomationTask } from '@/data/tasks'
 import { useAutomation } from '@/lib/automation-store'
 import { useDrawer } from '@/lib/drawer'
 import { cn } from '@/lib/cn'
@@ -27,6 +27,8 @@ export function AutomationPage() {
   // 创建 / 编辑以弹层形式覆盖在列表之上（对齐设计稿 14/15）
   const isCreate = location.pathname === '/automation/new'
   const isEdit = location.pathname.endsWith('/edit')
+  // 顶部两个页签：我的（任务列表）/ 模板（从模板添加）
+  const isTemplates = location.pathname === '/automation/templates'
   const editingTask = isEdit ? (tasks.find((item) => item.id === id) ?? null) : null
 
   const actions = menuTask
@@ -55,7 +57,7 @@ export function AutomationPage() {
       <ScreenHeader
         title="自动化"
         onMenu={openDrawer}
-        right={
+        right={isTemplates ? undefined : (
           <button
             type="button"
             aria-label="刷新"
@@ -64,31 +66,79 @@ export function AutomationPage() {
           >
             <RefreshCw className="size-[19px]" strokeWidth={1.8} />
           </button>
-        }
+        )}
       />
 
+      <div className="flex gap-6 px-4 pb-2">
+        <button
+          type="button"
+          onClick={() => navigate('/automation')}
+          className={cn(
+            'cursor-pointer border-b-2 pb-1 text-[15px] leading-[22px]',
+            isTemplates ? 'text-sub border-transparent' : 'text-brand border-brand font-medium'
+          )}
+        >
+          我的
+        </button>
+        <button
+          type="button"
+          onClick={() => navigate('/automation/templates')}
+          className={cn(
+            'cursor-pointer border-b-2 pb-1 text-[15px] leading-[22px]',
+            isTemplates ? 'text-brand border-brand font-medium' : 'text-sub border-transparent'
+          )}
+        >
+          模板
+        </button>
+      </div>
+
       <div className="scrollbar-none min-h-0 flex-1 overflow-y-auto px-4 pt-1 pb-28">
-        <div className="flex flex-col gap-2.5">
-          {tasks.map((task) => (
-            <TaskCard
-              key={task.id}
-              task={task}
-              onMenu={() => setMenuTask(task)}
-              onOpenRecord={() => navigate(`/automation/${task.id}/detail`)}
-            />
-          ))}
-        </div>
+        {isTemplates ? (
+          <div className="grid grid-cols-2 gap-2.5">
+            {templates.map((template) => (
+              <button
+                key={template.id}
+                type="button"
+                onClick={() => navigate(`/automation/new?template=${template.id}`)}
+                className="flex flex-col gap-2 rounded-[14px] bg-white px-3.5 py-3.5 text-left ring-1 ring-[rgba(0,0,0,0.04)] active:bg-[#fafbfd]"
+              >
+                <span className="text-ink text-[15px] leading-[22px] font-medium">
+                  {template.name}
+                </span>
+                <span className="text-ink/60 line-clamp-3 text-[12px] leading-[19px]">
+                  {template.desc}
+                </span>
+                <span className="text-sub text-right text-[11px]">
+                  🔥 {template.uses}
+                </span>
+              </button>
+            ))}
+          </div>
+        ) : (
+          <div className="flex flex-col gap-2.5">
+            {tasks.map((task) => (
+              <TaskCard
+                key={task.id}
+                task={task}
+                onMenu={() => setMenuTask(task)}
+                onOpenRecord={() => navigate(`/automation/${task.id}/detail`)}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
       {/* 新建任务入口 */}
-      <button
-        type="button"
-        aria-label="创建任务"
-        onClick={() => navigate('/automation/new')}
-        className="bg-ink absolute right-4 bottom-[78px] flex size-[56px] items-center justify-center rounded-full text-white shadow-[0_10px_24px_rgba(40,50,83,0.28)]"
-      >
-        <Plus className="size-[26px]" strokeWidth={2.2} />
-      </button>
+      {isTemplates ? null : (
+        <button
+          type="button"
+          aria-label="创建任务"
+          onClick={() => navigate('/automation/new')}
+          className="bg-ink absolute right-4 bottom-[78px] flex size-[56px] items-center justify-center rounded-full text-white shadow-[0_10px_24px_rgba(40,50,83,0.28)]"
+        >
+          <Plus className="size-[26px]" strokeWidth={2.2} />
+        </button>
+      )}
 
       <TabBar active="automation" />
 

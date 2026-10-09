@@ -4,7 +4,6 @@ import { ToastProvider } from '@/components/toast'
 import { AutomationProvider } from '@/lib/automation-store'
 import { DrawerProvider } from '@/lib/drawer'
 import { TaskDraftProvider } from '@/lib/task-draft'
-import { AutomationTemplatesPage } from '@/pages/automation-templates'
 import { AutomationPage } from '@/pages/automation'
 import { AutomationDetailPage } from '@/pages/automation-detail'
 import { ExpertDetailPage } from '@/pages/expert-detail'
@@ -33,10 +32,7 @@ export default function MobileApp() {
                 <Route path="/skills" element={<SkillsPage />} />
                 <Route path="/skills/:id" element={<SkillDetailPage />} />
                 <Route path="/automation" element={<AutomationPage />} />
-                <Route
-                  path="/automation/templates"
-                  element={<AutomationTemplatesPage />}
-                />
+                <Route path="/automation/templates" element={<AutomationPage />} />
                 <Route path="/automation/new" element={<AutomationPage />} />
                 <Route path="/automation/:id/edit" element={<AutomationPage />} />
                 <Route
