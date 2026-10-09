@@ -3,6 +3,7 @@ import { Switch } from '@/components/ui/switch'
 // 技能使用说明的示例问法与专家助理保持一致
 import { expertExamples } from '@/data/experts'
 import type { Skill } from '@/data/skills'
+import { cn } from 'cn'
 
 /**
  * 技能中心「查看详情」弹窗：规格与样式对齐专家助理弹窗。
@@ -32,8 +33,14 @@ export default function SkillDetailDialog({
             </DialogTitle>
             <button
               type="button"
+              disabled={!installed}
               onClick={onTry}
-              className="bg-ink mt-2 cursor-pointer rounded-[8px] px-4 py-2 text-[13px] text-white"
+              className={cn(
+                'mt-2 rounded-[8px] px-4 py-2 text-[13px]',
+                installed
+                  ? 'bg-ink cursor-pointer text-white'
+                  : 'cursor-not-allowed bg-[rgba(40,50,83,0.08)] text-[#a6aab8]'
+              )}
             >
               试一试
             </button>
