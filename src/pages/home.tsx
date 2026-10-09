@@ -25,7 +25,7 @@ export default function HomePage() {
 
   function submit(payload: ComposerSubmit) {
     navigate(`/buddy?q=${encodeURIComponent(payload.text)}`, {
-      state: { files: payload.attachments },
+      state: { files: payload.attachments, skills: payload.skills },
     })
   }
 

@@ -74,8 +74,10 @@ function ConversationDetail({
 }) {
   const toast = useToast()
   const location = useLocation()
-  // 首页提交时带过来的附件（文件名），随提问一起进会话
-  const presetFiles = (location.state as { files?: string[] } | null)?.files
+  // 首页提交时带过来的附件（文件名）与指定技能，随提问一起进会话
+  const preset = location.state as { files?: string[]; skills?: string[] } | null
+  const presetFiles = preset?.files
+  const presetSkills = preset?.skills
 
   // 带 ?q= 进来时视为「新提出的一轮问题」，独立成一条会话，不并入历史记录
   const base = React.useMemo(
@@ -94,32 +96,35 @@ function ConversationDetail({
   const bottomRef = React.useRef<HTMLDivElement>(null)
   const bootstrapped = React.useRef(false)
 
-  const ask = React.useCallback((text: string, files: string[] = []) => {
-    const stamp = Date.now()
-    setMessages((list) => [
-      ...list,
-      { id: `u-${stamp}`, role: 'user', text, time: formatAskTime(), files },
-      {
-        id: `a-${stamp}`,
-        role: 'assistant',
-        thinkingLabel: '任务处理过程',
-        duration: '6s.280ms',
-        steps: longTimeline,
-        blocks: buildAnswer(text),
-        disclaimer: true,
-      },
-    ])
-    setStreamingId(`a-${stamp}`)
-    setRevealCount(0)
-    setAnswerVisible(false)
-  }, [])
+  const ask = React.useCallback(
+    (text: string, files: string[] = [], skills: string[] = []) => {
+      const stamp = Date.now()
+      setMessages((list) => [
+        ...list,
+        { id: `u-${stamp}`, role: 'user', text, time: formatAskTime(), files, skills },
+        {
+          id: `a-${stamp}`,
+          role: 'assistant',
+          thinkingLabel: '任务处理过程',
+          duration: '6s.280ms',
+          steps: longTimeline,
+          blocks: buildAnswer(text),
+          disclaimer: true,
+        },
+      ])
+      setStreamingId(`a-${stamp}`)
+      setRevealCount(0)
+      setAnswerVisible(false)
+    },
+    []
+  )
 
   // 首页等入口带过来的提问：进入页面后自动开始「思考 → 回答」
   React.useEffect(() => {
     if (!question || bootstrapped.current) return
     bootstrapped.current = true
-    ask(question, presetFiles)
-  }, [ask, presetFiles, question])
+    ask(question, presetFiles, presetSkills)
+  }, [ask, presetFiles, presetSkills, question])
 
   React.useEffect(() => {
     if (!streamingId) return
@@ -169,6 +174,14 @@ function ConversationDetail({
                         className="text-ink flex items-center gap-1.5 rounded-full bg-[rgba(40,50,83,0.08)] py-[3px] pr-2.5 pl-1 text-[13px] leading-[20px]"
                       >
                         <FileTypeIcon name={name} size={16} className="shrink-0" />
+                        {name}
+                      </span>
+                    ))}
+                    {message.skills?.map((name) => (
+                      <span
+                        key={name}
+                        className="text-ink rounded-full bg-[rgba(40,50,83,0.08)] px-2.5 py-[3px] text-[13px] leading-[20px]"
+                      >
                         {name}
                       </span>
                     ))}
@@ -240,7 +253,7 @@ function ConversationDetail({
         <Composer
           size="sm"
           className="mx-auto w-full max-w-[874px]"
-          onSend={(payload) => ask(payload.text, payload.attachments)}
+          onSend={(payload) => ask(payload.text, payload.attachments, payload.skills)}
         />
       </div>
     </div>
