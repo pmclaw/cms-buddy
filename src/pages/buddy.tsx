@@ -11,6 +11,7 @@ import ThinkingTimeline from '@/components/thinking-timeline'
 import { useToast } from '@/components/toast'
 import { assets } from '@/data/assets'
 import {
+  buildThinking,
   conversations,
   findConversation,
   longTimeline,
@@ -94,14 +95,20 @@ function ConversationDetail({
   const [messages, setMessages] = React.useState<ChatMessage[]>(base.messages)
   const [streamingId, setStreamingId] = React.useState<string | null>(null)
   const [revealCount, setRevealCount] = React.useState(0)
+  const [thinkingChars, setThinkingChars] = React.useState(0)
+  const [elapsed, setElapsed] = React.useState(0)
   const [answerVisible, setAnswerVisible] = React.useState(true)
   const [openMap, setOpenMap] = React.useState<Record<string, boolean>>({})
   const bottomRef = React.useRef<HTMLDivElement>(null)
   const bootstrapped = React.useRef(false)
+  // 当前流式输出的思考过程全文
+  const thinkingRef = React.useRef('')
 
   const ask = React.useCallback(
     (text: string, files: string[] = [], skills: string[] = [], expert: string | null = null) => {
       const stamp = Date.now()
+      const thinking = buildThinking(text)
+      thinkingRef.current = thinking
       setMessages((list) => [
         ...list,
         { id: `u-${stamp}`, role: 'user', text, time: formatAskTime(), files, skills },
@@ -114,10 +121,13 @@ function ConversationDetail({
           blocks: buildAnswer(text),
           disclaimer: true,
           expert: expert ?? undefined,
+          thinking,
         },
       ])
       setStreamingId(`a-${stamp}`)
       setRevealCount(0)
+      setThinkingChars(0)
+      setElapsed(0)
       setAnswerVisible(false)
     },
     []
@@ -130,24 +140,48 @@ function ConversationDetail({
     ask(question, presetFiles, presetSkills, presetExpert)
   }, [ask, presetExpert, presetFiles, presetSkills, question])
 
+  // 任务执行过程：逐字流式输出「思考过程」，同时按节奏放出「任务处理过程」的步骤
   React.useEffect(() => {
     if (!streamingId) return
-    let index = 0
+    const thinking = thinkingRef.current
+    if (!thinking) return
+    const stepEvery = Math.max(1, Math.ceil(thinking.length / longTimeline.length))
+    let chars = 0
+    let ticks = 0
     const timer = window.setInterval(() => {
-      index += 1
-      setRevealCount(index)
-      if (index >= longTimeline.length) {
-        window.clearInterval(timer)
-        window.setTimeout(() => setAnswerVisible(true), 320)
-      }
-    }, 220)
+      chars += 1
+      ticks += 1
+      setThinkingChars(chars)
+      setRevealCount(Math.min(Math.floor(ticks / stepEvery) + 1, longTimeline.length))
+      if (chars < thinking.length) return
+
+      window.clearInterval(timer)
+      setThinkingChars(Number.POSITIVE_INFINITY)
+      setRevealCount(longTimeline.length)
+      window.setTimeout(() => setAnswerVisible(true), 320)
+    }, 14)
     return () => window.clearInterval(timer)
   }, [streamingId])
 
+  // 执行中的已用时，让等待过程可见
+  React.useEffect(() => {
+    if (!streamingId || answerVisible) return
+    const start = Date.now()
+    const timer = window.setInterval(() => setElapsed(Date.now() - start), 100)
+    return () => window.clearInterval(timer)
+  }, [answerVisible, streamingId])
+
+  const lastReveal = React.useRef(0)
   React.useEffect(() => {
     if (!streamingId) return
-    bottomRef.current?.scrollIntoView({ block: 'end', behavior: 'smooth' })
-  }, [revealCount, answerVisible, messages.length, streamingId])
+    // 新步骤出现时平滑跟随；字级别的流式输出直接跟随，避免打断滚动动画
+    const stepChanged = revealCount !== lastReveal.current
+    lastReveal.current = revealCount
+    bottomRef.current?.scrollIntoView({
+      block: 'end',
+      behavior: stepChanged ? 'smooth' : 'auto',
+    })
+  }, [answerVisible, messages.length, revealCount, streamingId])
 
   return (
     <div className="flex h-full min-h-0 flex-col bg-white">
@@ -240,6 +274,12 @@ function ConversationDetail({
                   steps={steps ?? []}
                   open={open && Boolean(steps)}
                   visibleCount={streaming ? revealCount : undefined}
+                  streaming={streaming && !answerVisible}
+                  elapsed={`${(elapsed / 1000).toFixed(1)}s`}
+                  thinking={message.thinking}
+                  thinkingChars={
+                    streaming && !answerVisible ? thinkingChars : undefined
+                  }
                   onToggle={() =>
                     setOpenMap((map) => ({ ...map, [message.id]: !open }))
                   }
