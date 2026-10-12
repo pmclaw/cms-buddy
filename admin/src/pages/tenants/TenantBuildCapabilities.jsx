@@ -9,6 +9,7 @@ import { Tag } from '../../components/Tag.jsx';
 import { McpToolsDialog } from '../../components/McpToolsDialog.jsx';
 import { SelectedToolsDialog } from '../../components/SelectedToolsDialog.jsx';
 import { AuthorizeUserDialog } from '../../components/AuthorizeUserDialog.jsx';
+import { ExpertRobotDialog } from '../../components/ExpertRobotDialog.jsx';
 
 const TABS = [
   { key: 'mcp', label: 'MCP服务' },
@@ -68,6 +69,23 @@ export function TenantBuildCapabilities() {
     const item = (userAuthTarget.kind === 'skill' ? skills : experts).find((x) => x.id === userAuthTarget.id);
     return item ? { kind: userAuthTarget.kind, item } : null;
   }, [userAuthTarget, skills, experts]);
+
+  // ===== 配置机器人弹窗（仅专家助理页签）：按 Buddy 空间维度存储 expert.robotByTenant =====
+  const [robotTarget, setRobotTarget] = useState(null); // 专家助理 id
+  const robotTargetItem = useMemo(
+    () => (robotTarget ? experts.find((x) => x.id === robotTarget) : null),
+    [robotTarget, experts]
+  );
+  // 保存当前空间的机器人配置（不影响其他空间）
+  const saveExpertRobot = (cfg) => {
+    if (!robotTargetItem) return;
+    upsertExpert({
+      ...robotTargetItem,
+      robotByTenant: { ...(robotTargetItem.robotByTenant || {}), [id]: cfg },
+    });
+    setRobotTarget(null);
+    toast.success(`专家助理「${robotTargetItem.name}」在「${tenant ? tenant.brandName : id}」的机器人配置已保存`);
+  };
 
   // 已关联 MCP 工具数（口径：已关联 MCP 的已选工具总数）
   const associatedToolCount = associatedMcps.reduce((sum, id) => {
@@ -433,7 +451,7 @@ export function TenantBuildCapabilities() {
                         <th>能力描述</th>
                         <th width={90}>更新人</th>
                         <th width={150}>更新时间</th>
-                        <th width={100}>操作</th>
+                        <th width={170}>操作</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -456,6 +474,11 @@ export function TenantBuildCapabilities() {
                                 style={{ background: 'none', border: 'none', padding: 0, color: '#E89E57', cursor: 'pointer', fontSize: 13 }}
                                 onClick={() => setUserAuthTarget({ kind: 'expert', id: e.id })}
                               >授权用户</button>
+                              <button
+                                className="btn btn-text"
+                                style={{ background: 'none', border: 'none', padding: 0, marginLeft: 12, color: '#E89E57', cursor: 'pointer', fontSize: 13 }}
+                                onClick={() => setRobotTarget(e.id)}
+                              >配置机器人</button>
                             </td>
                           </tr>
                         );
@@ -546,6 +569,18 @@ export function TenantBuildCapabilities() {
             toast.success(`${authTarget.kind === 'skill' ? 'Skill技能' : '专家助理'}「${authTarget.item.name}」用户授权已更新`);
             setUserAuthTarget(null);
           }}
+        />
+      )}
+
+      {/* 配置机器人弹窗（专家助理页签）：为当前 Buddy 空间配置该专家助理的聚力机器人，
+          配置按空间维度存储（expert.robotByTenant），不影响其他空间 */}
+      {robotTargetItem && (
+        <ExpertRobotDialog
+          key={`robot-${robotTargetItem.id}-${id}`}
+          expert={robotTargetItem}
+          tenant={tenant}
+          onClose={() => setRobotTarget(null)}
+          onSubmit={saveExpertRobot}
         />
       )}
     </div>
