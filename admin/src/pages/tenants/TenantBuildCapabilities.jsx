@@ -474,10 +474,19 @@ export function TenantBuildCapabilities() {
                                 style={{ background: 'none', border: 'none', padding: 0, color: '#E89E57', cursor: 'pointer', fontSize: 13 }}
                                 onClick={() => setUserAuthTarget({ kind: 'expert', id: e.id })}
                               >授权用户</button>
+                              {/* 配置机器人：与「是否关联到空间」绑定 —— 未关联该专家助理时置灰不可点击 */}
                               <button
                                 className="btn btn-text"
-                                style={{ background: 'none', border: 'none', padding: 0, marginLeft: 12, color: '#E89E57', cursor: 'pointer', fontSize: 13 }}
-                                onClick={() => setRobotTarget(e.id)}
+                                disabled={!checked}
+                                title={checked
+                                  ? `为「${tenant.brandName}」配置该专家助理的聚力机器人`
+                                  : '请先关联该专家助理（勾选左侧复选框，或在「授权用户」中开启「是否关联到空间」）后再配置机器人'}
+                                style={{
+                                  background: 'none', border: 'none', padding: 0, marginLeft: 12, fontSize: 13,
+                                  color: checked ? '#E89E57' : '#C0C4CC',
+                                  cursor: checked ? 'pointer' : 'not-allowed',
+                                }}
+                                onClick={() => { if (checked) setRobotTarget(e.id); }}
                               >配置机器人</button>
                             </td>
                           </tr>
