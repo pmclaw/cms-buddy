@@ -26,7 +26,7 @@ const TABS = [
   { key: 'basic', label: '基本信息' },
   { key: 'brand', label: '主题风格' },
   { key: 'system', label: '系统提示词' },
-  { key: 'robot', label: '聚力机器人' },
+  { key: 'robot', label: '机器人配置' },
 ];
 
 function generateAppCode() {
@@ -168,29 +168,6 @@ export function TenantEdit() {
   if (!form) return <div className="page-body">未找到Buddy空间</div>;
 
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
-
-  // 复制消息接收 URL（优先 Clipboard API，失败降级 execCommand）
-  const copyReceiveUrl = async () => {
-    const url = form.receiveUrl || '';
-    try {
-      await navigator.clipboard.writeText(url);
-      toast.success('消息接收URL已复制');
-    } catch {
-      try {
-        const ta = document.createElement('textarea');
-        ta.value = url;
-        ta.style.position = 'fixed';
-        ta.style.opacity = '0';
-        document.body.appendChild(ta);
-        ta.select();
-        document.execCommand('copy');
-        ta.remove();
-        toast.success('消息接收URL已复制');
-      } catch {
-        toast.error('复制失败，请手动选择复制');
-      }
-    }
-  };
 
   const onSave = () => {
     if (!form.brandName) {
@@ -504,107 +481,68 @@ export function TenantEdit() {
             )}
 
             {tab === 'robot' && (
+              // 机器人配置：按设计稿（附图）布局 —— 纯标题 + 通栏字段，无卡片边框 / 无字段下方说明文案
               <div>
-                {/* 消息接收 URL */}
-                <Section title="消息接收 URL" bodyStyle={{ padding: '16px 20px' }}>
-                  <div style={{
-                    display: 'flex', alignItems: 'center', gap: 6,
-                    padding: '8px 12px', background: '#FFF8EE', border: '1px solid #FBE4C0',
-                    borderRadius: 6, marginBottom: 16, fontSize: 12, color: '#92400E',
-                  }}>
-                    <span style={{ fontSize: 14 }}>💡</span>
-                    聚力机器人接收消息的唯一回调地址，由系统在创建 Buddy 空间时自动生成，创建后保持不变。
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <div style={{
-                      flex: 1, minWidth: 0,
-                      padding: '9px 12px', border: '1px solid #E5E7EB', borderRadius: 6,
-                      background: '#F8F9FB', fontSize: 13, color: '#1F2937',
-                      fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                    }} title={form.receiveUrl}>{form.receiveUrl}</div>
+                <div style={{ fontSize: 15, fontWeight: 600, color: '#1F2937', marginBottom: 6 }}>
+                  机器人配置
+                </div>
+                <RobotConfigRow label="机器人名称">
+                  <input
+                    className="input"
+                    placeholder="如 招小顾聚力机器人"
+                    value={form.robotName || ''}
+                    onChange={(e) => set('robotName', e.target.value)}
+                  />
+                </RobotConfigRow>
+                <RobotConfigRow label="机器人ID">
+                  <input
+                    className="input"
+                    placeholder="请输入聚力机器人ID"
+                    value={form.robotId || ''}
+                    onChange={(e) => set('robotId', e.target.value)}
+                  />
+                </RobotConfigRow>
+                <RobotConfigRow label="AppKey">
+                  <input
+                    className="input"
+                    placeholder="请输入聚力机器人AppKey"
+                    value={form.appKey || ''}
+                    onChange={(e) => set('appKey', e.target.value)}
+                  />
+                </RobotConfigRow>
+                <RobotConfigRow label="AppSecret">
+                  <div style={{ position: 'relative' }}>
+                    <input
+                      className="input"
+                      type={showSecret ? 'text' : 'password'}
+                      placeholder="请输入聚力机器人AppSecret"
+                      style={{ paddingRight: 40 }}
+                      value={form.appSecret || ''}
+                      onChange={(e) => set('appSecret', e.target.value)}
+                    />
                     <button
                       type="button"
-                      onClick={copyReceiveUrl}
-                      className="btn btn-default"
-                      style={{ display: 'inline-flex', alignItems: 'center', gap: 6, flexShrink: 0 }}
+                      onClick={() => setShowSecret(!showSecret)}
+                      title={showSecret ? '隐藏 AppSecret' : '查看 AppSecret'}
+                      style={{
+                        position: 'absolute', right: 4, top: '50%', transform: 'translateY(-50%)',
+                        width: 30, height: 30, border: 'none', background: 'transparent',
+                        cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        borderRadius: 4,
+                      }}
                     >
-                      <Icon name="copy" size={14} color="#E89E57" />
-                      复制
+                      <Icon name="eye" size={16} color={showSecret ? '#E89E57' : '#9CA3AF'} />
                     </button>
                   </div>
-                </Section>
-
-                {/* 机器人配置 */}
-                <Section title="机器人配置" bodyStyle={{ padding: '8px 20px' }}>
-                  <div style={{ fontSize: 12, color: '#9CA3AF', padding: '10px 0 6px' }}>
-                    配置聚力机器人的关键 KEY 信息，用于消息推送鉴权与签名校验。
-                  </div>
-                  <FormRow label="机器人名称">
-                    <input
-                      className="input"
-                      style={{ maxWidth: 420 }}
-                      placeholder="如 招小顾聚力机器人"
-                      value={form.robotName || ''}
-                      onChange={(e) => set('robotName', e.target.value)}
-                    />
-                    <div className="help-text">需与聚力开放平台创建的机器人名称保持一致</div>
-                  </FormRow>
-                  <FormRow label="机器人ID">
-                    <input
-                      className="input"
-                      style={{ maxWidth: 420, fontFamily: 'monospace' }}
-                      placeholder="请输入聚力机器人ID"
-                      value={form.robotId || ''}
-                      onChange={(e) => set('robotId', e.target.value)}
-                    />
-                    <div className="help-text">聚力机器人的唯一ID信息</div>
-                  </FormRow>
-                  <FormRow label="AppKey">
-                    <input
-                      className="input"
-                      style={{ maxWidth: 420, fontFamily: 'monospace' }}
-                      placeholder="请输入机器人 AppKey"
-                      value={form.appKey || ''}
-                      onChange={(e) => set('appKey', e.target.value)}
-                    />
-                  </FormRow>
-                  <FormRow label="AppSecret">
-                    <div style={{ position: 'relative', maxWidth: 420 }}>
-                      <input
-                        className="input"
-                        type={showSecret ? 'text' : 'password'}
-                        placeholder="请输入机器人 AppSecret"
-                        style={{ width: '100%', paddingRight: 40, fontFamily: 'monospace' }}
-                        value={form.appSecret || ''}
-                        onChange={(e) => set('appSecret', e.target.value)}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowSecret(!showSecret)}
-                        title={showSecret ? '隐藏 AppSecret' : '查看 AppSecret'}
-                        style={{
-                          position: 'absolute', right: 4, top: '50%', transform: 'translateY(-50%)',
-                          width: 30, height: 30, border: 'none', background: 'transparent',
-                          cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          borderRadius: 4,
-                        }}
-                      >
-                        <Icon name="eye" size={16} color={showSecret ? '#E89E57' : '#9CA3AF'} />
-                      </button>
-                    </div>
-                    <div className="help-text">AppSecret 用于接口签名校验</div>
-                  </FormRow>
-                  <FormRow label="Webhook地址">
-                    <input
-                      className="input"
-                      style={{ maxWidth: 420, fontFamily: 'monospace' }}
-                      placeholder="请输入聚力机器人 Webhook 地址"
-                      value={form.webhookUrl || ''}
-                      onChange={(e) => set('webhookUrl', e.target.value)}
-                    />
-                    <div className="help-text">聚力机器人主动发送消息的 API 地址</div>
-                  </FormRow>
-                </Section>
+                </RobotConfigRow>
+                <RobotConfigRow label="Webhook地址">
+                  <input
+                    className="input"
+                    placeholder="请输入聚力机器人Webhook地址"
+                    value={form.webhookUrl || ''}
+                    onChange={(e) => set('webhookUrl', e.target.value)}
+                  />
+                </RobotConfigRow>
               </div>
             )}
           </div>
@@ -717,6 +655,16 @@ function MultiSelectAccounts({ value = [], onChange }) {
           ))}
         </div>
       )}
+    </div>
+  );
+}
+
+// 机器人配置行：按设计稿布局 —— 左侧 90px 灰色标签 + 右侧通栏输入框（无虚线分隔、无说明文案）
+function RobotConfigRow({ label, children }) {
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: '90px 1fr', alignItems: 'center', padding: '10px 0' }}>
+      <div style={{ fontSize: 14, color: '#6B7280' }}>{label}</div>
+      <div>{children}</div>
     </div>
   );
 }
