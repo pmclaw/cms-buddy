@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Modal } from './Overlay.jsx';
+import { Toggle } from './Toggle.jsx';
 import { UserAuthPanel, EMPTY_USER_AUTH } from './AuthorizeDialog.jsx';
 import { useRole } from '../contexts/RoleContext.jsx';
 import { useStore } from '../contexts/StoreContext.jsx';
@@ -14,7 +15,12 @@ import { useStore } from '../contexts/StoreContext.jsx';
 // 兼容历史扁平结构 { groupIds, deptIds, ... }：读取时归入默认空间，不丢失既有数据。
 //
 // 可选空间 = 当前空间管理员管理的空间 ∩ 当前资产被授权（开放）的空间
-export function AuthorizeUserDialog({ resource, resourceType, onClose, onSubmit }) {
+//
+// 可选 props（构建能力页使用，不影响既有调用方）：
+//  - scopeTenantId：把可选空间锁定为指定的单个 Buddy 空间（不做「已管理 ∩ 已授权」交集）
+//  - switchItems：在弹窗顶部渲染若干切换开关配置项
+//      [{ key, label, desc, checked, onChange }]，切换即时生效（与列表中的关联/启用操作协同）
+export function AuthorizeUserDialog({ resource, resourceType, onClose, onSubmit, scopeTenantId, switchItems = [] }) {
   const { user } = useRole();
   const { tenants } = useStore();
 
@@ -30,19 +36,23 @@ export function AuthorizeUserDialog({ resource, resourceType, onClose, onSubmit 
     return resource.openTenants || [];
   }, [resource, tenants]);
 
-  // 页签列表 = 我管理的空间 ∩ 资产被授权的空间
-  const spaceOptions = useMemo(
-    () => tenants.filter((t) => managedIds.includes(t.id) && authedIds.includes(t.id)),
-    [tenants, managedIds, authedIds]
-  );
+  // 页签列表 = 我管理的空间 ∩ 资产被授权的空间；scopeTenantId 存在时锁定为单个空间
+  const spaceOptions = useMemo(() => {
+    if (scopeTenantId) {
+      const t = tenants.find((x) => x.id === scopeTenantId);
+      return t ? [t] : [];
+    }
+    return tenants.filter((t) => managedIds.includes(t.id) && authedIds.includes(t.id));
+  }, [tenants, managedIds, authedIds, scopeTenantId]);
 
   // 默认激活页签：优先沿用历史选择，其次当前空间，最后第一个
   const defaultId = useMemo(() => {
+    if (scopeTenantId && spaceOptions.some((t) => t.id === scopeTenantId)) return scopeTenantId;
     const prior = resource.userAuth && resource.userAuth.tenantId;
     if (spaceOptions.some((t) => t.id === prior)) return prior;
     if (spaceOptions.some((t) => t.id === user.tenantId)) return user.tenantId;
     return spaceOptions.length ? spaceOptions[0].id : '';
-  }, [resource, spaceOptions, user]);
+  }, [resource, spaceOptions, user, scopeTenantId]);
 
   // 按空间分组数据（初始化一次，后续由各页签各自维护）
   const [byTenant, setByTenant] = useState(() => normalizeByTenant(resource.userAuth, defaultId));
@@ -73,13 +83,37 @@ export function AuthorizeUserDialog({ resource, resourceType, onClose, onSubmit 
           padding: '28px 0', textAlign: 'center', color: '#9CA3AF', fontSize: 13,
           border: '1px dashed #E5E7EB', borderRadius: 6,
         }}>
-          该{resourceType}暂未授权给我管理的空间，无可设置的空间
+          {scopeTenantId ? '未找到指定的 Buddy 空间' : `该${resourceType}暂未授权给我管理的空间，无可设置的空间`}
         </div>
       ) : (
         <div>
+          {/* ===== 关联 / 启用配置项（构建能力页传入）===== */}
+          {switchItems.length > 0 && (
+            <div style={{
+              padding: '12px 16px', background: '#FBF7F1', border: '1px solid #F3E3D0',
+              borderRadius: 8, marginBottom: 16,
+            }}>
+              {switchItems.map((it, i) => (
+                <div
+                  key={it.key}
+                  style={{ display: 'flex', alignItems: 'center', gap: 12, paddingTop: i === 0 ? 0 : 10 }}
+                >
+                  <span style={{ fontSize: 13.5, color: '#374151', minWidth: 104, flexShrink: 0 }}>{it.label}</span>
+                  <Toggle checked={!!it.checked} onChange={it.onChange} />
+                  {it.desc && <span style={{ fontSize: 12, color: '#9CA3AF' }}>{it.desc}</span>}
+                </div>
+              ))}
+              <div style={{ marginTop: 10, fontSize: 12, color: '#B08968' }}>
+                开关调整会即时同步到构建能力列表；下方「取消 / 确定」仅作用于用户授权。
+              </div>
+            </div>
+          )}
+
           {/* ===== 说明 ===== */}
           <div style={{ fontSize: 13, color: '#4B5563', lineHeight: 1.6, marginBottom: 14 }}>
-            按空间分别设置授权用户，每个空间的授权用户互不影响。切换页签即可为不同空间设置不同的用户。
+            {scopeTenantId
+              ? `仅为当前 Buddy 空间「${spaceOptions[0]?.brandName || scopeTenantId}」设置授权用户，下方用户授权即为该空间内的可用人员。`
+              : '按空间分别设置授权用户，每个空间的授权用户互不影响。切换页签即可为不同空间设置不同的用户。'}
           </div>
 
           {/* ===== 空间页签（平铺） ===== */}
@@ -106,9 +140,11 @@ export function AuthorizeUserDialog({ resource, resourceType, onClose, onSubmit 
                 </div>
               );
             })}
-            <span style={{ marginLeft: 'auto', fontSize: 12, color: '#9CA3AF', paddingBottom: 8 }}>
-              共 {spaceOptions.length} 个空间
-            </span>
+            {!scopeTenantId && (
+              <span style={{ marginLeft: 'auto', fontSize: 12, color: '#9CA3AF', paddingBottom: 8 }}>
+                共 {spaceOptions.length} 个空间
+              </span>
+            )}
           </div>
 
           {/* ===== 授权给用户（当前空间，独立表单） ===== */}

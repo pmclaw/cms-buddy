@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useStore } from '../../contexts/StoreContext.jsx';
 import { useToast } from '../../contexts/ToastContext.jsx';
@@ -8,6 +8,7 @@ import { Checkbox } from '../../components/Checkbox.jsx';
 import { Tag } from '../../components/Tag.jsx';
 import { McpToolsDialog } from '../../components/McpToolsDialog.jsx';
 import { SelectedToolsDialog } from '../../components/SelectedToolsDialog.jsx';
+import { AuthorizeUserDialog } from '../../components/AuthorizeUserDialog.jsx';
 
 const TABS = [
   { key: 'mcp', label: 'MCP服务' },
@@ -19,7 +20,7 @@ const TABS = [
 export function TenantBuildCapabilities() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { tenants, mcps, skills, templates, experts, setToolGlobal, setMcpEnabledGlobal, setMcpToolConfig, upsertSkill } = useStore();
+  const { tenants, mcps, skills, templates, experts, setToolGlobal, setMcpEnabledGlobal, setMcpToolConfig, upsertSkill, upsertExpert } = useStore();
   const toast = useToast();
   const tenant = tenants.find((t) => t.id === id);
 
@@ -59,6 +60,15 @@ export function TenantBuildCapabilities() {
     availableExperts.slice(0, 3).map((e) => e.id)
   );
 
+  // ===== 授权用户弹窗（Skill技能 / 专家助理）：{ kind: 'skill' | 'expert', id } =====
+  const [userAuthTarget, setUserAuthTarget] = useState(null);
+  // 实时从 store 取目标资源，保证弹窗内的开关状态与列表状态始终协同
+  const authTarget = useMemo(() => {
+    if (!userAuthTarget) return null;
+    const item = (userAuthTarget.kind === 'skill' ? skills : experts).find((x) => x.id === userAuthTarget.id);
+    return item ? { kind: userAuthTarget.kind, item } : null;
+  }, [userAuthTarget, skills, experts]);
+
   // 已关联 MCP 工具数（口径：已关联 MCP 的已选工具总数）
   const associatedToolCount = associatedMcps.reduce((sum, id) => {
     const m = mcps.find((x) => x.id === id);
@@ -92,9 +102,21 @@ export function TenantBuildCapabilities() {
   };
 
   // 切换技能的默认启用/关闭状态
-  const toggleSkillDefault = (s) => {
-    upsertSkill({ ...s, defaultEnabled: !s.defaultEnabled });
-    toast.success(`技能「${s.name}」已设为${!s.defaultEnabled ? '默认启用' : '默认关闭'}`);
+  const toggleSkillDefault = (s) => setSkillDefault(s, !s.defaultEnabled);
+
+  // 设置 Skill「是否默认启用」（列表 Toggle 与授权用户弹窗共用同一写入逻辑，保证协同）
+  const setSkillDefault = (s, on) => {
+    upsertSkill({ ...s, defaultEnabled: on });
+    toast.success(`技能「${s.name}」已设为${on ? '默认启用' : '默认关闭'}`);
+  };
+
+  // 设置「是否关联到空间」（与列表首列复选框同一状态源，双向协同）
+  const setAssociated = (kind, itemId, on) => {
+    const apply = (arr) => (on
+      ? (arr.includes(itemId) ? arr : [...arr, itemId])
+      : arr.filter((x) => x !== itemId));
+    if (kind === 'skill') setAssociatedSkills(apply);
+    else setAssociatedExperts(apply);
   };
 
   const toggleTemplate = (id) =>
@@ -301,6 +323,7 @@ export function TenantBuildCapabilities() {
                         <th>技能说明</th>
                         <th width={90}>更新人</th>
                         <th width={150}>更新时间</th>
+                        <th width={100}>操作</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -326,6 +349,13 @@ export function TenantBuildCapabilities() {
                             <td style={{ fontSize: 12, color: '#6B7280' }}>{s.desc}</td>
                             <td style={{ fontSize: 12, color: '#6B7280' }}>{s.creator}</td>
                             <td style={{ fontSize: 12, color: '#9CA3AF' }}>{s.updateTime}</td>
+                            <td>
+                              <button
+                                className="btn btn-text"
+                                style={{ background: 'none', border: 'none', padding: 0, color: '#E89E57', cursor: 'pointer', fontSize: 13 }}
+                                onClick={() => setUserAuthTarget({ kind: 'skill', id: s.id })}
+                              >授权用户</button>
+                            </td>
                           </tr>
                         );
                       })}
@@ -403,6 +433,7 @@ export function TenantBuildCapabilities() {
                         <th>能力描述</th>
                         <th width={90}>更新人</th>
                         <th width={150}>更新时间</th>
+                        <th width={100}>操作</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -419,6 +450,13 @@ export function TenantBuildCapabilities() {
                             <td style={{ fontSize: 12, color: '#6B7280' }}>{e.description}</td>
                             <td style={{ fontSize: 12, color: '#6B7280' }}>{e.creator}</td>
                             <td style={{ fontSize: 12, color: '#9CA3AF' }}>{e.updateTime}</td>
+                            <td>
+                              <button
+                                className="btn btn-text"
+                                style={{ background: 'none', border: 'none', padding: 0, color: '#E89E57', cursor: 'pointer', fontSize: 13 }}
+                                onClick={() => setUserAuthTarget({ kind: 'expert', id: e.id })}
+                              >授权用户</button>
+                            </td>
                           </tr>
                         );
                       })}
@@ -470,6 +508,44 @@ export function TenantBuildCapabilities() {
           mcp={toolsViewMcp}
           selectedNames={toolsViewMcp.enabledTools || []}
           onClose={() => setToolsViewMcp(null)}
+        />
+      )}
+
+      {/* 授权用户弹窗（Skill技能 / 专家助理）：空间范围锁定为本页正在配置的 Buddy 空间，
+          顶部开关与列表的「关联」「默认启用」共用同一状态源，双向协同 */}
+      {authTarget && (
+        <AuthorizeUserDialog
+          key={`${authTarget.kind}-${authTarget.item.id}`}
+          resource={authTarget.item}
+          resourceType={authTarget.kind === 'skill' ? 'Skill技能' : '专家助理'}
+          scopeTenantId={id}
+          switchItems={[
+            {
+              key: 'associated',
+              label: '是否关联到空间',
+              desc: authTarget.kind === 'skill'
+                ? '开启后本空间可在 Skill技能库使用该技能'
+                : '开启后本空间可在 chatbot 中选用该专家助理',
+              checked: (authTarget.kind === 'skill' ? associatedSkills : associatedExperts).includes(authTarget.item.id),
+              onChange: (v) => setAssociated(authTarget.kind, authTarget.item.id, v),
+            },
+            ...(authTarget.kind === 'skill'
+              ? [{
+                  key: 'defaultEnabled',
+                  label: '是否默认启用',
+                  desc: '开启后 Agent runtime 平台运行时会将该技能作为默认启用',
+                  checked: !!authTarget.item.defaultEnabled,
+                  onChange: (v) => setSkillDefault(authTarget.item, v),
+                }]
+              : []),
+          ]}
+          onClose={() => setUserAuthTarget(null)}
+          onSubmit={(userAuth) => {
+            if (authTarget.kind === 'skill') upsertSkill({ ...authTarget.item, userAuth });
+            else upsertExpert({ ...authTarget.item, userAuth });
+            toast.success(`${authTarget.kind === 'skill' ? 'Skill技能' : '专家助理'}「${authTarget.item.name}」用户授权已更新`);
+            setUserAuthTarget(null);
+          }}
         />
       )}
     </div>
