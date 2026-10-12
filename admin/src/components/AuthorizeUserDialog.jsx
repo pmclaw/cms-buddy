@@ -87,36 +87,7 @@ export function AuthorizeUserDialog({ resource, resourceType, onClose, onSubmit,
         </div>
       ) : (
         <div>
-          {/* ===== 关联 / 启用配置项（构建能力页传入）===== */}
-          {switchItems.length > 0 && (
-            <div style={{
-              padding: '12px 16px', background: '#FBF7F1', border: '1px solid #F3E3D0',
-              borderRadius: 8, marginBottom: 16,
-            }}>
-              {switchItems.map((it, i) => (
-                <div
-                  key={it.key}
-                  style={{ display: 'flex', alignItems: 'center', gap: 12, paddingTop: i === 0 ? 0 : 10 }}
-                >
-                  <span style={{ fontSize: 13.5, color: '#374151', minWidth: 104, flexShrink: 0 }}>{it.label}</span>
-                  <Toggle checked={!!it.checked} onChange={it.onChange} />
-                  {it.desc && <span style={{ fontSize: 12, color: '#9CA3AF' }}>{it.desc}</span>}
-                </div>
-              ))}
-              <div style={{ marginTop: 10, fontSize: 12, color: '#B08968' }}>
-                开关调整会即时同步到构建能力列表；下方「取消 / 确定」仅作用于用户授权。
-              </div>
-            </div>
-          )}
-
-          {/* ===== 说明 ===== */}
-          <div style={{ fontSize: 13, color: '#4B5563', lineHeight: 1.6, marginBottom: 14 }}>
-            {scopeTenantId
-              ? `仅为当前 Buddy 空间「${spaceOptions[0]?.brandName || scopeTenantId}」设置授权用户，下方用户授权即为该空间内的可用人员。`
-              : '按空间分别设置授权用户，每个空间的授权用户互不影响。切换页签即可为不同空间设置不同的用户。'}
-          </div>
-
-          {/* ===== 空间页签（平铺） ===== */}
+          {/* ===== 空间页签（平铺，置顶） ===== */}
           <div style={{
             display: 'flex', alignItems: 'flex-end', gap: 0, flexWrap: 'wrap',
             borderBottom: '2px solid #F2F4F7', marginBottom: 16,
@@ -145,6 +116,35 @@ export function AuthorizeUserDialog({ resource, resourceType, onClose, onSubmit,
                 共 {spaceOptions.length} 个空间
               </span>
             )}
+          </div>
+
+          {/* ===== 关联 / 启用配置项（构建能力页传入）===== */}
+          {switchItems.length > 0 && (
+            <div style={{
+              padding: '12px 16px', background: '#FBF7F1', border: '1px solid #F3E3D0',
+              borderRadius: 8, marginBottom: 16,
+            }}>
+              {switchItems.map((it, i) => (
+                <div
+                  key={it.key}
+                  style={{ display: 'flex', alignItems: 'center', gap: 12, paddingTop: i === 0 ? 0 : 10 }}
+                >
+                  <span style={{ fontSize: 13.5, color: '#374151', minWidth: 104, flexShrink: 0 }}>{it.label}</span>
+                  <Toggle checked={!!it.checked} onChange={it.onChange} />
+                  {it.desc && <span style={{ fontSize: 12, color: '#9CA3AF' }}>{it.desc}</span>}
+                </div>
+              ))}
+              <div style={{ marginTop: 10, fontSize: 12, color: '#B08968' }}>
+                开关调整会即时同步到构建能力列表；下方「取消 / 确定」仅作用于用户授权。
+              </div>
+            </div>
+          )}
+
+          {/* ===== 说明 ===== */}
+          <div style={{ fontSize: 13, color: '#4B5563', lineHeight: 1.6, marginBottom: 14 }}>
+            {scopeTenantId
+              ? `仅为当前 Buddy 空间「${spaceOptions[0]?.brandName || scopeTenantId}」设置授权用户，下方用户授权即为该空间内的可用人员。`
+              : '按空间分别设置授权用户，每个空间的授权用户互不影响。切换页签即可为不同空间设置不同的用户。'}
           </div>
 
           {/* ===== 授权给用户（当前空间，独立表单） ===== */}
