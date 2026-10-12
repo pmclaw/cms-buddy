@@ -57,19 +57,14 @@ export default function ThinkingTimeline({
 }) {
   const count = visibleCount ?? steps.length
   const expanded = streaming || open
-  // 默认：执行中展开、结束后收起；用户点过之后以用户选择为准
+  // 思考过程默认：执行中展开、结束后收起；用户点过之后以用户选择为准
   const [thinkingOpen, setThinkingOpen] = React.useState<boolean | null>(null)
   const thinkingExpanded = thinkingOpen ?? streaming
   const thinkingBoxRef = React.useRef<HTMLDivElement>(null)
-  const rootRef = React.useRef<HTMLDivElement>(null)
   const shownThinking =
     thinkingChars === undefined ? thinking : thinking?.slice(0, thinkingChars)
-
-  // 思考容器在第一个步骤里，执行时把整块「任务处理过程」顶到视口上方，保证思考过程可见
-  React.useEffect(() => {
-    if (!streaming) return
-    rootRef.current?.scrollIntoView({ block: 'start', behavior: 'smooth' })
-  }, [streaming])
+  // 容器跟着最新出现的（最后一个）节点走；只有它支持收缩展开
+  const activeIndex = Math.min(count, steps.length) - 1
 
   // 流式输出时把思考容器滚到底部，保证最新思考可见
   React.useEffect(() => {
@@ -78,7 +73,7 @@ export default function ThinkingTimeline({
   }, [shownThinking])
 
   return (
-    <div ref={rootRef} className="w-full">
+    <div className="w-full">
       <button
         type="button"
         disabled={streaming}
@@ -119,8 +114,7 @@ export default function ThinkingTimeline({
           {steps.slice(0, count).map((step, index) => {
             const Icon = iconMap[step.icon]
             const last = index === Math.min(count, steps.length) - 1
-            // 流式思考过程挂在第一个「深度思考」节点里
-            const withThinking = index === 0 && Boolean(thinking)
+            const withThinking = index === activeIndex && Boolean(thinking)
             return (
               <li
                 key={`${step.label}-${index}`}

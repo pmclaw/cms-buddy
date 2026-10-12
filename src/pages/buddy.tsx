@@ -172,10 +172,10 @@ function ConversationDetail({
   }, [answerVisible, streamingId])
 
   React.useEffect(() => {
-    // 执行中由思考容器自己保持可见；回答出现后再滚到回答位置
-    if (!streamingId || !answerVisible) return
+    // 思考容器挂在最后一个步骤上，跟随底部即可让它始终可见
+    if (!streamingId) return
     bottomRef.current?.scrollIntoView({ block: 'end', behavior: 'smooth' })
-  }, [answerVisible, messages.length, streamingId])
+  }, [answerVisible, messages.length, revealCount, streamingId])
 
   return (
     <div className="flex h-full min-h-0 flex-col bg-white">
@@ -246,7 +246,8 @@ function ConversationDetail({
 
             const streaming = message.id === streamingId
             const steps = message.steps
-            const open = openMap[message.id] ?? Boolean(steps)
+            // 执行中展开；回答完成后连同思考过程一起收起，点击可再展开
+            const open = openMap[message.id] ?? Boolean(steps && streaming && !answerVisible)
 
             return (
               <div key={message.id} className="flex flex-col">
