@@ -134,9 +134,6 @@ export function AuthorizeUserDialog({ resource, resourceType, onClose, onSubmit,
                   {it.desc && <span style={{ fontSize: 12, color: '#9CA3AF' }}>{it.desc}</span>}
                 </div>
               ))}
-              <div style={{ marginTop: 10, fontSize: 12, color: '#B08968' }}>
-                开关调整会即时同步到构建能力列表；下方「取消 / 确定」仅作用于用户授权。
-              </div>
             </div>
           )}
 
