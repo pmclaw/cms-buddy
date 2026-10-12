@@ -171,17 +171,11 @@ function ConversationDetail({
     return () => window.clearInterval(timer)
   }, [answerVisible, streamingId])
 
-  const lastReveal = React.useRef(0)
   React.useEffect(() => {
-    if (!streamingId) return
-    // 新步骤出现时平滑跟随；字级别的流式输出直接跟随，避免打断滚动动画
-    const stepChanged = revealCount !== lastReveal.current
-    lastReveal.current = revealCount
-    bottomRef.current?.scrollIntoView({
-      block: 'end',
-      behavior: stepChanged ? 'smooth' : 'auto',
-    })
-  }, [answerVisible, messages.length, revealCount, streamingId])
+    // 执行中由思考容器自己保持可见；回答出现后再滚到回答位置
+    if (!streamingId || !answerVisible) return
+    bottomRef.current?.scrollIntoView({ block: 'end', behavior: 'smooth' })
+  }, [answerVisible, messages.length, streamingId])
 
   return (
     <div className="flex h-full min-h-0 flex-col bg-white">

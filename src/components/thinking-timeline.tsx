@@ -61,8 +61,15 @@ export default function ThinkingTimeline({
   const [thinkingOpen, setThinkingOpen] = React.useState<boolean | null>(null)
   const thinkingExpanded = thinkingOpen ?? streaming
   const thinkingBoxRef = React.useRef<HTMLDivElement>(null)
+  const rootRef = React.useRef<HTMLDivElement>(null)
   const shownThinking =
     thinkingChars === undefined ? thinking : thinking?.slice(0, thinkingChars)
+
+  // 思考容器在第一个步骤里，执行时把整块「任务处理过程」顶到视口上方，保证思考过程可见
+  React.useEffect(() => {
+    if (!streaming) return
+    rootRef.current?.scrollIntoView({ block: 'start', behavior: 'smooth' })
+  }, [streaming])
 
   // 流式输出时把思考容器滚到底部，保证最新思考可见
   React.useEffect(() => {
@@ -71,7 +78,7 @@ export default function ThinkingTimeline({
   }, [shownThinking])
 
   return (
-    <div className="w-full">
+    <div ref={rootRef} className="w-full">
       <button
         type="button"
         disabled={streaming}
@@ -112,6 +119,8 @@ export default function ThinkingTimeline({
           {steps.slice(0, count).map((step, index) => {
             const Icon = iconMap[step.icon]
             const last = index === Math.min(count, steps.length) - 1
+            // 流式思考过程挂在第一个「深度思考」节点里
+            const withThinking = index === 0 && Boolean(thinking)
             return (
               <li
                 key={`${step.label}-${index}`}
@@ -128,6 +137,22 @@ export default function ThinkingTimeline({
                     <span className="text-ink text-[12px] leading-[20px]">
                       {step.label}
                     </span>
+                    {withThinking ? (
+                      <button
+                        type="button"
+                        aria-label={thinkingExpanded ? '收起思考过程' : '展开思考过程'}
+                        onClick={() => setThinkingOpen(!thinkingExpanded)}
+                        className="text-sub hover:text-ink -ml-1 cursor-pointer p-0.5"
+                      >
+                        <ChevronDown
+                          className={cn(
+                            'size-[14px] transition-transform',
+                            thinkingExpanded ? 'rotate-180' : ''
+                          )}
+                          strokeWidth={1.8}
+                        />
+                      </button>
+                    ) : null}
                     {step.badge ? (
                       <span className="text-sub rounded-[4px] bg-[rgba(40,50,83,0.05)] px-1.5 py-[1px] font-mono text-[11px] leading-[18px]">
                         {step.badge}
@@ -145,49 +170,24 @@ export default function ThinkingTimeline({
                       </span>
                     ) : null}
                   </p>
+                  {withThinking && thinkingExpanded ? (
+                    <div
+                      ref={thinkingBoxRef}
+                      className="scrollbar-slim mt-2 h-[160px] overflow-y-auto rounded-[8px] bg-[#f7f8fa] px-3 py-2"
+                    >
+                      <p className="text-ink/80 text-[13px] leading-[22px] whitespace-pre-wrap">
+                        {shownThinking}
+                        {streaming ? (
+                          <span className="bg-ink/70 ml-0.5 inline-block h-[13px] w-[2px] animate-pulse align-[-2px] motion-reduce:animate-none" />
+                        ) : null}
+                      </p>
+                    </div>
+                  ) : null}
                 </div>
               </li>
             )
           })}
         </ol>
-      ) : null}
-
-      {expanded && thinking ? (
-        <div className="pl-7">
-          <button
-            type="button"
-            onClick={() => setThinkingOpen(!thinkingExpanded)}
-            className="flex cursor-pointer items-center gap-2 py-1"
-          >
-            <ChevronDown
-              className={cn(
-                'text-sub size-[14px] transition-transform',
-                thinkingExpanded ? '' : '-rotate-90'
-              )}
-              strokeWidth={1.8}
-            />
-            <span className="text-ink text-[12px] leading-[20px]">思考过程</span>
-            {streaming ? (
-              <span className="text-sub text-[11px] leading-[20px]">
-                正在输出…
-              </span>
-            ) : null}
-          </button>
-
-          {thinkingExpanded ? (
-            <div
-              ref={thinkingBoxRef}
-              className="scrollbar-slim mt-1 h-[160px] overflow-y-auto rounded-[8px] bg-[#f7f8fa] px-3 py-2"
-            >
-              <p className="text-ink/80 text-[13px] leading-[22px] whitespace-pre-wrap">
-                {shownThinking}
-                {streaming ? (
-                  <span className="bg-ink/70 ml-0.5 inline-block h-[13px] w-[2px] animate-pulse align-[-2px] motion-reduce:animate-none" />
-                ) : null}
-              </p>
-            </div>
-          ) : null}
-        </div>
       ) : null}
     </div>
   )
