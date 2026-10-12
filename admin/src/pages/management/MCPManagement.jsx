@@ -12,6 +12,7 @@ import { AuthSettingsSection } from '../../components/AuthSettingsSection.jsx';
 import { Pagination } from '../../components/Pagination.jsx';
 import { SelectCombobox } from '../../components/SelectCombobox.jsx';
 import { RoleSwitcher } from '../../components/RoleSwitcher.jsx';
+import { Tooltip } from '../../components/Tooltip.jsx';
 import { platformSources, addDictItem } from '../../data/mock.js';
 
 const MCP_CATEGORIES = ['投研服务', '投顾服务', '系统工具', '数据服务', '资讯舆情'];
@@ -659,6 +660,7 @@ function MCPEditDialog({ initial, isPlatform, onClose, onSubmit, readOnly }) {
     remark: '',
     spaceOnlyVisible: false,
     allowSysAuth: true,
+    inMcpLibrary: false, // 是否入驻到 MCP 工具库（与技能「是否入驻到技能库」口径一致）
     ...initial,
   }));
   const [tab, setTab] = useState('base');
@@ -740,6 +742,22 @@ function MCPEditDialog({ initial, isPlatform, onClose, onSubmit, readOnly }) {
                   onChange={(v) => set('source', v)}
                 />
               </Field>
+              {/* 所属空间：紧跟「来源渠道」之后；查看详情（readOnly）时不展示，仅编辑时保留 */}
+              {!isPlatform && !readOnly && (
+                <Field label="所属空间">
+                  <select
+                    className="select"
+                    style={{ maxWidth: 360 }}
+                    value={form.creatorTenant || user.tenantId || ''}
+                    disabled={readOnly}
+                    onChange={(e) => set('creatorTenant', e.target.value)}
+                  >
+                    {ownedTenants.map((t) => (
+                      <option key={t.id} value={t.id}>{t.brandName}（{t.nickname}）</option>
+                    ))}
+                  </select>
+                </Field>
+              )}
               <Field label="服务地址" required>
                 <input className="input" value={form.serviceUrl || ''} disabled={readOnly} onChange={(e) => set('serviceUrl', e.target.value)} placeholder="https://api.example.com/api/mcp" />
               </Field>
@@ -774,22 +792,23 @@ function MCPEditDialog({ initial, isPlatform, onClose, onSubmit, readOnly }) {
                   <Toggle checked={form.enabled} disabled={readOnly} onChange={(v) => set('enabled', v)} />
                 </div>
               </Field>
-              {/* 所属空间：与上架状态并列一行；查看详情（readOnly）时不展示，仅编辑时保留 */}
-              {!isPlatform && !readOnly && (
-                <Field label="所属空间">
-                  <select
-                    className="select"
-                    style={{ maxWidth: 360 }}
-                    value={form.creatorTenant || user.tenantId || ''}
+              {/* 是否入驻到MCP工具库：与上架状态并列一行（右列），说明文案以 label 后小 i 图标悬停 tips 展示 */}
+              <Field
+                label={
+                  <>
+                    是否入驻到MCP工具库
+                    <Tooltip text="入驻后，所有空间管理员可在「MCP工具库」中查看并使用该 MCP 服务" />
+                  </>
+                }
+              >
+                <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
+                  <Toggle
+                    checked={!!form.inMcpLibrary}
+                    onChange={(v) => set('inMcpLibrary', v)}
                     disabled={readOnly}
-                    onChange={(e) => set('creatorTenant', e.target.value)}
-                  >
-                    {ownedTenants.map((t) => (
-                      <option key={t.id} value={t.id}>{t.brandName}（{t.nickname}）</option>
-                    ))}
-                  </select>
-                </Field>
-              )}
+                  />
+                </div>
+              </Field>
             </div>
           )}
 
