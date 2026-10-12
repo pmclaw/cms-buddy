@@ -61,6 +61,7 @@ export function ExpertEdit({ readOnly }) {
     mcpToolMap: {}, // { mcpId: [toolName] }
     skillIds: [],
     status: '已上架',
+    inExpertLibrary: false, // 是否入驻到专家助理库（仅系统管理员可配置）
     creator: '系统管理员',
     creatorTenant: user.tenantId || null,
   };
@@ -214,6 +215,19 @@ export function ExpertEdit({ readOnly }) {
                       <Toggle checked={form.status === '已上架'} onChange={(v) => set('status', v ? '已上架' : '已下架')} disabled={readOnly} />
                     </div>
                   </Row>
+                  {/* 是否入驻到专家助理库：仅系统管理员视角展示（空间管理员不需要）。
+                      说明：本表单 label 列宽 130px，10 字标签 + 小 i 图标会换行，故此处不挂 Tooltip，保持单行。 */}
+                  {isPlatform && (
+                    <Row label="是否入驻到专家助理库">
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <Toggle
+                          checked={!!form.inExpertLibrary}
+                          onChange={(v) => set('inExpertLibrary', v)}
+                          disabled={readOnly}
+                        />
+                      </div>
+                    </Row>
+                  )}
                   <Row label="备注" vertical>
                     <textarea className="input" rows={3} placeholder="对专家的备注信息" value={form.remark} onChange={(e) => set('remark', e.target.value)} disabled={readOnly} />
                   </Row>

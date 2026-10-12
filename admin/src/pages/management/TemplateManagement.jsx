@@ -5,6 +5,7 @@ import { useRole } from '../../contexts/RoleContext.jsx';
 import { Icon, Empty, Confirm } from '../../components/Common.jsx';
 import { Tag } from '../../components/Tag.jsx';
 import { Toggle } from '../../components/Toggle.jsx';
+import { Tooltip } from '../../components/Tooltip.jsx';
 import { Modal } from '../../components/Overlay.jsx';
 import { EnableScopeDialog } from './SkillManagement.jsx';
 import { AuthorizeDialog } from '../../components/AuthorizeDialog.jsx';
@@ -342,6 +343,7 @@ function TemplateEditDialog({ initial, isPlatform, onClose, onSubmit, readOnly }
     openTenants: [],
     source: '卡片模式',
     status: '已启用',
+    inTemplateLibrary: false, // 是否入驻到任务模板库
     creator: user.fullName || '系统管理员',
     creatorTenant: user.tenantId || null,
     channel: '聚力',
@@ -462,6 +464,23 @@ function TemplateEditDialog({ initial, isPlatform, onClose, onSubmit, readOnly }
               <Field label="上架状态">
                 <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
                   <Toggle checked={form.enabled} disabled={readOnly} onChange={(v) => set('enabled', v)} />
+                </div>
+              </Field>
+              {/* 是否入驻到任务模板库：与上架状态并列一行（右列），说明文案以 label 后小 i 图标悬停 tips 展示 */}
+              <Field
+                label={
+                  <>
+                    是否入驻到任务模板库
+                    <Tooltip text="入驻后，所有空间管理员可在「任务模板库」中查看并启用该任务模板" />
+                  </>
+                }
+              >
+                <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
+                  <Toggle
+                    checked={!!form.inTemplateLibrary}
+                    onChange={(v) => set('inTemplateLibrary', v)}
+                    disabled={readOnly}
+                  />
                 </div>
               </Field>
               {/* 所属空间：与上架状态并列一行；查看详情（readOnly）时不展示，仅编辑时保留 */}
