@@ -23,6 +23,7 @@ const TABS = [
   { key: 'tools', label: '关联工具' },
   { key: 'skills', label: '关联技能' },
   { key: 'system', label: '系统提示词' },
+  { key: 'robot', label: '机器人配置' },
 ];
 
 const PAGE_SIZE = 6;
@@ -42,6 +43,7 @@ export function ExpertEdit({ readOnly }) {
     : tenants.filter((t) => (user.managedTenants || [user.tenantId]).includes(t.id));
 
   const [tab, setTab] = useState('basic');
+  const [showSecret, setShowSecret] = useState(false); // 机器人配置 AppSecret 明文切换
 
   const empty = {
     id: 'E' + String(experts.length + 1).padStart(3, '0'),
@@ -62,6 +64,12 @@ export function ExpertEdit({ readOnly }) {
     skillIds: [],
     status: '已上架',
     inExpertLibrary: false, // 是否入驻到专家助理库（仅系统管理员可配置）
+    // 机器人配置（与 Buddy 空间管理「机器人配置」页签同口径，支持单独为该专家助理配置机器人）
+    robotName: '',
+    robotId: '',
+    appKey: '',
+    appSecret: '',
+    webhookUrl: '',
     creator: '系统管理员',
     creatorTenant: user.tenantId || null,
   };
@@ -326,6 +334,78 @@ export function ExpertEdit({ readOnly }) {
                     预估 token：{Math.ceil((form.systemPrompt || '').length / 2)}
                   </div>
                 </FormSection>
+              </div>
+            )}
+
+            {tab === 'robot' && (
+              // 机器人配置：与 Buddy 空间管理「机器人配置」完全同口径（纯标题 + 通栏字段，无卡片边框 / 无字段说明）
+              // 用于单独为该专家助理配置聚力机器人，未配置时回落到所属空间的机器人
+              <div>
+                <div style={{ fontSize: 15, fontWeight: 600, color: '#1F2937', marginBottom: 6 }}>
+                  机器人配置
+                </div>
+                <RobotConfigRow label="机器人名称">
+                  <input
+                    className="input"
+                    placeholder="如 招小顾聚力机器人"
+                    value={form.robotName || ''}
+                    onChange={(e) => set('robotName', e.target.value)}
+                    disabled={readOnly}
+                  />
+                </RobotConfigRow>
+                <RobotConfigRow label="机器人ID">
+                  <input
+                    className="input"
+                    placeholder="请输入聚力机器人ID"
+                    value={form.robotId || ''}
+                    onChange={(e) => set('robotId', e.target.value)}
+                    disabled={readOnly}
+                  />
+                </RobotConfigRow>
+                <RobotConfigRow label="AppKey">
+                  <input
+                    className="input"
+                    placeholder="请输入聚力机器人AppKey"
+                    value={form.appKey || ''}
+                    onChange={(e) => set('appKey', e.target.value)}
+                    disabled={readOnly}
+                  />
+                </RobotConfigRow>
+                <RobotConfigRow label="AppSecret">
+                  <div style={{ position: 'relative' }}>
+                    <input
+                      className="input"
+                      type={showSecret ? 'text' : 'password'}
+                      placeholder="请输入聚力机器人AppSecret"
+                      style={{ paddingRight: 40 }}
+                      value={form.appSecret || ''}
+                      onChange={(e) => set('appSecret', e.target.value)}
+                      disabled={readOnly}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowSecret(!showSecret)}
+                      title={showSecret ? '隐藏 AppSecret' : '查看 AppSecret'}
+                      style={{
+                        position: 'absolute', right: 4, top: '50%', transform: 'translateY(-50%)',
+                        width: 30, height: 30, border: 'none', background: 'transparent',
+                        cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        borderRadius: 4,
+                      }}
+                    >
+                      <Icon name="eye" size={16} color={showSecret ? '#E89E57' : '#9CA3AF'} />
+                    </button>
+                  </div>
+                </RobotConfigRow>
+                <RobotConfigRow label="Webhook地址">
+                  <input
+                    className="input"
+                    placeholder="请输入聚力机器人Webhook地址"
+                    value={form.webhookUrl || ''}
+                    onChange={(e) => set('webhookUrl', e.target.value)}
+                    disabled={readOnly}
+                  />
+                </RobotConfigRow>
               </div>
             )}
           </div>
@@ -730,6 +810,16 @@ function Row({ label, children, required, vertical }) {
   return (
     <div className="form-row" style={{ borderBottom: '1px dashed #F2F4F7' }}>
       <div className="label">{required && <span className="req">*</span>}{label}</div>
+      <div>{children}</div>
+    </div>
+  );
+}
+
+// 机器人配置行：与 Buddy 空间管理同款布局 —— 左侧 90px 灰色标签 + 右侧通栏输入框（无虚线分隔、无说明文案）
+function RobotConfigRow({ label, children }) {
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: '90px 1fr', alignItems: 'center', padding: '10px 0' }}>
+      <div style={{ fontSize: 14, color: '#6B7280' }}>{label}</div>
       <div>{children}</div>
     </div>
   );
