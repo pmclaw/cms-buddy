@@ -959,16 +959,11 @@ function SkillEditDialog({ initial, isPlatform, onClose, onSubmit, readOnly }) {
               </Field>
               <Field label="上架状态">
                 <div style={{ display: 'flex', gap: 24, alignItems: 'center' }}>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: (readOnly || skillOffline) ? 'default' : 'pointer' }}>
-                    <Toggle
-                      checked={form.enabled}
-                      onChange={(v) => { set('enabled', v); set('status', v ? '已上架' : '未上架'); }}
-                      disabled={readOnly || skillOffline}
-                    />
-                    <span style={{ fontSize: 13, color: '#4B5563' }}>
-                      {form.status === '已下架' ? '已下架' : (form.status === '未上架' || !form.enabled ? '未上架' : '已上架')}
-                    </span>
-                  </label>
+                  <Toggle
+                    checked={form.enabled}
+                    onChange={(v) => { set('enabled', v); set('status', v ? '已上架' : '未上架'); }}
+                    disabled={readOnly || skillOffline}
+                  />
                   {skillOffline && (
                     <span style={{ fontSize: 12, color: '#EF4444' }}>该技能已下线，上架状态不可修改</span>
                   )}
@@ -985,16 +980,11 @@ function SkillEditDialog({ initial, isPlatform, onClose, onSubmit, readOnly }) {
                 }
               >
                 <div style={{ display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap' }}>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: readOnly ? 'default' : 'pointer' }}>
-                    <Toggle
-                      checked={!!form.inSkillLibrary}
-                      onChange={(v) => set('inSkillLibrary', v)}
-                      disabled={readOnly}
-                    />
-                    <span style={{ fontSize: 13, color: '#4B5563' }}>
-                      {form.inSkillLibrary ? '已入驻' : '未入驻'}
-                    </span>
-                  </label>
+                  <Toggle
+                    checked={!!form.inSkillLibrary}
+                    onChange={(v) => set('inSkillLibrary', v)}
+                    disabled={readOnly}
+                  />
                 </div>
               </Field>
               {/* 所属空间：与上架状态并列一行；查看详情（readOnly）时不展示，仅编辑时保留 */}

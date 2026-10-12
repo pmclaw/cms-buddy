@@ -462,7 +462,6 @@ function TemplateEditDialog({ initial, isPlatform, onClose, onSubmit, readOnly }
               <Field label="上架状态">
                 <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
                   <Toggle checked={form.enabled} disabled={readOnly} onChange={(v) => set('enabled', v)} />
-                  <span style={{ fontSize: 13, color: '#4B5563' }}>{form.enabled ? '已上架' : '已下架'}</span>
                 </div>
               </Field>
               {/* 所属空间：与上架状态并列一行；查看详情（readOnly）时不展示，仅编辑时保留 */}

@@ -212,7 +212,6 @@ export function ExpertEdit({ readOnly }) {
                   <Row label="上架状态">
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <Toggle checked={form.status === '已上架'} onChange={(v) => set('status', v ? '已上架' : '已下架')} disabled={readOnly} />
-                      <span style={{ fontSize: 13, color: '#4B5563' }}>{form.status === '已上架' ? '已上架' : '已下架'}</span>
                     </div>
                   </Row>
                   <Row label="备注" vertical>
