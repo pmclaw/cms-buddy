@@ -3,7 +3,16 @@
  * 造型与配色对齐客户提供的 PDF 图标截图：彩色圆角底 + 白色纸张（带折角）+ 格式图形。
  */
 
-type FileKind = 'pdf' | 'doc' | 'sheet' | 'slide' | 'image' | 'archive' | 'text'
+type FileKind =
+  | 'pdf'
+  | 'doc'
+  | 'sheet'
+  | 'slide'
+  | 'image'
+  | 'archive'
+  | 'html'
+  | 'md'
+  | 'text'
 
 const kindColors: Record<FileKind, string> = {
   pdf: '#f55858',
@@ -12,6 +21,8 @@ const kindColors: Record<FileKind, string> = {
   slide: '#f2994a',
   image: '#9b6bf2',
   archive: '#e0a93a',
+  html: '#e8590c',
+  md: '#0891b2',
   text: '#8a93a5',
 }
 
@@ -34,11 +45,14 @@ const extensionKinds: Record<string, FileKind> = {
   zip: 'archive',
   rar: 'archive',
   '7z': 'archive',
+  html: 'html',
+  htm: 'html',
   txt: 'text',
-  md: 'text',
+  md: 'md',
+  markdown: 'md',
 }
 
-function glyphFor(kind: FileKind) {
+function glyphFor(kind: FileKind, color: string) {
   if (kind === 'pdf') return <path d="M16.5 12.6l4.1 7.1h-8.2z" />
   if (kind === 'sheet') {
     return (
@@ -65,6 +79,18 @@ function glyphFor(kind: FileKind) {
         <rect x="13.4" y="12.8" width="6.2" height="2.6" rx="0.6" />
         <rect x="13.4" y="16.4" width="6.2" height="2.6" rx="0.6" />
       </>
+    )
+  }
+  if (kind === 'html') {
+    return (
+      <path
+        d="M15.7 13.3l-3.2 3.2 3.2 3.2M17.3 13.3l3.2 3.2-3.2 3.2"
+        fill="none"
+        stroke={color}
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     )
   }
   return (
@@ -104,7 +130,7 @@ export default function FileTypeIcon({
         fill="#fff"
       />
       <path d="M17.5 6L22 10.5h-3.5a1 1 0 0 1-1-1z" fill="#fff" fillOpacity="0.4" />
-      <g fill={kindColors[kind]}>{glyphFor(kind)}</g>
+      <g fill={kindColors[kind]}>{glyphFor(kind, kindColors[kind])}</g>
     </svg>
   )
 }

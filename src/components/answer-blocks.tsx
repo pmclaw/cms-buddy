@@ -1,5 +1,6 @@
-import { Copy, ThumbsDown, ThumbsUp } from 'lucide-react'
+import { Copy, ExternalLink, ThumbsDown, ThumbsUp } from 'lucide-react'
 
+import FileTypeIcon from '@/components/file-type-icon'
 import RichText from '@/components/rich-text'
 import { useToast } from '@/components/toast'
 import {
@@ -57,8 +58,8 @@ function toInlineHtml(text: string) {
     .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
 }
 
-/** PDF 走浏览器打印：把回答排成一份干净文档，交给「另存为 PDF」。 */
-function openPdfView(title: string, blocks: AnswerBlock[], disclaimer?: boolean) {
+/** 把回答排成一份干净的 HTML 文档：导出 PDF 打印视图与生成的 HTML 文件共用。 */
+function buildReportHtml(title: string, blocks: AnswerBlock[], disclaimer?: boolean) {
   const body = blocks
     .map((block) => {
       if (block.kind === 'heading') return `<h2>${toInlineHtml(block.text)}</h2>`
@@ -72,10 +73,7 @@ function openPdfView(title: string, blocks: AnswerBlock[], disclaimer?: boolean)
     })
     .join('\n')
 
-  const frame = document.createElement('iframe')
-  frame.setAttribute('aria-hidden', 'true')
-  frame.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0'
-  frame.srcdoc = `<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><title>${title}</title>
+  return `<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><title>${title}</title>
     <style>
       * { box-sizing: border-box; }
       body { margin: 0; padding: 48px 56px; color: #283253; font-family: "PingFang SC", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif; font-size: 14px; line-height: 26px; }
@@ -94,6 +92,14 @@ function openPdfView(title: string, blocks: AnswerBlock[], disclaimer?: boolean)
     ${body}
     ${disclaimer ? `<p class="disclaimer">${DISCLAIMER}</p>` : ''}
   </body></html>`
+}
+
+/** PDF 走浏览器打印：把回答排成一份干净文档，交给「另存为 PDF」。 */
+function openPdfView(title: string, blocks: AnswerBlock[], disclaimer?: boolean) {
+  const frame = document.createElement('iframe')
+  frame.setAttribute('aria-hidden', 'true')
+  frame.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0'
+  frame.srcdoc = buildReportHtml(title, blocks, disclaimer)
 
   frame.onload = () => {
     frame.contentWindow?.focus()
@@ -118,6 +124,28 @@ function downloadText(name: string, content: string, type: string) {
   URL.revokeObjectURL(url)
 }
 
+/** 生成文件卡片：技能产出物，点「浏览」用浏览器新标签页打开。 */
+type GeneratedFile = { name: string; size: string; content: string; type: string }
+
+function buildGeneratedFiles(
+  title: string,
+  blocks: AnswerBlock[],
+  disclaimer?: boolean
+): GeneratedFile[] {
+  return [
+    { name: `${toFileName(title)}.html`, content: buildReportHtml(title, blocks, disclaimer), type: 'text/html;charset=utf-8' },
+    { name: `${toFileName(title)}.md`, content: toMarkdown(title, blocks, disclaimer), type: 'text/plain;charset=utf-8' },
+  ].map((file) => ({
+    ...file,
+    size: `${(new Blob([file.content]).size / 1024).toFixed(1)} KB`,
+  }))
+}
+
+function openFileInNewTab(file: GeneratedFile) {
+  const url = URL.createObjectURL(new Blob([file.content], { type: file.type }))
+  window.open(url, '_blank', 'noopener')
+}
+
 export default function AnswerBlocks({
   blocks,
   disclaimer,
@@ -130,6 +158,7 @@ export default function AnswerBlocks({
 }) {
   const toast = useToast()
   const fileName = toFileName(title)
+  const generatedFiles = buildGeneratedFiles(title, blocks, disclaimer)
 
   return (
     <div className="flex flex-col">
@@ -187,6 +216,32 @@ export default function AnswerBlocks({
           </div>
         )
       })}
+
+      <div className="mt-4 grid gap-2.5 sm:grid-cols-2">
+        {generatedFiles.map((file) => (
+          <div
+            key={file.name}
+            className="flex items-center gap-3 rounded-[14px] bg-[rgba(40,50,83,0.05)] px-4 py-3"
+          >
+            <FileTypeIcon name={file.name} size={32} className="shrink-0" />
+            <div className="min-w-0 flex-1">
+              <p className="text-ink truncate text-[15px] leading-[22px] font-medium">
+                {file.name}
+              </p>
+              <p className="text-sub text-[13px] leading-[20px]">{file.size}</p>
+            </div>
+            <button
+              type="button"
+              aria-label={`浏览 ${file.name}`}
+              title="浏览"
+              onClick={() => openFileInNewTab(file)}
+              className="text-sub hover:text-ink shrink-0 cursor-pointer transition-colors"
+            >
+              <ExternalLink className="size-[18px]" strokeWidth={1.7} />
+            </button>
+          </div>
+        ))}
+      </div>
 
       {disclaimer ? (
         <p className="text-sub mt-6 text-[12px] leading-[22px]">{DISCLAIMER}</p>
