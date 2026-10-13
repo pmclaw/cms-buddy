@@ -607,6 +607,7 @@ export const skills = [
   {
     id: 'S001', name: '个股诊断', code: 'hot_news', category: '投顾服务',
     desc: '面向个股的全维度诊断分析，包括基本面、技术面、舆情面、资金面等。',
+    welcome: '您好，我是个股诊断助手，请输入股票名称或代码，我将为您生成全维度诊断报告。',
     tags: ['股票', '分析', '诊断'],
     enabled: true,
     defaultEnabled: true,
@@ -629,6 +630,7 @@ export const skills = [
   {
     id: 'S002', name: '盘前小结', code: 'pre_market_summary', category: '投顾服务',
     desc: '每个交易日盘前生成的市场综述，包括隔夜海外要闻、盘前热点、风险提示等。',
+    welcome: '早上好！我可以为您生成今日盘前市场综述，请输入您关注的指数或板块。',
     tags: ['盘前', '资讯', '报告'],
     enabled: false,
     defaultEnabled: false,

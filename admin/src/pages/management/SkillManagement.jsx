@@ -697,6 +697,7 @@ function SkillEditDialog({ initial, isPlatform, onClose, onSubmit, readOnly }) {
     spaceOnlyVisible: false,
     inSkillLibrary: false,
     allowSysAuth: true,
+    welcome: '',
     ...initial,
   }));
   const [tab, setTab] = useState('base');
@@ -910,6 +911,15 @@ function SkillEditDialog({ initial, isPlatform, onClose, onSubmit, readOnly }) {
                   onChangeMcpIds={(v) => set('mcpIds', v)}
                   onChangeMcpToolMap={(v) => set('mcpToolMap', v)}
                   readOnly={readOnly}
+                />
+              </Field>
+              {/* 欢迎语：非必填，多行文本，位于技能描述上方 */}
+              <Field label="欢迎语" full>
+                <textarea
+                  className="input" rows={3} value={form.welcome || ''}
+                  onChange={(e) => set('welcome', e.target.value)}
+                  placeholder="请输入欢迎语，用户进入该技能时将展示此内容"
+                  disabled={readOnly}
                 />
               </Field>
               <Field label="技能描述" required full>

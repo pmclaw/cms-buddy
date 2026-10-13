@@ -171,7 +171,7 @@ export function ExpertEdit({ readOnly }) {
             {!readOnly && (
               <button className="btn btn-primary" onClick={onSave}>
                 <Icon name="check" size={14} />
-                保存
+                保存配置
               </button>
             )}
           </div>
