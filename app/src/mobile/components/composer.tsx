@@ -4,6 +4,7 @@ import { ArrowUp, ChevronDown, CircleGauge, Plus, X } from 'lucide-react'
 import CharacterAvatar from '@/components/character-avatar'
 import { experts } from '@/data/experts'
 import { cn } from '@/lib/cn'
+import { useKeyboard } from '@/lib/keyboard'
 import { useTaskDraft } from '@/lib/task-draft'
 
 /** 与 PC 端一致的模型列表 */
@@ -26,6 +27,7 @@ export default function Composer({
   placeholder?: string
 }) {
   const { draft, patch } = useTaskDraft()
+  const { show, hide } = useKeyboard()
   const areaRef = React.useRef<HTMLTextAreaElement>(null)
 
   const canSend = draft.text.trim().length > 0
@@ -45,10 +47,21 @@ export default function Composer({
     onSend(draft.text.trim())
     // 发送后清空文本与附件/技能（与 PC 端一致，保留模型与召唤的专家）
     patch({ text: '', skills: [], attachments: [] })
+    closeKeyboard()
+  }
+
+  function closeKeyboard() {
+    hide()
+    areaRef.current?.blur()
   }
 
   return (
-    <div className="shrink-0 px-4 pt-2 pb-3">
+    <div
+      className="shrink-0 px-4 pt-2 pb-3"
+      onMouseDown={(event) => {
+        if (event.target !== areaRef.current) event.preventDefault()
+      }}
+    >
       <div className="flex flex-col rounded-[24px] bg-white px-4 py-3 shadow-[0_8px_28px_rgba(40,50,83,0.12)]">
         {draft.attachments.length > 0 ||
         draft.skills.length > 0 ||
@@ -119,6 +132,8 @@ export default function Composer({
               submit()
             }
           }}
+          onFocus={show}
+          onBlur={hide}
           placeholder={placeholder}
           className="text-ink placeholder:text-[#a6aab8] w-full resize-none bg-transparent text-[16px] leading-[26px] outline-none"
         />
@@ -126,7 +141,10 @@ export default function Composer({
         <div className="mt-1 flex items-center justify-between">
           <button
             type="button"
-            onClick={onOpenModel}
+            onClick={() => {
+              closeKeyboard()
+              onOpenModel()
+            }}
             className="text-ink flex items-center gap-1 text-[15px]"
           >
             <CircleGauge className="size-[18px]" strokeWidth={1.7} />
@@ -138,7 +156,10 @@ export default function Composer({
             <button
               type="button"
               aria-label="更多功能"
-              onClick={onOpenPlus}
+              onClick={() => {
+                closeKeyboard()
+                onOpenPlus()
+              }}
               className="text-ink flex size-9 items-center justify-center"
             >
               <Plus className="size-[24px]" strokeWidth={2} />

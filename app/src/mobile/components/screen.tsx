@@ -6,6 +6,7 @@ import FigmaIcon from '@/components/figma-icon'
 import StatusBar from '@/components/status-bar'
 import { navIcons } from '@/data/assets'
 import { cn } from '@/lib/cn'
+import { MOBILE_KEYBOARD_HEIGHT, useKeyboard } from '@/lib/keyboard'
 
 /** 每个移动端页面共用的外框：状态栏 + 内容列 */
 export function PhoneScreen({
@@ -18,13 +19,16 @@ export function PhoneScreen({
   /** grey：列表页浅灰底；plain：任务页点阵白底（与 PC 首页一致） */
   tone?: 'grey' | 'plain'
 }) {
+  const { open } = useKeyboard()
+
   return (
     <div
       className={cn(
-        'flex h-full flex-col',
+        'flex h-full flex-col transition-[padding] duration-200 ease-out',
         tone === 'plain' ? 'bg-dot-grid bg-[#fcfcfc]' : 'bg-page',
         className
       )}
+      style={{ paddingBottom: open ? MOBILE_KEYBOARD_HEIGHT : 0 }}
     >
       <StatusBar />
       {children}
@@ -113,6 +117,9 @@ export function TabBar({
   tone?: 'grey' | 'plain'
 }) {
   const navigate = useNavigate()
+  const { open } = useKeyboard()
+
+  if (open) return null
   // 图标沿用 PC 端侧边栏导出的 Figma 资源
   const items = [
     { key: 'task' as const, label: '任务', to: '/', icon: navIcons.newTask },

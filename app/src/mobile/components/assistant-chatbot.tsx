@@ -12,6 +12,7 @@ import {
 import { useToast } from '@/components/toast'
 import type { SmartAssistant } from '@/data/experts'
 import { TaskDraftProvider } from '@/lib/task-draft'
+import { MOBILE_KEYBOARD_HEIGHT, useKeyboard } from '@/lib/keyboard'
 
 /**
  * 智能助理 chatbot 弹层：覆盖在专家列表之上的浮层，
@@ -29,9 +30,13 @@ export default function AssistantChatbot({
   const [skillOpen, setSkillOpen] = React.useState(false)
   const [expertOpen, setExpertOpen] = React.useState(false)
   const [modelOpen, setModelOpen] = React.useState(false)
+  const { open } = useKeyboard()
 
   return (
-    <div className="bg-page absolute top-[46px] right-0 bottom-0 left-0 z-50 flex flex-col">
+    <div
+      className="bg-page absolute top-[46px] right-0 bottom-0 left-0 z-50 flex flex-col transition-[padding] duration-200 ease-out"
+      style={{ paddingBottom: open ? MOBILE_KEYBOARD_HEIGHT : 0 }}
+    >
       <div className="flex h-[52px] shrink-0 items-center justify-end px-4">
         <button
           type="button"
@@ -43,7 +48,7 @@ export default function AssistantChatbot({
         </button>
       </div>
 
-      <div className="flex min-h-0 flex-1 flex-col justify-center px-6">
+      <div className="flex min-h-0 flex-1 flex-col justify-center overflow-hidden px-6">
         <CharacterAvatar character={assistant.avatar} size={140} className="mx-auto" />
         <div className="relative z-10 -mt-4 rounded-[18px] bg-white px-6 py-5 text-center shadow-[0_10px_30px_rgba(40,50,83,0.08)]">
           <p className="text-ink text-[20px] leading-[30px] font-semibold">
