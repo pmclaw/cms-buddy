@@ -9,10 +9,12 @@ import { assets } from '@/data/assets'
 import { skillCategories, skills } from '@/data/skills'
 import { cn } from '@/lib/cn'
 import { useDrawer } from '@/lib/drawer'
+import { useKeyboard } from '@/lib/keyboard'
 
 export function SkillsPage() {
   const navigate = useNavigate()
   const { openDrawer } = useDrawer()
+  const { show, hide } = useKeyboard()
   const [keyword, setKeyword] = React.useState('')
   const [category, setCategory] = React.useState<string | null>(null)
 
@@ -35,6 +37,8 @@ export function SkillsPage() {
           <input
             value={keyword}
             onChange={(event) => setKeyword(event.target.value)}
+            onFocus={show}
+            onBlur={hide}
             placeholder="搜索技能"
             className="text-ink placeholder:text-[#a6aab8] h-full flex-1 bg-transparent text-[15px] outline-none"
           />

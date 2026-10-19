@@ -14,10 +14,12 @@ import {
 } from '@/data/experts'
 import { cn } from '@/lib/cn'
 import { useDrawer } from '@/lib/drawer'
+import { useKeyboard } from '@/lib/keyboard'
 
 export function ExpertsPage() {
   const navigate = useNavigate()
   const { openDrawer } = useDrawer()
+  const { show, hide } = useKeyboard()
   const [keyword, setKeyword] = React.useState('')
   const [category, setCategory] = React.useState<string | null>(null)
   const [assistant, setAssistant] = React.useState<SmartAssistant | null>(null)
@@ -57,6 +59,8 @@ export function ExpertsPage() {
           <input
             value={keyword}
             onChange={(event) => setKeyword(event.target.value)}
+            onFocus={show}
+            onBlur={hide}
             placeholder="搜索专家助理"
             className="text-ink placeholder:text-[#a6aab8] h-full flex-1 bg-transparent text-[15px] outline-none"
           />
