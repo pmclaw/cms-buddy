@@ -96,7 +96,7 @@ export function PlusPanel({
   )
 }
 
-/** 技能选择（多选），对齐设计稿 09/10 */
+/** 技能选择（单选）：点选后回到会话输入区 */
 export function SkillPickerSheet({
   open,
   onClose,
@@ -104,7 +104,7 @@ export function SkillPickerSheet({
   open: boolean
   onClose: () => void
 }) {
-  const { draft, patch } = useTaskDraft()
+  const { draft, patch, focusComposer } = useTaskDraft()
   const [keyword, setKeyword] = React.useState('')
 
   const list = skills.filter(
@@ -113,12 +113,10 @@ export function SkillPickerSheet({
       skill.desc.toLowerCase().includes(keyword.trim().toLowerCase())
   )
 
-  function toggle(name: string) {
-    patch({
-      skills: draft.skills.includes(name)
-        ? draft.skills.filter((item) => item !== name)
-        : [...draft.skills, name],
-    })
+  function select(name: string) {
+    patch({ skills: [name] })
+    onClose()
+    focusComposer()
   }
 
   return (
@@ -141,7 +139,7 @@ export function SkillPickerSheet({
               <button
                 key={skill.id}
                 type="button"
-                onClick={() => toggle(skill.name)}
+                onClick={() => select(skill.name)}
                 className="active:bg-ink/5 flex items-start gap-3 border-b border-[rgba(40,50,83,0.06)] py-3 text-left last:border-0"
               >
                 <span className="min-w-0 flex-1">
@@ -172,7 +170,7 @@ export function SkillPickerSheet({
   )
 }
 
-/** 召唤专家（单选），对齐设计稿 08 */
+/** 召唤专家（单选）：点选后回到会话输入区 */
 export function ExpertPickerSheet({
   open,
   onClose,
@@ -180,7 +178,7 @@ export function ExpertPickerSheet({
   open: boolean
   onClose: () => void
 }) {
-  const { draft, patch } = useTaskDraft()
+  const { draft, patch, focusComposer } = useTaskDraft()
   const [keyword, setKeyword] = React.useState('')
 
   const list = experts.filter(
@@ -209,7 +207,11 @@ export function ExpertPickerSheet({
               <button
                 key={expert.id}
                 type="button"
-                onClick={() => patch({ expert: active ? null : expert.name })}
+                onClick={() => {
+                  patch({ expert: expert.name })
+                  onClose()
+                  focusComposer()
+                }}
                 className="active:bg-ink/5 flex items-start gap-3 border-b border-[rgba(40,50,83,0.06)] py-3 text-left last:border-0"
               >
                 <CharacterAvatar character={expert.avatar} size={36} />

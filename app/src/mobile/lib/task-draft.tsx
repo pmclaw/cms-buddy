@@ -23,19 +23,34 @@ const TaskDraftContext = React.createContext<{
   draft: TaskDraft
   patch: (next: Partial<TaskDraft>) => void
   reset: () => void
-}>({ draft: emptyDraft, patch: () => {}, reset: () => {} })
+  focusComposer: () => void
+  composerFocusKey: number
+}>({
+  draft: emptyDraft,
+  patch: () => {},
+  reset: () => {},
+  focusComposer: () => {},
+  composerFocusKey: 0,
+})
 
 export function TaskDraftProvider({ children }: { children: React.ReactNode }) {
   const [draft, setDraft] = React.useState<TaskDraft>(emptyDraft)
+  const [composerFocusKey, setComposerFocusKey] = React.useState(0)
 
   const patch = React.useCallback((next: Partial<TaskDraft>) => {
     setDraft((current) => ({ ...current, ...next }))
   }, [])
 
   const reset = React.useCallback(() => setDraft(emptyDraft), [])
+  const focusComposer = React.useCallback(
+    () => setComposerFocusKey((current) => current + 1),
+    []
+  )
 
   return (
-    <TaskDraftContext.Provider value={{ draft, patch, reset }}>
+    <TaskDraftContext.Provider
+      value={{ draft, patch, reset, focusComposer, composerFocusKey }}
+    >
       {children}
     </TaskDraftContext.Provider>
   )

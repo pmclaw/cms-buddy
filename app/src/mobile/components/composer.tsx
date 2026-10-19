@@ -26,7 +26,7 @@ export default function Composer({
   onOpenModel: () => void
   placeholder?: string
 }) {
-  const { draft, patch } = useTaskDraft()
+  const { draft, patch, composerFocusKey } = useTaskDraft()
   const { show, hide } = useKeyboard()
   const areaRef = React.useRef<HTMLTextAreaElement>(null)
 
@@ -39,6 +39,12 @@ export default function Composer({
     area.style.height = 'auto'
     area.style.height = `${Math.min(area.scrollHeight, 132)}px`
   }, [draft.text])
+
+  React.useEffect(() => {
+    if (!composerFocusKey) return
+    const timer = window.setTimeout(() => areaRef.current?.focus(), 0)
+    return () => window.clearTimeout(timer)
+  }, [composerFocusKey])
 
   const summoned = experts.find((item) => item.name === draft.expert)
 
