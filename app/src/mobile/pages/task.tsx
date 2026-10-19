@@ -138,27 +138,34 @@ export function TaskPage() {
             <div ref={bottomRef} />
           </div>
         ) : (
-          <div className="flex min-h-full flex-col items-center justify-center px-6">
-            <FigmaIcon src={assets.heroMascot} size={164} height="auto" />
-            <h1 className="text-ink mt-5 text-[26px] leading-[38px] font-bold">
-              聚心念之力，成方寸之功
-            </h1>
-            <p className="text-ink/60 mt-2 text-center text-[13px] leading-[21px]">
-              念头随风而来，算力为你而留，让所有无形的创意，长成看得见的结果。
-            </p>
-
-            <div className="scrollbar-none mt-8 -mb-2 flex w-full gap-2 overflow-x-auto pb-2">
-              {suggestedPrompts.map((prompt) => (
-                <button
-                  key={prompt}
-                  type="button"
-                  onClick={() => navigate(`/task/new?q=${encodeURIComponent(prompt)}`)}
-                  className="text-ink shrink-0 rounded-full bg-[rgba(40,50,83,0.08)] px-4 py-2 text-[13px] whitespace-nowrap"
-                >
-                  {prompt}
-                </button>
-              ))}
+          <div className="flex min-h-full flex-col px-6 pt-6 pb-10">
+            <div className="flex flex-col items-center">
+              <FigmaIcon src={assets.heroMascot} size={132} height="auto" />
+              <h1 className="text-ink mt-4 text-[26px] leading-[38px] font-bold">
+                聚心念之力，成方寸之功
+              </h1>
+              <p className="text-ink/60 mt-3 text-center text-[15px] leading-[22px]">
+                念头随风而来，算力为你而留，
+                <br />
+                让所有无形的创意，长成看得见的结果。
+              </p>
             </div>
+
+            <section className="mt-auto pt-8">
+              <p className="text-sub text-[13px] leading-[18px]">为你推荐</p>
+              <div className="mt-2.5 flex flex-col items-start gap-3">
+                {suggestedPrompts.slice(0, 3).map((prompt) => (
+                  <button
+                    key={prompt}
+                    type="button"
+                    onClick={() => navigate(`/task/new?q=${encodeURIComponent(prompt)}`)}
+                    className="text-ink rounded-[14px] bg-[rgba(40,50,83,0.06)] px-4 py-[9px] text-left text-[15px] leading-[20px]"
+                  >
+                    {prompt}
+                  </button>
+                ))}
+              </div>
+            </section>
           </div>
         )}
       </div>
