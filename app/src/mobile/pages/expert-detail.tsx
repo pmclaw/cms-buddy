@@ -1,4 +1,4 @@
-import { ArrowUpRight, Sparkles, UserRoundCheck } from 'lucide-react'
+import { Sparkles, UserRoundCheck } from 'lucide-react'
 import { useNavigate, useParams } from 'react-router'
 
 import CharacterAvatar from '@/components/character-avatar'
@@ -64,28 +64,24 @@ export function ExpertDetailPage() {
         </section>
 
         <section className="mt-6">
-          <h2 className="text-ink flex items-center gap-2 text-[16px] font-medium">
-            <Sparkles className="size-[18px]" strokeWidth={1.8} />
-            试试这样问我
-          </h2>
-          <div className="mt-3 flex flex-col gap-3">
-            {expertExamples.map((example) => (
-              <button
-                key={example}
-                type="button"
-                onClick={() => {
-                  patch({ expert: expert.name, text: example })
-                  navigate('/')
-                }}
-                className="flex items-start gap-3 rounded-[14px] bg-white px-4 py-3.5 text-left ring-1 ring-[rgba(0,0,0,0.04)] active:bg-[#fafbfd]"
-              >
-                <span className="text-ink/80 flex-1 text-[14px] leading-[24px]">
-                  {example}
-                </span>
-                <ArrowUpRight className="text-sub mt-1 size-[18px]" strokeWidth={1.8} />
-              </button>
-            ))}
+          <div className="flex gap-4">
+            <span className="text-brand border-brand border-b-2 pb-1 text-[15px] font-medium">
+              使用说明
+            </span>
           </div>
+          <article className="mt-4 rounded-[14px] bg-white px-4 py-5 ring-1 ring-[rgba(0,0,0,0.04)]">
+            <ol className="flex flex-col gap-2.5">
+              {expertExamples.map((example, index) => (
+                <li
+                  key={example}
+                  className="text-ink/80 flex gap-2 text-[13px] leading-[24px]"
+                >
+                  <span className="text-sub">{index + 1}.</span>
+                  <span>{example}</span>
+                </li>
+              ))}
+            </ol>
+          </article>
         </section>
       </div>
 
