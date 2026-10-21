@@ -54,6 +54,7 @@ export function calcAuthorizedUsers(userAuth) {
 export function UserAuthPanel({ resourceType, value, onChange, tenantId }) {
   const [authPage, setAuthPage] = useState(1);
   const [authPageSize, setAuthPageSize] = useState(10);
+  const [authKeyword, setAuthKeyword] = useState('');
 
   // 授权清单变化（渠道勾选）后回到第一页
   useEffect(() => {
@@ -81,12 +82,21 @@ export function UserAuthPanel({ resourceType, value, onChange, tenantId }) {
   };
 
   const authorized = useMemo(() => calcAuthorizedUsers(value), [value]);
-  const authTotalPages = Math.max(1, Math.ceil(authorized.length / authPageSize));
+  // 已授权用户姓名搜索
+  const authKw = authKeyword.trim().toLowerCase();
+  const shownAuthorized = authKw
+    ? authorized.filter((u) => String(u.name || '').toLowerCase().includes(authKw))
+    : authorized;
+  const authTotalPages = Math.max(1, Math.ceil(shownAuthorized.length / authPageSize));
   const safeAuthPage = Math.min(authPage, authTotalPages);
-  const pagedAuthorized = authorized.slice((safeAuthPage - 1) * authPageSize, safeAuthPage * authPageSize);
+  const pagedAuthorized = shownAuthorized.slice((safeAuthPage - 1) * authPageSize, safeAuthPage * authPageSize);
   const onAuthPageChange = (p, size) => {
     if (size) setAuthPageSize(size);
     setAuthPage(p);
+  };
+  const onAuthKeywordChange = (v) => {
+    setAuthKeyword(v);
+    setAuthPage(1);
   };
 
   // 已授权用户清单为只读结果：不允许在清单中单独移出某个用户
@@ -154,12 +164,36 @@ export function UserAuthPanel({ resourceType, value, onChange, tenantId }) {
 
       {/* 已授权用户清单 */}
       <div style={{ marginTop: 14 }}>
-        <div style={{ fontSize: 13, fontWeight: 500, color: '#1F2937', marginBottom: 8 }}>
-          已授权用户 <span style={{ color: '#E89E57' }}>{authorized.length}</span> 人
+        {/* 左侧：按姓名搜索已授权用户；右侧：已授权用户总数 */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
+          {authorized.length > 0 && (
+            <div style={{ position: 'relative', width: 220, flexShrink: 0 }}>
+              <Icon
+                name="search"
+                size={14}
+                color="#9CA3AF"
+                style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}
+              />
+              <input
+                className="input"
+                style={{ paddingLeft: 30 }}
+                placeholder="搜索用户姓名"
+                value={authKeyword}
+                onChange={(e) => onAuthKeywordChange(e.target.value)}
+              />
+            </div>
+          )}
+          <div style={{ marginLeft: 'auto', fontSize: 13, fontWeight: 500, color: '#1F2937' }}>
+            已授权用户 <span style={{ color: '#E89E57' }}>{authorized.length}</span> 人
+          </div>
         </div>
         {authorized.length === 0 ? (
           <div style={{ padding: '14px 0', textAlign: 'center', color: '#9CA3AF', fontSize: 12, border: '1px dashed #E5E7EB', borderRadius: 6 }}>
             尚未授权任何用户
+          </div>
+        ) : shownAuthorized.length === 0 ? (
+          <div style={{ padding: '14px 0', textAlign: 'center', color: '#9CA3AF', fontSize: 12, border: '1px dashed #E5E7EB', borderRadius: 6 }}>
+            未找到匹配的用户
           </div>
         ) : (
           <>
@@ -195,7 +229,7 @@ export function UserAuthPanel({ resourceType, value, onChange, tenantId }) {
               <Pagination
                 page={safeAuthPage}
                 pageSize={authPageSize}
-                total={authorized.length}
+                total={shownAuthorized.length}
                 onChange={onAuthPageChange}
               />
             </div>
