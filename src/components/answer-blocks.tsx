@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Copy, Download, ThumbsDown, ThumbsUp } from 'lucide-react'
 
 import FileTypeIcon from '@/components/file-type-icon'
@@ -9,6 +10,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import type { AnswerBlock } from '@/data/chat'
 
 const DISCLAIMER =
@@ -146,6 +153,68 @@ function openFileInNewTab(file: GeneratedFile) {
   window.open(url, '_blank', 'noopener')
 }
 
+function GeneratedFileCard({ file }: { file: GeneratedFile }) {
+  const [browseOpen, setBrowseOpen] = useState(false)
+  const [downloadOpen, setDownloadOpen] = useState(false)
+
+  return (
+    <div className="flex items-center rounded-[14px] bg-[rgba(40,50,83,0.05)] transition-colors hover:bg-[rgba(40,50,83,0.07)]">
+      <Tooltip open={browseOpen} onOpenChange={setBrowseOpen}>
+        <TooltipTrigger asChild>
+          <button
+            type="button"
+            aria-label={`浏览 ${file.name}`}
+            onPointerEnter={() => {
+              setDownloadOpen(false)
+              setBrowseOpen(true)
+            }}
+            onPointerLeave={() => setBrowseOpen(false)}
+            onFocus={() => {
+              setDownloadOpen(false)
+              setBrowseOpen(true)
+            }}
+            onBlur={() => setBrowseOpen(false)}
+            onClick={() => openFileInNewTab(file)}
+            className="flex min-w-0 flex-1 cursor-pointer items-center gap-3 py-3 pl-4 text-left"
+          >
+            <FileTypeIcon name={file.name} size={32} className="shrink-0" />
+            <div className="min-w-0 flex-1">
+              <p className="text-ink truncate text-[15px] leading-[22px] font-medium">
+                {file.name}
+              </p>
+              <p className="text-sub text-[13px] leading-[20px]">{file.size}</p>
+            </div>
+          </button>
+        </TooltipTrigger>
+        <TooltipContent side="top">浏览</TooltipContent>
+      </Tooltip>
+      <Tooltip open={downloadOpen} onOpenChange={setDownloadOpen}>
+        <TooltipTrigger asChild>
+          <button
+            type="button"
+            aria-label={`下载 ${file.name}`}
+            onPointerEnter={() => {
+              setBrowseOpen(false)
+              setDownloadOpen(true)
+            }}
+            onPointerLeave={() => setDownloadOpen(false)}
+            onFocus={() => {
+              setBrowseOpen(false)
+              setDownloadOpen(true)
+            }}
+            onBlur={() => setDownloadOpen(false)}
+            onClick={() => downloadText(file.name, file.content, file.type)}
+            className="text-sub hover:text-ink mr-3 ml-2 shrink-0 cursor-pointer rounded-[8px] p-1 transition-colors"
+          >
+            <Download className="size-[19px]" strokeWidth={1.8} />
+          </button>
+        </TooltipTrigger>
+        <TooltipContent side="top">下载</TooltipContent>
+      </Tooltip>
+    </div>
+  )
+}
+
 export default function AnswerBlocks({
   blocks,
   disclaimer,
@@ -217,38 +286,13 @@ export default function AnswerBlocks({
         )
       })}
 
-      <div className="mt-4 grid gap-2.5 sm:grid-cols-2">
-        {generatedFiles.map((file) => (
-          <div
-            key={file.name}
-            className="flex items-center rounded-[14px] bg-[rgba(40,50,83,0.05)] transition-colors hover:bg-[rgba(40,50,83,0.07)]"
-          >
-            <button
-              type="button"
-              aria-label={`浏览 ${file.name}`}
-              onClick={() => openFileInNewTab(file)}
-              className="flex min-w-0 flex-1 cursor-pointer items-center gap-3 py-3 pl-4 text-left"
-            >
-              <FileTypeIcon name={file.name} size={32} className="shrink-0" />
-              <div className="min-w-0 flex-1">
-                <p className="text-ink truncate text-[15px] leading-[22px] font-medium">
-                  {file.name}
-                </p>
-                <p className="text-sub text-[13px] leading-[20px]">{file.size}</p>
-              </div>
-            </button>
-            <button
-              type="button"
-              aria-label={`下载 ${file.name}`}
-              title="下载"
-              onClick={() => downloadText(file.name, file.content, file.type)}
-              className="text-sub hover:text-ink mr-3 ml-2 shrink-0 cursor-pointer rounded-[8px] p-1 transition-colors"
-            >
-              <Download className="size-[19px]" strokeWidth={1.8} />
-            </button>
-          </div>
-        ))}
-      </div>
+      <TooltipProvider>
+        <div className="mt-4 grid gap-2.5 sm:grid-cols-2">
+          {generatedFiles.map((file) => (
+            <GeneratedFileCard key={file.name} file={file} />
+          ))}
+        </div>
+      </TooltipProvider>
 
       {disclaimer ? (
         <p className="text-sub mt-6 text-[12px] leading-[22px]">{DISCLAIMER}</p>
