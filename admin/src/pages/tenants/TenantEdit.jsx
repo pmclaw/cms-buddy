@@ -2,7 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useStore } from '../../contexts/StoreContext.jsx';
 import { useToast } from '../../contexts/ToastContext.jsx';
-import { Icon, Section, Tabs } from '../../components/Common.jsx';
+import { useRole } from '../../contexts/RoleContext.jsx';
+import { Icon, Section, Tabs, Confirm, Empty } from '../../components/Common.jsx';
+import { Modal } from '../../components/Overlay.jsx';
+import { Tooltip } from '../../components/Tooltip.jsx';
 import { ColorPicker } from '../../components/ColorPicker.jsx';
 import { ImageUploader } from '../../components/ImageUploader.jsx';
 import { Tag } from '../../components/Tag.jsx';
@@ -27,7 +30,15 @@ const TABS = [
   { key: 'brand', label: '主题风格' },
   { key: 'system', label: '系统提示词' },
   { key: 'robot', label: '机器人配置' },
+  { key: 'recommend', label: '推荐问管理' },
 ];
+
+// 当前时间：yyyy-MM-dd HH:mm:ss（推荐问的更新人/更新时间展示口径）
+function nowStamp() {
+  const d = new Date();
+  const p = (n) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+}
 
 function generateAppCode() {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -109,6 +120,9 @@ export function TenantEdit() {
 
   const [tab, setTab] = useState('basic');
   const [showSecret, setShowSecret] = useState(false); // AppSecret 明文/掩码切换
+  const { user } = useRole();
+  const [faqTarget, setFaqTarget] = useState(null); // null=关闭；{}=新增；推荐问对象=修改
+  const [faqDelTarget, setFaqDelTarget] = useState(null); // 待删除的推荐问
   const [form, setForm] = useState(() => {
     if (isEdit) {
       const t = tenants.find((x) => x.id === id);
@@ -140,6 +154,7 @@ export function TenantEdit() {
       appSecret: '',
       robotId: '',
       webhookUrl: '',
+      recommendQuestions: [],
       hideNavMenus: [],
       status: '已上线',
       creator: '系统管理员',
@@ -168,6 +183,41 @@ export function TenantEdit() {
   if (!form) return <div className="page-body">未找到Buddy空间</div>;
 
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
+
+  // ===== 推荐问管理（按当前 Buddy 空间独立配置，随「保存配置」一并提交） =====
+  const faqs = form.recommendQuestions || [];
+  // 展示顺序：排序序号升序；序号相同时按创建时间倒序（最新添加的在前）
+  const sortedFaqs = [...faqs].sort(
+    (a, b) => (Number(a.sort) || 0) - (Number(b.sort) || 0)
+      || String(b.createTime || '').localeCompare(String(a.createTime || ''))
+  );
+  const faqUpdater = user?.name || '管理员';
+  const saveFaq = (q) => {
+    const stamp = nowStamp();
+    setForm((f) => {
+      const list = f.recommendQuestions || [];
+      const exists = !!q.id && list.some((x) => x.id === q.id);
+      const nextList = exists
+        ? list.map((x) => (x.id === q.id ? { ...x, ...q, updater: faqUpdater, updateTime: stamp } : x))
+        : [...list, { ...q, id: `RQ${Date.now().toString(36)}`, updater: faqUpdater, updateTime: stamp, createTime: stamp }];
+      return { ...f, recommendQuestions: nextList };
+    });
+    toast.success(q.id ? '推荐问已修改' : '推荐问已新增');
+  };
+  const patchFaq = (id, patch) => {
+    const stamp = nowStamp();
+    setForm((f) => ({
+      ...f,
+      recommendQuestions: (f.recommendQuestions || []).map((x) => (
+        x.id === id ? { ...x, ...patch, updater: faqUpdater, updateTime: stamp } : x
+      )),
+    }));
+  };
+  const removeFaq = (id) => {
+    setForm((f) => ({ ...f, recommendQuestions: (f.recommendQuestions || []).filter((x) => x.id !== id) }));
+    setFaqDelTarget(null);
+    toast.success('推荐问已删除');
+  };
 
   const onSave = () => {
     if (!form.brandName) {
@@ -545,6 +595,82 @@ export function TenantEdit() {
                 </RobotConfigRow>
               </div>
             )}
+
+            {tab === 'recommend' && (
+              <div>
+                {/* 说明 + 新增入口 */}
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16, marginBottom: 14 }}>
+                  <div style={{ flex: 1, fontSize: 12, color: '#9CA3AF', lineHeight: 1.8 }}>
+                    推荐问是客户端首页的常见问题气泡：按排序序号从小到大展示，序号相同的以最新添加的在前；「始终推荐」只在推荐方式为随机时生效，这类问题每次都会出现。
+                  </div>
+                  <button
+                    type="button"
+                    className="btn btn-primary"
+                    style={{ flexShrink: 0 }}
+                    onClick={() => setFaqTarget({})}
+                  >
+                    <Icon name="plus" size={14} />
+                    新增推荐问
+                  </button>
+                </div>
+
+                <div className="table-wrap">
+                  <table className="table">
+                    <thead>
+                      <tr>
+                        <th>推荐问标题</th>
+                        <th style={{ width: 80 }}>排序</th>
+                        <th style={{ width: 100 }}>是否启用</th>
+                        <th style={{ width: 120 }}>是否始终推荐</th>
+                        <th style={{ width: 100 }}>更新人</th>
+                        <th style={{ width: 170 }}>更新时间</th>
+                        <th style={{ width: 110 }}>操作</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {sortedFaqs.length === 0 ? (
+                        <tr>
+                          <td colSpan={7}>
+                            <Empty icon="💬" tip="暂无推荐问，点击右上角「新增推荐问」添加" />
+                          </td>
+                        </tr>
+                      ) : sortedFaqs.map((q) => (
+                        <tr key={q.id}>
+                          <td style={{ fontSize: 13, color: '#1F2937' }}>{q.title}</td>
+                          <td style={{ fontSize: 13, color: '#4B5563' }}>{q.sort ?? 0}</td>
+                          <td>
+                            <Toggle checked={!!q.enabled} onChange={(v) => patchFaq(q.id, { enabled: v })} />
+                          </td>
+                          <td>
+                            <Toggle checked={!!q.always} onChange={(v) => patchFaq(q.id, { always: v })} />
+                          </td>
+                          <td style={{ fontSize: 12, color: '#6B7280' }}>{q.updater || '-'}</td>
+                          <td style={{ fontSize: 12, color: '#6B7280' }}>{q.updateTime || '-'}</td>
+                          <td>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                              <button
+                                type="button"
+                                onClick={() => setFaqTarget(q)}
+                                style={{ fontSize: 13, color: '#E89E57', background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+                              >
+                                修改
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setFaqDelTarget(q)}
+                                style={{ fontSize: 13, color: '#EF4444', background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+                              >
+                                删除
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
           </div>
 
           <div style={{
@@ -559,6 +685,116 @@ export function TenantEdit() {
           </div>
         </div>
       </div>
+
+      {/* 新增 / 修改推荐问 */}
+      {faqTarget && (
+        <RecommendQuestionDialog
+          initial={faqTarget}
+          onClose={() => setFaqTarget(null)}
+          onSubmit={(q) => {
+            saveFaq({ ...q, id: faqTarget.id });
+            setFaqTarget(null);
+          }}
+        />
+      )}
+
+      {/* 删除推荐问二次确认 */}
+      <Confirm
+        open={!!faqDelTarget}
+        title="删除推荐问"
+        content={`确定删除推荐问「${faqDelTarget?.title || ''}」吗？删除后该问题将不再出现在客户端首页。`}
+        danger
+        onCancel={() => setFaqDelTarget(null)}
+        onOk={() => removeFaq(faqDelTarget.id)}
+      />
+    </div>
+  );
+}
+
+// ========== 推荐问：新增 / 修改弹窗 ==========
+function RecommendQuestionDialog({ initial, onClose, onSubmit }) {
+  const isEdit = !!initial?.id;
+  const [title, setTitle] = useState(initial?.title || '');
+  const [sort, setSort] = useState(initial?.sort ?? 0);
+  const [enabled, setEnabled] = useState(isEdit ? !!initial.enabled : true);
+  const [always, setAlways] = useState(!!initial?.always);
+  const toast = useToast();
+
+  const submit = () => {
+    if (!title.trim()) {
+      toast.error('请填写推荐问标题');
+      return;
+    }
+    onSubmit({
+      title: title.trim(),
+      sort: Number(sort) || 0,
+      enabled,
+      always,
+    });
+  };
+
+  return (
+    <Modal
+      open
+      title={isEdit ? '修改推荐问' : '新增推荐问'}
+      onClose={onClose}
+      width={640}
+      footer={
+        <>
+          <button className="btn btn-default" onClick={onClose}>取消</button>
+          <button className="btn btn-primary" onClick={submit}>确认</button>
+        </>
+      }
+    >
+      <div style={{ padding: '4px 0' }}>
+        <FaqRow label="推荐问标题" required>
+          <div style={{ position: 'relative' }}>
+            <input
+              className="input"
+              style={{ paddingRight: 76 }}
+              maxLength={200}
+              placeholder="例如：帮我生成今日最新的盘前小结"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+            />
+            <span style={{
+              position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)',
+              fontSize: 12, color: '#9CA3AF', pointerEvents: 'none',
+            }}>
+              {title.length} / 200
+            </span>
+          </div>
+        </FaqRow>
+        <FaqRow label="排序" tip="数值越小越靠前；排序序号相同时，最新添加的排在前面">
+          <input
+            className="input"
+            type="number"
+            min={0}
+            value={sort}
+            onChange={(e) => setSort(e.target.value)}
+          />
+        </FaqRow>
+        <FaqRow label="是否启用">
+          <Toggle checked={enabled} onChange={setEnabled} />
+        </FaqRow>
+        <FaqRow label="是否始终推荐" tip="仅在推荐方式为随机时生效；开启后该问题每次都会出现">
+          <Toggle checked={always} onChange={setAlways} />
+        </FaqRow>
+      </div>
+    </Modal>
+  );
+}
+
+// 弹窗字段行：110px 标签列 + 通栏控件（无分隔线）
+function FaqRow({ label, required, tip, children }) {
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: '110px 1fr', alignItems: 'center', gap: 12, padding: '10px 0' }}>
+      <div style={{ fontSize: 13, color: '#4B5563', display: 'flex', alignItems: 'center' }}>
+        {required && <span style={{ color: '#EF4444', marginRight: 2 }}>*</span>}
+        <span>{label}</span>
+        {tip && <Tooltip text={tip} />}
+      </div>
+      <div>{children}</div>
     </div>
   );
 }
