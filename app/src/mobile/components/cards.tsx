@@ -1,4 +1,4 @@
-import { ChevronRight, MoreHorizontal } from 'lucide-react'
+import { ChevronRight, MessageCircle, MoreHorizontal, Plus } from 'lucide-react'
 
 import CharacterAvatar from '@/components/character-avatar'
 import FigmaIcon from '@/components/figma-icon'
@@ -11,35 +11,62 @@ import { cn } from '@/lib/cn'
 /** 技能卡片（内容对齐 PC 端技能中心） */
 export function SkillCard({
   skill,
+  installed,
+  onInstall,
+  onUse,
   onClick,
 }: {
   skill: Skill
+  installed: boolean
+  onInstall: () => void
+  onUse: () => void
   onClick: () => void
 }) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="flex w-full flex-col gap-2 rounded-[14px] bg-white px-4 py-3.5 text-left ring-1 ring-[rgba(0,0,0,0.04)] active:bg-[#fafbfd]"
-    >
-      <div className="flex flex-col">
-        <span className="text-ink truncate text-[16px] leading-[24px] font-semibold">
-          {skill.name}
-        </span>
-        <span className="text-sub text-[12px] leading-[18px]">{skill.owner}</span>
-      </div>
-      <p className="text-ink/60 line-clamp-2 text-[12px] leading-[19px]">{skill.desc}</p>
-      <div className="flex items-center justify-between">
-        <span className="text-brand rounded-[4px] bg-[rgba(24,94,200,0.06)] px-2 py-[2px] text-[11px] leading-[16px]">
-          {skillCategoryLabel(skill.category)}
-        </span>
-        <span className="flex items-center gap-2.5">
-          <Stat icon={cardIcons.star} value={skill.rating} />
-          <Stat icon={cardIcons.bookmark} value={String(skill.bookmarks)} />
-          <Stat icon={cardIcons.download} value={String(skill.downloads)} />
-        </span>
-      </div>
-    </button>
+    <article className="relative rounded-[14px] bg-white ring-1 ring-[rgba(0,0,0,0.04)]">
+      <button
+        type="button"
+        onClick={onClick}
+        className="flex w-full flex-col gap-2 rounded-[14px] px-4 py-3.5 text-left active:bg-[#fafbfd]"
+      >
+        <div className="flex flex-col pr-[52px]">
+          <span className="text-ink truncate text-[16px] leading-[24px] font-semibold">
+            {skill.name}
+          </span>
+          <span className="text-sub text-[12px] leading-[18px]">{skill.owner}</span>
+        </div>
+        <p className="text-ink/60 line-clamp-2 text-[12px] leading-[19px]">
+          {skill.desc}
+        </p>
+        <div className="flex items-center justify-between">
+          <span className="text-brand rounded-[4px] bg-[rgba(24,94,200,0.06)] px-2 py-[2px] text-[11px] leading-[16px]">
+            {skillCategoryLabel(skill.category)}
+          </span>
+          <span className="flex items-center gap-2.5">
+            <Stat icon={cardIcons.star} value={skill.rating} />
+            <Stat icon={cardIcons.bookmark} value={String(skill.bookmarks)} />
+            <Stat icon={cardIcons.download} value={String(skill.downloads)} />
+          </span>
+        </div>
+      </button>
+
+      <button
+        type="button"
+        aria-label={installed ? `使用${skill.name}` : `安装${skill.name}`}
+        onClick={(event) => {
+          event.stopPropagation()
+          if (installed) onUse()
+          else onInstall()
+        }}
+        className="text-ink absolute top-3.5 right-3 flex size-11 items-center justify-center rounded-full bg-[rgba(40,50,83,0.045)] transition-colors active:bg-[rgba(40,50,83,0.1)]"
+      >
+        {installed ? (
+          <MessageCircle className="size-[23px]" strokeWidth={1.8} />
+        ) : (
+          <Plus className="size-[25px]" strokeWidth={1.8} />
+        )}
+      </button>
+    </article>
   )
 }
 
