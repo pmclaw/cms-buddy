@@ -154,6 +154,9 @@ export function TenantEdit() {
       appSecret: '',
       robotId: '',
       webhookUrl: '',
+      // 推荐问设置：客户端首页展示的推荐问数量与推荐方式
+      recommendCount: 6,
+      recommendMode: 'fixed',
       recommendQuestions: [],
       hideNavMenus: [],
       status: '已上线',
@@ -174,6 +177,9 @@ export function TenantEdit() {
           appSecret: t.appSecret || '',
           robotId: t.robotId || '',
           webhookUrl: t.webhookUrl || '',
+          // 推荐问设置缺省补全：默认 6 条 + 固定
+          recommendCount: t.recommendCount ?? 6,
+          recommendMode: t.recommendMode || 'fixed',
           hideNavMenus: t.hideNavMenus || [],
         });
       }
@@ -235,7 +241,18 @@ export function TenantEdit() {
       setTab('system');
       return;
     }
-    upsertTenant(form);
+    // 推荐问设置：数量必须是 1-50 的整数（默认 6），方式缺省为「固定」
+    const recommendCount = Number(form.recommendCount);
+    if (!Number.isInteger(recommendCount) || recommendCount < 1 || recommendCount > 50) {
+      toast.error('推荐数量需为 1-50 的整数');
+      setTab('basic');
+      return;
+    }
+    upsertTenant({
+      ...form,
+      recommendCount,
+      recommendMode: form.recommendMode || 'fixed',
+    });
     toast.success(isEdit ? '修改成功' : '创建成功');
     navigate('/tenants');
   };
@@ -337,6 +354,55 @@ export function TenantEdit() {
                       onChange={(v) => set('spaceAdmins', v)}
                     />
                     <div className="help-text">支持填写多个 OA 账号（如 jiangchao5），将以多选标签形式展示</div>
+                  </FormRow>
+                  {/* 推荐问设置：管理参数，推荐数量默认 6、推荐方式默认「固定」 */}
+                  <FormRow label="推荐问设置">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 28, flexWrap: 'wrap' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <span style={{ fontSize: 13, color: '#4B5563', whiteSpace: 'nowrap' }}>推荐数量</span>
+                        <input
+                          className="input"
+                          type="number"
+                          min={1}
+                          max={50}
+                          style={{ width: 120 }}
+                          value={form.recommendCount ?? 6}
+                          onChange={(e) => set('recommendCount', e.target.value)}
+                        />
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <span style={{ fontSize: 13, color: '#4B5563', whiteSpace: 'nowrap' }}>推荐方式</span>
+                        <div style={{ display: 'flex', gap: 8 }}>
+                          {[{ key: 'fixed', label: '固定' }, { key: 'random', label: '随机' }].map((o) => {
+                            const active = (form.recommendMode || 'fixed') === o.key;
+                            return (
+                              <label
+                                key={o.key}
+                                style={{
+                                  padding: '6px 18px', cursor: 'pointer', fontSize: 13,
+                                  border: '1px solid ' + (active ? form.themeColor : '#E5E7EB'),
+                                  background: active ? '#FBF1E5' : '#fff',
+                                  color: active ? '#B87136' : '#6B7280',
+                                  borderRadius: 6, fontWeight: active ? 500 : 400,
+                                }}
+                              >
+                                <input
+                                  type="radio"
+                                  name="recommendMode"
+                                  style={{ display: 'none' }}
+                                  checked={active}
+                                  onChange={() => set('recommendMode', o.key)}
+                                />
+                                {o.label}
+                              </label>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="help-text">
+                      推荐数量为客户端首页展示的推荐问条数（默认 6）；「固定」按排序序号取前 N 条，「随机」每次随机抽取 N 条，「始终推荐」的问题每次都会出现。
+                    </div>
                   </FormRow>
                   <FormRow label="默认消息通道" required vertical>
                     <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
