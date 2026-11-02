@@ -3,6 +3,7 @@ import { HashRouter, Route, Routes } from 'react-router'
 import { ToastProvider } from '@/components/toast'
 import { AutomationProvider } from '@/lib/automation-store'
 import { DrawerProvider } from '@/lib/drawer'
+import { SkillInstallationProvider } from '@/lib/skill-installation'
 import { TaskDraftProvider } from '@/lib/task-draft'
 import { KeyboardProvider } from '@/lib/keyboard'
 import MobileKeyboard from '@/components/mobile-keyboard'
@@ -23,32 +24,34 @@ export default function MobileApp() {
     <ToastProvider>
       <KeyboardProvider>
         <TaskDraftProvider>
-          <AutomationProvider>
-            <HashRouter>
-              <div className="bg-page relative h-full overflow-clip">
-                <DrawerProvider>
-                  <Routes>
-                    <Route path="/" element={<TaskPage />} />
-                    <Route path="/task/:id" element={<TaskPage />} />
-                    <Route path="/experts" element={<ExpertsPage />} />
-                    <Route path="/experts/:id" element={<ExpertDetailPage />} />
-                    <Route path="/skills" element={<SkillsPage />} />
-                    <Route path="/skills/:id" element={<SkillDetailPage />} />
-                    <Route path="/automation" element={<AutomationPage />} />
-                    <Route path="/automation/templates" element={<AutomationPage />} />
-                    <Route path="/automation/new" element={<AutomationPage />} />
-                    <Route path="/automation/:id/edit" element={<AutomationPage />} />
-                    <Route
-                      path="/automation/:id/detail"
-                      element={<AutomationDetailPage />}
-                    />
-                    <Route path="*" element={<TaskPage />} />
-                  </Routes>
-                </DrawerProvider>
-                <MobileKeyboard />
-              </div>
-            </HashRouter>
-          </AutomationProvider>
+          <SkillInstallationProvider>
+            <AutomationProvider>
+              <HashRouter>
+                <div className="bg-page relative h-full overflow-clip">
+                  <DrawerProvider>
+                    <Routes>
+                      <Route path="/" element={<TaskPage />} />
+                      <Route path="/task/:id" element={<TaskPage />} />
+                      <Route path="/experts" element={<ExpertsPage />} />
+                      <Route path="/experts/:id" element={<ExpertDetailPage />} />
+                      <Route path="/skills" element={<SkillsPage />} />
+                      <Route path="/skills/:id" element={<SkillDetailPage />} />
+                      <Route path="/automation" element={<AutomationPage />} />
+                      <Route path="/automation/templates" element={<AutomationPage />} />
+                      <Route path="/automation/new" element={<AutomationPage />} />
+                      <Route path="/automation/:id/edit" element={<AutomationPage />} />
+                      <Route
+                        path="/automation/:id/detail"
+                        element={<AutomationDetailPage />}
+                      />
+                      <Route path="*" element={<TaskPage />} />
+                    </Routes>
+                  </DrawerProvider>
+                  <MobileKeyboard />
+                </div>
+              </HashRouter>
+            </AutomationProvider>
+          </SkillInstallationProvider>
         </TaskDraftProvider>
       </KeyboardProvider>
     </ToastProvider>

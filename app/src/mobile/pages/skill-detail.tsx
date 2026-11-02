@@ -1,15 +1,19 @@
+import { Plus, Sparkles, X } from 'lucide-react'
 import { useNavigate, useParams } from 'react-router'
 
 import { PhoneScreen, ScreenHeader } from '@/components/screen'
 import { expertExamples } from '@/data/experts'
 import { findSkill, skills } from '@/data/skills'
+import { useSkillInstallation } from '@/lib/skill-installation'
 import { useTaskDraft } from '@/lib/task-draft'
 
 export function SkillDetailPage() {
   const { id } = useParams()
   const navigate = useNavigate()
   const { draft, patch } = useTaskDraft()
+  const { installedIds, install, uninstall } = useSkillInstallation()
   const skill = findSkill(id ?? '') ?? skills[0]
+  const installed = installedIds.has(skill.id)
 
   return (
     <PhoneScreen>
@@ -41,20 +45,42 @@ export function SkillDetailPage() {
       </div>
 
       <footer className="bg-page shrink-0 px-4 pt-2 pb-5">
-        <button
-          type="button"
-          onClick={() => {
-            patch({
-              skills: draft.skills.includes(skill.name)
-                ? draft.skills
-                : [...draft.skills, skill.name],
-            })
-            navigate('/')
-          }}
-          className="bg-ink flex h-[48px] w-full items-center justify-center rounded-[14px] text-[16px] text-white"
-        >
-          试一试
-        </button>
+        {installed ? (
+          <div className="grid grid-cols-2 gap-3">
+            <button
+              type="button"
+              onClick={() => uninstall(skill.id)}
+              className="text-ink border-ink/15 flex h-[48px] items-center justify-center gap-1.5 rounded-[14px] border bg-white text-[16px] active:opacity-70"
+            >
+              <X className="size-[19px]" strokeWidth={2} />
+              卸载技能
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                patch({
+                  skills: draft.skills.includes(skill.name)
+                    ? draft.skills
+                    : [...draft.skills, skill.name],
+                })
+                navigate('/')
+              }}
+              className="bg-ink flex h-[48px] items-center justify-center gap-1.5 rounded-[14px] text-[16px] text-white active:opacity-80"
+            >
+              <Sparkles className="size-[19px]" strokeWidth={1.9} />
+              试一试
+            </button>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => install(skill.id)}
+            className="bg-ink flex h-[48px] w-full items-center justify-center gap-1.5 rounded-[14px] text-[16px] text-white active:opacity-80"
+          >
+            <Plus className="size-[20px]" strokeWidth={2} />
+            安装技能
+          </button>
+        )}
       </footer>
     </PhoneScreen>
   )

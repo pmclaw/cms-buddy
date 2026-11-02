@@ -10,6 +10,7 @@ import { skillCategories, skills } from '@/data/skills'
 import { cn } from '@/lib/cn'
 import { useDrawer } from '@/lib/drawer'
 import { useKeyboard } from '@/lib/keyboard'
+import { useSkillInstallation } from '@/lib/skill-installation'
 import { useTaskDraft } from '@/lib/task-draft'
 
 export function SkillsPage() {
@@ -17,11 +18,9 @@ export function SkillsPage() {
   const { openDrawer } = useDrawer()
   const { show, hide } = useKeyboard()
   const { patch } = useTaskDraft()
+  const { installedIds, install } = useSkillInstallation()
   const [keyword, setKeyword] = React.useState('')
   const [category, setCategory] = React.useState<string | null>(null)
-  const [installedMap, setInstalledMap] = React.useState<Record<string, boolean>>({
-    'market-trend': true,
-  })
 
   const list = skills.filter((skill) => {
     const hitKeyword =
@@ -79,10 +78,8 @@ export function SkillsPage() {
               <SkillCard
                 key={skill.id}
                 skill={skill}
-                installed={Boolean(installedMap[skill.id])}
-                onInstall={() =>
-                  setInstalledMap((current) => ({ ...current, [skill.id]: true }))
-                }
+                installed={installedIds.has(skill.id)}
+                onInstall={() => install(skill.id)}
                 onUse={() => {
                   patch({ skills: [skill.name] })
                   navigate('/')
