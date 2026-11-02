@@ -36,7 +36,6 @@ export default function ThinkingTimeline({
   onToggle,
   visibleCount,
   streaming = false,
-  elapsed,
   thinking,
   thinkingChars,
 }: {
@@ -48,8 +47,6 @@ export default function ThinkingTimeline({
   visibleCount?: number
   /** 任务执行中：思考过程强制展开并显示执行状态 */
   streaming?: boolean
-  /** 执行中展示的已用时，例如 3.2s */
-  elapsed?: string
   /** 思考过程全文，没有则不展示该子节点 */
   thinking?: string
   /** 思考过程已输出的字数（流式中） */
@@ -89,13 +86,13 @@ export default function ThinkingTimeline({
         {streaming ? (
           <>
             <span className="border-brand/25 border-t-brand size-[14px] shrink-0 animate-spin rounded-full border-[1.5px] motion-reduce:animate-none" />
-            <span className="text-sub text-[13px] leading-[22px]">
-              思考中 · 已用时 {elapsed}
+            <span className="text-sub text-[13px] leading-[22px] tabular-nums">
+              总耗时 {duration}
             </span>
           </>
         ) : (
           <>
-            <span className="text-sub text-[13px] leading-[22px]">
+            <span className="text-sub text-[13px] leading-[22px] tabular-nums">
               总耗时 <span className="text-ink/80">{duration}</span>
             </span>
             <ChevronDown

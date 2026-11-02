@@ -19,6 +19,7 @@ import {
   type ChatMessage,
 } from '@/data/chat'
 import { findExpertByName } from '@/data/experts'
+import { formatElapsedTime } from '@/lib/time'
 
 /** 提问时间：9月21日 15:41 */
 function formatAskTime(date = new Date()) {
@@ -101,6 +102,7 @@ function ConversationDetail({
   const [openMap, setOpenMap] = React.useState<Record<string, boolean>>({})
   const bottomRef = React.useRef<HTMLDivElement>(null)
   const bootstrapped = React.useRef(false)
+  const startedAtRef = React.useRef(0)
   // 当前流式输出的思考过程全文
   const thinkingRef = React.useRef('')
 
@@ -108,6 +110,7 @@ function ConversationDetail({
     (text: string, files: string[] = [], skills: string[] = [], expert: string | null = null) => {
       const stamp = Date.now()
       const thinking = buildThinking(text)
+      startedAtRef.current = stamp
       thinkingRef.current = thinking
       setMessages((list) => [
         ...list,
@@ -116,7 +119,7 @@ function ConversationDetail({
           id: `a-${stamp}`,
           role: 'assistant',
           thinkingLabel: '任务处理过程',
-          duration: '6s.280ms',
+          duration: '0s',
           steps: longTimeline,
           blocks: buildAnswer(text),
           disclaimer: true,
@@ -148,6 +151,7 @@ function ConversationDetail({
     const stepEvery = Math.max(1, Math.ceil(thinking.length / longTimeline.length))
     let chars = 0
     let ticks = 0
+    let completeTimer: number | undefined
     const timer = window.setInterval(() => {
       chars += 1
       ticks += 1
@@ -158,16 +162,32 @@ function ConversationDetail({
       window.clearInterval(timer)
       setThinkingChars(Number.POSITIVE_INFINITY)
       setRevealCount(longTimeline.length)
-      window.setTimeout(() => setAnswerVisible(true), 320)
+      completeTimer = window.setTimeout(() => {
+        const finalElapsed = Date.now() - startedAtRef.current
+        setElapsed(finalElapsed)
+        setMessages((list) =>
+          list.map((message) =>
+            message.id === streamingId
+              ? { ...message, duration: formatElapsedTime(finalElapsed) }
+              : message
+          )
+        )
+        setAnswerVisible(true)
+      }, 320)
     }, 14)
-    return () => window.clearInterval(timer)
+    return () => {
+      window.clearInterval(timer)
+      if (completeTimer !== undefined) window.clearTimeout(completeTimer)
+    }
   }, [streamingId])
 
-  // 执行中的已用时，让等待过程可见
+  // 以任务提交时间为起点累计，完成后由最终耗时冻结展示
   React.useEffect(() => {
     if (!streamingId || answerVisible) return
-    const start = Date.now()
-    const timer = window.setInterval(() => setElapsed(Date.now() - start), 100)
+    const updateElapsed = () =>
+      setElapsed(Date.now() - startedAtRef.current)
+    updateElapsed()
+    const timer = window.setInterval(updateElapsed, 100)
     return () => window.clearInterval(timer)
   }, [answerVisible, streamingId])
 
@@ -265,12 +285,15 @@ function ConversationDetail({
                 ) : null}
                 <ThinkingTimeline
                   label={message.thinkingLabel}
-                  duration={message.duration}
+                  duration={
+                    streaming && !answerVisible
+                      ? formatElapsedTime(elapsed)
+                      : message.duration
+                  }
                   steps={steps ?? []}
                   open={open && Boolean(steps)}
                   visibleCount={streaming ? revealCount : undefined}
                   streaming={streaming && !answerVisible}
-                  elapsed={`${(elapsed / 1000).toFixed(1)}s`}
                   thinking={message.thinking}
                   thinkingChars={
                     streaming && !answerVisible ? thinkingChars : undefined

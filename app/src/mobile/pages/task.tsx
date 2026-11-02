@@ -23,6 +23,7 @@ import {
   type Conversation,
 } from '@/data/chat'
 import { useDrawer } from '@/lib/drawer'
+import { formatElapsedTime } from '@/lib/time'
 
 /** 输入任意问题时生成的回答骨架（与 PC 端逻辑一致） */
 function buildAnswer(question: string): AnswerBlock[] {
@@ -77,7 +78,7 @@ export function TaskPage() {
             id: 'a-new',
             role: 'assistant',
             thinkingLabel: '任务处理过程',
-            duration: '6s.280ms',
+            duration: '0s',
             steps: longTimeline,
             blocks: buildAnswer(question),
             disclaimer: true,
@@ -92,15 +93,21 @@ export function TaskPage() {
   const [revealCount, setRevealCount] = React.useState(question ? 0 : Infinity)
   const [thinkingChars, setThinkingChars] = React.useState(0)
   const [elapsed, setElapsed] = React.useState(0)
+  const [completedDuration, setCompletedDuration] = React.useState<string | null>(
+    null
+  )
   const [answerVisible, setAnswerVisible] = React.useState(!question)
   const [openMap, setOpenMap] = React.useState<Record<string, boolean>>({})
   const bottomRef = React.useRef<HTMLDivElement>(null)
+  const startedAtRef = React.useRef(0)
 
   React.useEffect(() => {
     if (!question) return
+    startedAtRef.current = Date.now()
     setRevealCount(0)
     setThinkingChars(0)
     setElapsed(0)
+    setCompletedDuration(null)
     setAnswerVisible(false)
     setOpenMap({})
     const stepEvery = Math.max(1, Math.ceil(thinking.length / longTimeline.length))
@@ -119,7 +126,12 @@ export function TaskPage() {
       window.clearInterval(timer)
       setThinkingChars(Number.POSITIVE_INFINITY)
       setRevealCount(longTimeline.length)
-      completeTimer = window.setTimeout(() => setAnswerVisible(true), 320)
+      completeTimer = window.setTimeout(() => {
+        const finalElapsed = Date.now() - startedAtRef.current
+        setElapsed(finalElapsed)
+        setCompletedDuration(formatElapsedTime(finalElapsed))
+        setAnswerVisible(true)
+      }, 320)
     }, 14)
     return () => {
       window.clearInterval(timer)
@@ -129,8 +141,10 @@ export function TaskPage() {
 
   React.useEffect(() => {
     if (!question || answerVisible) return
-    const start = Date.now()
-    const timer = window.setInterval(() => setElapsed(Date.now() - start), 100)
+    const updateElapsed = () =>
+      setElapsed(Date.now() - startedAtRef.current)
+    updateElapsed()
+    const timer = window.setInterval(updateElapsed, 100)
     return () => window.clearInterval(timer)
   }, [answerVisible, question])
 
@@ -163,6 +177,7 @@ export function TaskPage() {
                 revealCount={revealCount}
                 thinkingChars={thinkingChars}
                 elapsed={elapsed}
+                completedDuration={completedDuration}
                 answerVisible={answerVisible}
                 openMap={openMap}
                 setOpenMap={setOpenMap}
@@ -230,6 +245,7 @@ function MessageBubble({
   revealCount,
   thinkingChars,
   elapsed,
+  completedDuration,
   answerVisible,
   openMap,
   setOpenMap,
@@ -240,6 +256,7 @@ function MessageBubble({
   revealCount: number
   thinkingChars: number
   elapsed: number
+  completedDuration: string | null
   answerVisible: boolean
   openMap: Record<string, boolean>
   setOpenMap: React.Dispatch<React.SetStateAction<Record<string, boolean>>>
@@ -262,12 +279,13 @@ function MessageBubble({
   return (
     <div className="flex flex-col">
       <ThinkingTimeline
-        duration={message.duration}
+        duration={
+          running ? formatElapsedTime(elapsed) : (completedDuration ?? message.duration)
+        }
         steps={steps ?? []}
         open={open && Boolean(steps)}
         visibleCount={streaming ? revealCount : undefined}
         streaming={running}
-        elapsed={`${(elapsed / 1000).toFixed(1)}s`}
         thinking={message.thinking}
         thinkingChars={running ? thinkingChars : undefined}
         onToggle={() => setOpenMap((map) => ({ ...map, [message.id]: !open }))}

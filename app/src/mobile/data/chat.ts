@@ -203,7 +203,7 @@ export const chartAnswer: ChatMessage = {
   id: 'a1',
   role: 'assistant',
   thinkingLabel: '已完成思考',
-  duration: '18s.708ms',
+  duration: '18s',
   blocks: [
     { kind: 'heading', text: '一、核心看点' },
     {
@@ -372,7 +372,7 @@ export const conversations: Conversation[] = [
     'task-auto-report',
     '自动日报整理',
     '把今天的会议纪要、数据看板整理成一份日报',
-    '4m05s',
+    '4m5s',
     [
       { kind: 'heading', text: '一、今日进展' },
       {
@@ -443,7 +443,7 @@ export const conversations: Conversation[] = [
         id: 'a1',
         role: 'assistant',
         thinkingLabel: '已完成思考',
-        duration: '12s.032ms',
+        duration: '12s',
         blocks: [
           { kind: 'heading', text: '一、现象：热度曲线的三个阶段' },
           {
@@ -474,7 +474,7 @@ export const conversations: Conversation[] = [
         id: 'a1',
         role: 'assistant',
         thinkingLabel: '已完成思考',
-        duration: '9s.415ms',
+        duration: '9s',
         blocks: [
           { kind: 'heading', text: '一、长期活力的三个支点' },
           {
@@ -499,7 +499,7 @@ export const conversations: Conversation[] = [
         id: 'a1',
         role: 'assistant',
         thinkingLabel: '已完成思考',
-        duration: '21s.276ms',
+        duration: '21s',
         blocks: [
           { kind: 'heading', text: '一、爆红样本的共同特征' },
           {
@@ -530,7 +530,7 @@ export const conversations: Conversation[] = [
         id: 'a1',
         role: 'assistant',
         thinkingLabel: '已完成思考',
-        duration: '14s.882ms',
+        duration: '14s',
         blocks: [
           { kind: 'heading', text: '一、转折点出现在「第一次功能复制」' },
           {

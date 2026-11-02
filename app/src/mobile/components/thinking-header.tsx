@@ -11,13 +11,11 @@ export default function ThinkingHeader({
   open,
   onToggle,
   streaming = false,
-  elapsed,
 }: {
   duration: string
   open: boolean
   onToggle: () => void
   streaming?: boolean
-  elapsed?: string
 }) {
   return (
     <button
@@ -35,13 +33,13 @@ export default function ThinkingHeader({
       {streaming ? (
         <>
           <span className="border-brand/25 border-t-brand size-[14px] shrink-0 animate-spin rounded-full border-[1.5px] motion-reduce:animate-none" />
-          <span className="text-sub text-[14px] leading-[22px]">
-            思考中 · 已用时 {elapsed}
+          <span className="text-sub text-[14px] leading-[22px] tabular-nums">
+            总耗时 {duration}
           </span>
         </>
       ) : (
         <>
-          <span className="text-sub text-[14px]">
+          <span className="text-sub text-[14px] tabular-nums">
             总耗时 <span className="text-ink/80">{duration}</span>
           </span>
           <ChevronDown
