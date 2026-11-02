@@ -31,11 +31,12 @@ export function PlusPanel({
   onOpenExpertPicker: () => void
 }) {
   const { draft, patch } = useTaskDraft()
+  const [filePickerOpen, setFilePickerOpen] = React.useState(false)
 
   const sources = [
     { label: '拍照', icon: Camera },
     { label: '图片', icon: Image },
-    { label: '手机文件', icon: FolderUp },
+    { label: '文件', icon: FolderUp },
   ]
 
   const rows = [
@@ -57,41 +58,86 @@ export function PlusPanel({
     },
   ]
 
-  return (
-    <BottomSheet open={open} onClose={onClose}>
-      <div className="px-4 pt-1 pb-5">
-        <div className="grid grid-cols-3 gap-2.5">
-          {sources.map((source) => (
-            <button
-              key={source.label}
-              type="button"
-              onClick={() => {
-                patch({ attachments: [...draft.attachments, `${source.label}_素材`] })
-                onClose()
-              }}
-              className="flex flex-col items-center gap-2 rounded-[14px] bg-[#f5f6f8] py-3.5"
-            >
-              <source.icon className="text-ink size-[26px]" strokeWidth={1.7} />
-              <span className="text-ink text-[13px]">{source.label}</span>
-            </button>
-          ))}
-        </div>
+  function addAttachment(label: string) {
+    patch({ attachments: [...draft.attachments, `${label}_素材`] })
+    setFilePickerOpen(false)
+    onClose()
+  }
 
-        <div className="mt-4 flex flex-col">
-          {rows.map((row) => (
-            <button
-              key={row.label}
-              type="button"
-              onClick={row.onClick}
-              className="active:bg-ink/5 flex h-[52px] items-center gap-3 rounded-[10px] px-1"
-            >
-              <row.icon className="text-ink size-[20px]" strokeWidth={1.8} />
-              <span className="text-ink flex-1 text-left text-[16px]">{row.label}</span>
-              <ChevronRight className="text-ink/30 size-[18px]" strokeWidth={2} />
-            </button>
-          ))}
+  return (
+    <BottomSheet
+      open={open}
+      onClose={() => {
+        setFilePickerOpen(false)
+        onClose()
+      }}
+      hideHeader={filePickerOpen}
+    >
+      {filePickerOpen ? (
+        <div className="min-h-[260px] bg-[#f2f2f7] px-4 pt-5 pb-6">
+          <div className="overflow-hidden rounded-[16px] bg-white">
+            {['手机文件', '微信文件'].map((label) => (
+              <button
+                key={label}
+                type="button"
+                onClick={() => addAttachment(label)}
+                className="text-ink active:bg-ink/5 flex h-[60px] w-full items-center justify-center border-b border-[rgba(40,50,83,0.08)] text-[17px] last:border-0"
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              setFilePickerOpen(false)
+              onClose()
+            }}
+            className="text-ink active:bg-ink/5 mt-3 flex h-[52px] w-full items-center justify-center rounded-[16px] bg-white text-[17px]"
+          >
+            取消
+          </button>
         </div>
-      </div>
+      ) : (
+        <div className="px-4 pt-1 pb-5">
+          <div className="grid grid-cols-3 gap-2.5">
+            {sources.map((source) => (
+              <button
+                key={source.label}
+                type="button"
+                onClick={() => {
+                  if (source.label === '文件') {
+                    setFilePickerOpen(true)
+                    return
+                  }
+                  addAttachment(source.label)
+                }}
+                className="active:bg-ink/5 flex flex-col items-center gap-2 rounded-[14px] bg-[#f5f6f8] py-3.5"
+              >
+                <source.icon className="text-ink size-[26px]" strokeWidth={1.7} />
+                <span className="text-ink text-[13px]">{source.label}</span>
+              </button>
+            ))}
+          </div>
+
+          <div className="mt-4 flex flex-col">
+            {rows.map((row) => (
+              <button
+                key={row.label}
+                type="button"
+                onClick={row.onClick}
+                className="active:bg-ink/5 flex h-[52px] items-center gap-3 rounded-[10px] px-1"
+              >
+                <row.icon className="text-ink size-[20px]" strokeWidth={1.8} />
+                <span className="text-ink flex-1 text-left text-[16px]">
+                  {row.label}
+                </span>
+                <ChevronRight className="text-ink/30 size-[18px]" strokeWidth={2} />
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
     </BottomSheet>
   )
 }
