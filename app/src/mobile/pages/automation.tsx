@@ -11,6 +11,7 @@ import { templates, type AutomationTask } from '@/data/tasks'
 import { useAutomation } from '@/lib/automation-store'
 import { useDrawer } from '@/lib/drawer'
 import { cn } from '@/lib/cn'
+import { useTaskDraft } from '@/lib/task-draft'
 
 export function AutomationPage() {
   const location = useLocation()
@@ -20,7 +21,9 @@ export function AutomationPage() {
   const toast = useToast()
   const { openDrawer } = useDrawer()
   const { tasks, remove, toggleStatus, runOnce } = useAutomation()
+  const { reset: resetTaskDraft, patch: patchTaskDraft } = useTaskDraft()
 
+  const [addMenuOpen, setAddMenuOpen] = React.useState(false)
   const [menuTask, setMenuTask] = React.useState<AutomationTask | null>(null)
   const [deleting, setDeleting] = React.useState<AutomationTask | null>(null)
 
@@ -133,7 +136,7 @@ export function AutomationPage() {
         <button
           type="button"
           aria-label="创建任务"
-          onClick={() => navigate('/automation/new')}
+          onClick={() => setAddMenuOpen(true)}
           className="bg-ink absolute right-4 bottom-[78px] flex size-[56px] items-center justify-center rounded-full text-white shadow-[0_10px_24px_rgba(40,50,83,0.28)]"
         >
           <Plus className="size-[26px]" strokeWidth={2.2} />
@@ -141,6 +144,48 @@ export function AutomationPage() {
       )}
 
       <TabBar active="automation" />
+
+      {/* 新建任务方式选择 */}
+      <BottomSheet
+        open={addMenuOpen}
+        onClose={() => setAddMenuOpen(false)}
+        hideHeader
+        className="bg-page pb-3"
+      >
+        <div className="px-3 pt-3">
+          <div className="overflow-hidden rounded-[14px] bg-white">
+            <button
+              type="button"
+              onClick={() => {
+                setAddMenuOpen(false)
+                navigate('/automation/new')
+              }}
+              className="text-ink flex h-[58px] w-full items-center justify-center border-b border-[rgba(40,50,83,0.07)] text-[17px]"
+            >
+              自定义添加
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setAddMenuOpen(false)
+                resetTaskDraft()
+                patchTaskDraft({ skills: ['创建自动化任务'] })
+                navigate('/')
+              }}
+              className="text-ink flex h-[58px] w-full items-center justify-center text-[17px]"
+            >
+              以对话方式添加
+            </button>
+          </div>
+          <button
+            type="button"
+            onClick={() => setAddMenuOpen(false)}
+            className="text-ink mt-2 flex h-[58px] w-full items-center justify-center rounded-[14px] bg-white text-[17px] font-medium"
+          >
+            取消
+          </button>
+        </div>
+      </BottomSheet>
 
       {/* 任务操作面板（对齐设计稿 12：标题 + 操作行 + 取消） */}
       <BottomSheet
