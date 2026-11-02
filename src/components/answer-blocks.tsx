@@ -1,4 +1,4 @@
-import { Copy, ExternalLink, ThumbsDown, ThumbsUp } from 'lucide-react'
+import { Copy, Download, ThumbsDown, ThumbsUp } from 'lucide-react'
 
 import FileTypeIcon from '@/components/file-type-icon'
 import RichText from '@/components/rich-text'
@@ -124,7 +124,7 @@ function downloadText(name: string, content: string, type: string) {
   URL.revokeObjectURL(url)
 }
 
-/** 生成文件卡片：技能产出物，点「浏览」用浏览器新标签页打开。 */
+/** 生成文件卡片：技能产出物，卡片主体用于浏览，右侧按钮用于下载。 */
 type GeneratedFile = { name: string; size: string; content: string; type: string }
 
 function buildGeneratedFiles(
@@ -221,23 +221,30 @@ export default function AnswerBlocks({
         {generatedFiles.map((file) => (
           <div
             key={file.name}
-            className="flex items-center gap-3 rounded-[14px] bg-[rgba(40,50,83,0.05)] px-4 py-3"
+            className="flex items-center rounded-[14px] bg-[rgba(40,50,83,0.05)] transition-colors hover:bg-[rgba(40,50,83,0.07)]"
           >
-            <FileTypeIcon name={file.name} size={32} className="shrink-0" />
-            <div className="min-w-0 flex-1">
-              <p className="text-ink truncate text-[15px] leading-[22px] font-medium">
-                {file.name}
-              </p>
-              <p className="text-sub text-[13px] leading-[20px]">{file.size}</p>
-            </div>
             <button
               type="button"
               aria-label={`浏览 ${file.name}`}
-              title="浏览"
               onClick={() => openFileInNewTab(file)}
-              className="text-sub hover:text-ink shrink-0 cursor-pointer transition-colors"
+              className="flex min-w-0 flex-1 cursor-pointer items-center gap-3 py-3 pl-4 text-left"
             >
-              <ExternalLink className="size-[18px]" strokeWidth={1.7} />
+              <FileTypeIcon name={file.name} size={32} className="shrink-0" />
+              <div className="min-w-0 flex-1">
+                <p className="text-ink truncate text-[15px] leading-[22px] font-medium">
+                  {file.name}
+                </p>
+                <p className="text-sub text-[13px] leading-[20px]">{file.size}</p>
+              </div>
+            </button>
+            <button
+              type="button"
+              aria-label={`下载 ${file.name}`}
+              title="下载"
+              onClick={() => downloadText(file.name, file.content, file.type)}
+              className="text-sub hover:text-ink mr-3 ml-2 shrink-0 cursor-pointer rounded-[8px] p-1 transition-colors"
+            >
+              <Download className="size-[19px]" strokeWidth={1.8} />
             </button>
           </div>
         ))}

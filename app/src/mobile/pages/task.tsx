@@ -158,6 +158,7 @@ export function TaskPage() {
               <MessageBubble
                 key={message.id}
                 message={message}
+                title={conversation.title}
                 streaming={Boolean(question) && message.role === 'assistant'}
                 revealCount={revealCount}
                 thinkingChars={thinkingChars}
@@ -224,6 +225,7 @@ export function TaskPage() {
 
 function MessageBubble({
   message,
+  title,
   streaming,
   revealCount,
   thinkingChars,
@@ -233,6 +235,7 @@ function MessageBubble({
   setOpenMap,
 }: {
   message: ChatMessage
+  title: string
   streaming: boolean
   revealCount: number
   thinkingChars: number
@@ -275,7 +278,11 @@ function MessageBubble({
           正在生成回答…
         </div>
       ) : (
-        <AnswerBlocks blocks={message.blocks} disclaimer={message.disclaimer} />
+        <AnswerBlocks
+          blocks={message.blocks}
+          disclaimer={message.disclaimer}
+          title={title}
+        />
       )}
     </div>
   )
