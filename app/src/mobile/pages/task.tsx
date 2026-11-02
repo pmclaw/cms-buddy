@@ -14,6 +14,7 @@ import { PhoneScreen, ScreenHeader, TabBar } from '@/components/screen'
 import ThinkingTimeline from '@/components/thinking-timeline'
 import { assets } from '@/data/assets'
 import {
+  buildThinking,
   findConversation,
   longTimeline,
   suggestedPrompts,
@@ -54,6 +55,10 @@ export function TaskPage() {
   const navigate = useNavigate()
   const { openDrawer } = useDrawer()
   const question = searchParams.get('q')
+  const thinking = React.useMemo(
+    () => (question ? buildThinking(question) : ''),
+    [question]
+  )
 
   const [plusOpen, setPlusOpen] = React.useState(false)
   const [skillOpen, setSkillOpen] = React.useState(false)
@@ -76,14 +81,17 @@ export function TaskPage() {
             steps: longTimeline,
             blocks: buildAnswer(question),
             disclaimer: true,
+            thinking,
           },
         ],
       }
     }
     return id ? (findConversation(id) ?? null) : null
-  }, [id, question])
+  }, [id, question, thinking])
 
   const [revealCount, setRevealCount] = React.useState(question ? 0 : Infinity)
+  const [thinkingChars, setThinkingChars] = React.useState(0)
+  const [elapsed, setElapsed] = React.useState(0)
   const [answerVisible, setAnswerVisible] = React.useState(!question)
   const [openMap, setOpenMap] = React.useState<Record<string, boolean>>({})
   const bottomRef = React.useRef<HTMLDivElement>(null)
@@ -91,18 +99,40 @@ export function TaskPage() {
   React.useEffect(() => {
     if (!question) return
     setRevealCount(0)
+    setThinkingChars(0)
+    setElapsed(0)
     setAnswerVisible(false)
-    let index = 0
+    setOpenMap({})
+    const stepEvery = Math.max(1, Math.ceil(thinking.length / longTimeline.length))
+    let chars = 0
+    let ticks = 0
+    let completeTimer: number | undefined
     const timer = window.setInterval(() => {
-      index += 1
-      setRevealCount(index)
-      if (index >= longTimeline.length) {
-        window.clearInterval(timer)
-        window.setTimeout(() => setAnswerVisible(true), 300)
-      }
-    }, 180)
+      chars += 1
+      ticks += 1
+      setThinkingChars(chars)
+      setRevealCount(
+        Math.min(Math.floor(ticks / stepEvery) + 1, longTimeline.length)
+      )
+      if (chars < thinking.length) return
+
+      window.clearInterval(timer)
+      setThinkingChars(Number.POSITIVE_INFINITY)
+      setRevealCount(longTimeline.length)
+      completeTimer = window.setTimeout(() => setAnswerVisible(true), 320)
+    }, 14)
+    return () => {
+      window.clearInterval(timer)
+      if (completeTimer !== undefined) window.clearTimeout(completeTimer)
+    }
+  }, [question, thinking])
+
+  React.useEffect(() => {
+    if (!question || answerVisible) return
+    const start = Date.now()
+    const timer = window.setInterval(() => setElapsed(Date.now() - start), 100)
     return () => window.clearInterval(timer)
-  }, [question])
+  }, [answerVisible, question])
 
   React.useEffect(() => {
     if (!question) return
@@ -130,6 +160,8 @@ export function TaskPage() {
                 message={message}
                 streaming={Boolean(question) && message.role === 'assistant'}
                 revealCount={revealCount}
+                thinkingChars={thinkingChars}
+                elapsed={elapsed}
                 answerVisible={answerVisible}
                 openMap={openMap}
                 setOpenMap={setOpenMap}
@@ -194,6 +226,8 @@ function MessageBubble({
   message,
   streaming,
   revealCount,
+  thinkingChars,
+  elapsed,
   answerVisible,
   openMap,
   setOpenMap,
@@ -201,6 +235,8 @@ function MessageBubble({
   message: ChatMessage
   streaming: boolean
   revealCount: number
+  thinkingChars: number
+  elapsed: number
   answerVisible: boolean
   openMap: Record<string, boolean>
   setOpenMap: React.Dispatch<React.SetStateAction<Record<string, boolean>>>
@@ -216,7 +252,9 @@ function MessageBubble({
   }
 
   const steps = message.steps
-  const open = openMap[message.id] ?? Boolean(steps)
+  const running = streaming && !answerVisible
+  // 执行中展开；回答完成后连同思考过程一起收起，点击可再展开
+  const open = openMap[message.id] ?? Boolean(steps && running)
 
   return (
     <div className="flex flex-col">
@@ -225,9 +263,13 @@ function MessageBubble({
         steps={steps ?? []}
         open={open && Boolean(steps)}
         visibleCount={streaming ? revealCount : undefined}
+        streaming={running}
+        elapsed={`${(elapsed / 1000).toFixed(1)}s`}
+        thinking={message.thinking}
+        thinkingChars={running ? thinkingChars : undefined}
         onToggle={() => setOpenMap((map) => ({ ...map, [message.id]: !open }))}
       />
-      {streaming && !answerVisible ? (
+      {running ? (
         <div className="text-sub mt-2 flex items-center gap-2 text-[13px]">
           <span className="bg-brand/60 size-[6px] animate-pulse rounded-full" />
           正在生成回答…
