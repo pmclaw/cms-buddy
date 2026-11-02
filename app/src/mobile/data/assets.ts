@@ -9,14 +9,11 @@ import avatarZhaoxiaoju from '@/assets/figma/avatar-zhaoxiaoju.png'
 import emptyState from '@/assets/figma/empty-state.png'
 import heroMascot from '@/assets/figma/hero-mascot.png'
 import iconAutomation from '@/assets/figma/icon-automation.svg'
-import iconBookmark from '@/assets/figma/icon-bookmark.svg'
-import iconDownload from '@/assets/figma/icon-download.svg'
 import iconExpert from '@/assets/figma/icon-expert.svg'
 import iconFeedback from '@/assets/figma/icon-feedback.png'
 import iconJuli from '@/assets/figma/icon-juli.png'
 import iconNewTask from '@/assets/figma/icon-newtask.svg'
 import iconSkills from '@/assets/figma/icon-skills.svg'
-import iconStar from '@/assets/figma/icon-star.svg'
 import iconWechatwork from '@/assets/figma/icon-wechatwork.png'
 import logo from '@/assets/figma/logo.svg'
 
@@ -35,13 +32,6 @@ export const navIcons = {
   skills: iconSkills,
   expert: iconExpert,
   automation: iconAutomation,
-} as const
-
-/** 技能卡片底部的小图标 */
-export const cardIcons = {
-  star: iconStar,
-  bookmark: iconBookmark,
-  download: iconDownload,
 } as const
 
 /**

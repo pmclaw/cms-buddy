@@ -1,8 +1,7 @@
 import { ChevronRight, MessageCircle, MoreHorizontal, Plus } from 'lucide-react'
 
 import CharacterAvatar from '@/components/character-avatar'
-import FigmaIcon from '@/components/figma-icon'
-import { cardIcons } from '@/data/assets'
+import { SkillMetrics } from '@/components/skill-metrics'
 import { skillCategoryLabel, type Skill } from '@/data/skills'
 import type { Expert } from '@/data/experts'
 import type { AutomationTask } from '@/data/tasks'
@@ -42,11 +41,7 @@ export function SkillCard({
           <span className="text-brand rounded-[4px] bg-[rgba(24,94,200,0.06)] px-2 py-[2px] text-[11px] leading-[16px]">
             {skillCategoryLabel(skill.category)}
           </span>
-          <span className="flex items-center gap-2.5">
-            <Stat icon={cardIcons.star} value={skill.rating} />
-            <Stat icon={cardIcons.bookmark} value={String(skill.bookmarks)} />
-            <Stat icon={cardIcons.download} value={String(skill.downloads)} />
-          </span>
+          <SkillMetrics skill={skill} />
         </div>
       </button>
 
@@ -67,15 +62,6 @@ export function SkillCard({
         )}
       </button>
     </article>
-  )
-}
-
-function Stat({ icon, value }: { icon: string; value: string }) {
-  return (
-    <span className="flex items-center gap-1">
-      <FigmaIcon src={icon} size={13} />
-      <span className="text-ink/40 text-[11px] leading-none">{value}</span>
-    </span>
   )
 }
 
