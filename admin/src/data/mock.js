@@ -1596,6 +1596,11 @@ export const qaRecords = [
     cloudCompute: '0.86', intranetCompute: '0.12',
     status: '正常', firstTokenMs: 820, totalTimeMs: 8420,
     model: 'DeepSeekV4', tokenCount: 3420, errorMsg: '',
+    // 是否下载文件：有下载明细即「是」，弹窗展示文件名称与下载时间
+    downloads: [
+      { name: '贵州茅台个股诊断报告.xlsx', time: '2026-08-29 09:33:02' },
+      { name: '白酒板块估值对比.xlsx', time: '2026-08-29 09:34:26' },
+    ],
   },
   {
     id: 'QR002', type: 'qa',
@@ -1634,6 +1639,9 @@ export const qaRecords = [
     cloudCompute: '1.05', intranetCompute: '0.18',
     status: '正常', firstTokenMs: 980, totalTimeMs: 11540,
     model: 'DeepSeekV4', tokenCount: 4860, errorMsg: '',
+    downloads: [
+      { name: '高净值客户季度专属服务报告.docx', time: '2026-08-29 09:01:38' },
+    ],
   },
   {
     id: 'QR004', type: 'qa',
@@ -1671,6 +1679,9 @@ export const qaRecords = [
     cloudCompute: '0.93', intranetCompute: '0.14',
     status: '正常', firstTokenMs: 760, totalTimeMs: 9380,
     model: 'DeepSeekV4', tokenCount: 3540, errorMsg: '',
+    downloads: [
+      { name: '半导体板块异动分析简报.pdf', time: '2026-08-28 15:19:42' },
+    ],
   },
   {
     id: 'QR006', type: 'qa',
@@ -1923,6 +1934,9 @@ export const autoTaskRecords = [
     status: '接口报错', firstTokenMs: 980, totalTimeMs: 14820,
     model: 'DeepSeekV4', tokenCount: 3820, errorMsg: 'mx_research 接口429限流，重试2次后仍失败，2只标的未完成',
     retryCount: 2,
+    downloads: [
+      { name: '自选股研报观点汇总_20260828.pdf', time: '2026-08-28 18:02:11' },
+    ],
   },
   {
     id: 'AR005', type: 'auto', taskName: '私享重要事件提醒',
@@ -1963,6 +1977,10 @@ export const autoTaskRecords = [
     status: '超时', firstTokenMs: 1560, totalTimeMs: 64500,
     model: 'DeepSeekV4', tokenCount: 12600, errorMsg: '批量生成42份报告，其中12份模型生成超时，已安排自动补偿',
     retryCount: 1,
+    downloads: [
+      { name: '月度资产报告_202608.xlsx', time: '2026-08-28 09:01:27' },
+      { name: '高净值客户资产概览_202608.xlsx', time: '2026-08-28 09:01:55' },
+    ],
   },
   {
     id: 'AR007', type: 'auto', taskName: '招小顾每日持仓诊断',

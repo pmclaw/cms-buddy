@@ -1,6 +1,6 @@
 // 任务执行记录：Tab（主动提问 / 自动化任务）+ 下拉筛选 + 关键词搜索 + 明细表格 + 双弹窗
 // 列表字段：任务指令(40字/2行) / 操作用户 / 执行时间 / 完整回答(40字截断·2行) / 所属空间 / 执行渠道 /
-//          技能与工具调用(调用步骤弹窗) / 用户所属部门 / 用户反馈(赞/踩+建议·截断展开) / 算力(云上·内网) / 执行状态 / 首token耗时 / 完整回答耗时
+//          技能与工具调用(调用步骤弹窗) / 用户所属部门 / 是否下载文件(是·查看详情弹窗) / 用户反馈(赞/踩+建议·截断展开) / 算力(云上·内网) / 执行状态 / 首token耗时 / 完整回答耗时
 import React, { useMemo, useState } from 'react';
 import { Icon, Empty, Tabs } from '../../components/Common.jsx';
 import { Tag } from '../../components/Tag.jsx';
@@ -131,6 +131,7 @@ export function TaskRecordList() {
   const [pageSize, setPageSize] = useState(10);
   const [answerDlg, setAnswerDlg] = useState(null); // 完整回答弹窗
   const [stepsDlg, setStepsDlg] = useState(null);   // 技能与工具调用步骤弹窗
+  const [downloadsDlg, setDownloadsDlg] = useState(null); // 下载文件明细弹窗
 
   const source = tab === 'qa' ? qaRecords : autoTaskRecords;
 
@@ -306,7 +307,7 @@ export function TaskRecordList() {
 
         {/* 明细表格 */}
         <div className="table-wrap" style={{ overflowX: 'auto' }}>
-          <table className="table" style={{ minWidth: 1610, borderCollapse: 'separate', borderSpacing: 0 }}>
+          <table className="table" style={{ minWidth: 1720, borderCollapse: 'separate', borderSpacing: 0 }}>
             <thead>
               <tr>
                 <th className="sticky-col" style={{ minWidth: 220 }}>任务指令</th>
@@ -317,6 +318,7 @@ export function TaskRecordList() {
                 <th style={{ minWidth: 100 }}>{isAuto ? '执行渠道' : '提问渠道'}</th>
                 <th style={{ minWidth: 100 }}>技能与工具调用</th>
                 <th style={{ minWidth: 110 }}>用户所属部门</th>
+                <th style={{ minWidth: 110 }}>是否下载文件</th>
                 <th style={{ minWidth: 240 }}>用户反馈</th>
                 <th style={{ minWidth: 100 }}>算力通道</th>
                 <th style={{ minWidth: 100 }}>token总消耗</th>
@@ -328,7 +330,7 @@ export function TaskRecordList() {
             <tbody>
               {paged.length === 0 && (
                 <tr>
-                  <td colSpan={14}>
+                  <td colSpan={15}>
                     <Empty icon="🗒️" tip={keyword || space || channel || status || timeStart || timeEnd || dept || feedback ? '未匹配到执行记录，可调整筛选条件' : '暂无执行记录'} />
                   </td>
                 </tr>
@@ -387,6 +389,23 @@ export function TaskRecordList() {
                   </td>
                   {/* 用户所属部门 */}
                   <td style={{ fontSize: 12, color: '#6B7280', whiteSpace: 'nowrap' }}>{r.userDept}</td>
+                  {/* 是否下载文件：是 → 提供「查看详情」下载明细入口 */}
+                  <td style={{ whiteSpace: 'nowrap' }}>
+                    {r.downloads && r.downloads.length > 0 ? (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <span style={{ fontSize: 13, color: '#1F2937' }}>是</span>
+                        <span
+                          className="link"
+                          style={{ fontSize: 12, whiteSpace: 'nowrap' }}
+                          onClick={() => setDownloadsDlg(r)}
+                        >
+                          查看详情
+                        </span>
+                      </div>
+                    ) : (
+                      <span style={{ fontSize: 13, color: '#6B7280' }}>否</span>
+                    )}
+                  </td>
                   {/* 用户反馈：赞/踩 + 建议（截断可展开） */}
                   <FeedbackCell fb={r.feedback} />
                   {/* 算力通道 */}
@@ -423,6 +442,8 @@ export function TaskRecordList() {
       {answerDlg && <AnswerDialog record={answerDlg} onClose={() => setAnswerDlg(null)} />}
       {/* 技能与工具调用步骤弹窗 */}
       {stepsDlg && <StepsDialog record={stepsDlg} onClose={() => setStepsDlg(null)} />}
+      {/* 下载文件明细弹窗 */}
+      {downloadsDlg && <DownloadsDialog record={downloadsDlg} onClose={() => setDownloadsDlg(null)} />}
     </div>
   );
 }
@@ -553,6 +574,53 @@ function StepsDialog({ record: r, onClose }) {
               </div>
             </div>
           ))}
+        </div>
+      </div>
+    </Modal>
+  );
+}
+
+// ========== 下载文件明细弹窗 ==========
+// 弹窗标题 = 任务名称（主动提问记录无任务名称时以任务指令前 28 字代替）
+function DownloadsDialog({ record: r, onClose }) {
+  const files = r.downloads || [];
+  const title = r.taskName || previewAnswer(r.instruction, 28) || '下载文件明细';
+
+  return (
+    <Modal
+      open
+      title={title}
+      onClose={onClose}
+      width={640}
+      footer={<button className="btn btn-primary" onClick={onClose}>关闭</button>}
+    >
+      <div>
+        <div style={{ fontSize: 12, color: '#9CA3AF', marginBottom: 10 }}>
+          共 {files.length} 个文件
+        </div>
+        <div className="table-wrap">
+          <table className="table">
+            <thead>
+              <tr>
+                <th>文件名称</th>
+                <th style={{ width: 180 }}>下载时间</th>
+              </tr>
+            </thead>
+            <tbody>
+              {files.length === 0 ? (
+                <tr>
+                  <td colSpan={2}>
+                    <Empty icon="📁" tip="暂无下载文件" />
+                  </td>
+                </tr>
+              ) : files.map((f, i) => (
+                <tr key={i}>
+                  <td style={{ fontSize: 13, color: '#1F2937', wordBreak: 'break-all' }}>{f.name}</td>
+                  <td style={{ fontSize: 12, color: '#6B7280', whiteSpace: 'nowrap' }}>{f.time}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
     </Modal>
