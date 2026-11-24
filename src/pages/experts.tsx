@@ -31,6 +31,7 @@ const smartAssistants = [
     tint: '#fdf3f2',
     avatar: zhaoxiaoguHead,
     session: zhaoxiaoguSession,
+    displayWidth: 1028,
   },
   {
     id: 'zhaoxiaoju',
@@ -40,6 +41,7 @@ const smartAssistants = [
     tint: '#f6f2fa',
     avatar: zhaoxiaojuHead,
     session: zhaoxiaojuSession,
+    displayWidth: 852,
   },
   {
     id: 'zhaoxiaoshu',
@@ -49,6 +51,7 @@ const smartAssistants = [
     tint: '#fdf3f2',
     avatar: zhaoxiaoshuHead,
     session: zhaoxiaoshuSession,
+    displayWidth: 1200,
   },
 ] as const
 
@@ -142,7 +145,8 @@ export default function ExpertsPage() {
             src={selectedAssistant.session}
             alt={`${selectedAssistant.name}独立助理会话`}
             draggable={false}
-            className="mx-auto block w-full max-w-[1200px] select-none"
+            className="mx-auto block h-auto max-w-full select-none"
+            style={{ width: selectedAssistant.displayWidth }}
           />
         </section>
       ) : (
