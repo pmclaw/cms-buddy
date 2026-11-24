@@ -139,7 +139,7 @@ export default function ExpertsPage() {
       {selectedAssistant ? (
         <section
           aria-label={`${selectedAssistant.name}独立助理会话`}
-          className="min-h-0 flex-1 px-8 pb-8"
+          className="min-h-0 flex-1 px-8 pt-6 pb-8"
         >
           <img
             src={selectedAssistant.session}
@@ -151,7 +151,7 @@ export default function ExpertsPage() {
         </section>
       ) : (
         <>
-          <div className="flex flex-wrap items-center gap-2 px-8 pb-3">
+          <div className="flex flex-wrap items-center gap-2 px-8 pt-6 pb-3">
             {expertCategories.map((item) => {
               const isActive = category === item.id
               return (
