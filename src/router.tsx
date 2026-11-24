@@ -55,6 +55,11 @@ export const router = createBrowserRouter(
           lazy: async () => ({ Component: (await import('@/pages/experts')).default }),
         },
         {
+          path: 'experts/:assistantId',
+          HydrateFallback,
+          lazy: async () => ({ Component: (await import('@/pages/experts')).default }),
+        },
+        {
           path: 'automation',
           HydrateFallback,
           lazy: async () => ({

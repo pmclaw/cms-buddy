@@ -24,8 +24,8 @@ type NavItem = {
 const navItems: NavItem[] = [
   { to: '/', label: '新任务', icon: navIcons.newTask, end: true, neverActive: true },
   { to: '/skills', label: '技能中心', icon: navIcons.skills },
-  { to: '/experts', label: '专家助理', icon: navIcons.expert },
   { to: '/automation', label: '自动化任务', icon: navIcons.automation },
+  { to: '/experts', label: '专家助理', icon: navIcons.expert, end: true },
 ]
 
 export default function Sidebar() {

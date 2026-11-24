@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { useNavigate } from 'react-router'
+import { useNavigate, useParams } from 'react-router'
 
 import zhaoxiaoguHead from '@/assets/smart-assistants/zhaoxiaogu-head.png'
 import zhaoxiaoguSession from '@/assets/smart-assistants/zhaoxiaogu-session.png'
@@ -57,13 +57,13 @@ const smartAssistants = [
 
 export default function ExpertsPage() {
   const navigate = useNavigate()
+  const { assistantId } = useParams()
   const [keyword, setKeyword] = React.useState('')
   const [category, setCategory] = React.useState<string | null>(null)
   const [active, setActive] = React.useState<Expert | null>(null)
-  const [activeAssistant, setActiveAssistant] = React.useState<string | null>(null)
 
   const selectedAssistant = smartAssistants.find(
-    (assistant) => assistant.id === activeAssistant
+    (assistant) => assistant.id === assistantId
   )
 
   const list = experts.filter((expert) => {
@@ -83,7 +83,7 @@ export default function ExpertsPage() {
           className="flex items-center gap-1 rounded-full bg-[#f7f8fc] p-1"
         >
           {smartAssistants.map((assistant) => {
-            const isActive = activeAssistant === assistant.id
+            const isActive = assistantId === assistant.id
             return (
               <button
                 key={assistant.id}
@@ -95,8 +95,8 @@ export default function ExpertsPage() {
                     : `打开${assistant.name}独立助理`
                 }
                 onClick={() =>
-                  setActiveAssistant((current) =>
-                    current === assistant.id ? null : assistant.id
+                  navigate(
+                    isActive ? '/experts' : `/experts/${assistant.id}`
                   )
                 }
                 className={cn(
