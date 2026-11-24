@@ -142,7 +142,7 @@ export default function ExpertsPage() {
             src={selectedAssistant.session}
             alt={`${selectedAssistant.name}独立助理会话`}
             draggable={false}
-            className="block w-full select-none"
+            className="mx-auto block w-full max-w-[1200px] select-none"
           />
         </section>
       ) : (
