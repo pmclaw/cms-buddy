@@ -32,14 +32,8 @@ export default function ExpertsPage() {
 
   return (
     <div className="scrollbar-slim flex h-full flex-col overflow-y-auto bg-page">
-      <header className="flex h-[80px] shrink-0 items-center justify-between px-8">
+      <header className="flex h-[80px] shrink-0 items-center px-8">
         <h1 className="text-ink text-[22px] leading-[32px] font-bold">专家助理</h1>
-        <SearchInput
-          value={keyword}
-          onValueChange={setKeyword}
-          placeholder="搜索专家助理"
-          className="w-[290px]"
-        />
       </header>
 
       <div className="flex flex-wrap items-center gap-2 px-8 pb-3">
@@ -61,6 +55,13 @@ export default function ExpertsPage() {
             </button>
           )
         })}
+
+        <SearchInput
+          value={keyword}
+          onValueChange={setKeyword}
+          placeholder="搜索专家助理"
+          className="ml-auto h-[34px] w-[290px] px-3 text-[12px]"
+        />
       </div>
 
       <div className="min-h-0 flex-1 px-8 pb-8">
