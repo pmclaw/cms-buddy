@@ -223,12 +223,3 @@ export const expertExamples = [
   '持仓查询：「我持有的贵州茅台最近有什么重要消息」',
   '打板分析：「XX 股票今天涨停是因为什么概念」',
 ]
-
-export const expertSorts = [
-  { id: 'all', label: '全部' },
-  { id: 'uses', label: '使用次数' },
-  { id: 'users', label: '使用人数' },
-  { id: 'likes', label: '点赞数' },
-] as const
-
-export type ExpertSort = (typeof expertSorts)[number]['id']

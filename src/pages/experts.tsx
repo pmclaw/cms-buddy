@@ -11,33 +11,24 @@ import {
 import {
   expertCategories,
   expertExamples,
-  expertSorts,
   experts,
   type Expert,
-  type ExpertSort,
 } from '@/data/experts'
 import { cn } from 'cn'
 
 export default function ExpertsPage() {
   const navigate = useNavigate()
   const [keyword, setKeyword] = React.useState('')
-  const [sort, setSort] = React.useState<ExpertSort>('all')
   const [category, setCategory] = React.useState<string | null>(null)
   const [active, setActive] = React.useState<Expert | null>(null)
 
-  const list = experts
-    .filter((expert) => {
-      const matchKeyword =
-        expert.name.toLowerCase().includes(keyword.trim().toLowerCase()) ||
-        expert.desc.toLowerCase().includes(keyword.trim().toLowerCase())
-      const matchCategory = category ? expert.category === category : true
-      return matchKeyword && matchCategory
-    })
-    .sort((a, b) => {
-      if (sort === 'likes') return b.likes - a.likes
-      if (sort === 'uses' || sort === 'users') return b.uses - a.uses
-      return 0
-    })
+  const list = experts.filter((expert) => {
+    const matchKeyword =
+      expert.name.toLowerCase().includes(keyword.trim().toLowerCase()) ||
+      expert.desc.toLowerCase().includes(keyword.trim().toLowerCase())
+    const matchCategory = category ? expert.category === category : true
+    return matchKeyword && matchCategory
+  })
 
   return (
     <div className="scrollbar-slim flex h-full flex-col overflow-y-auto bg-page">
@@ -70,22 +61,6 @@ export default function ExpertsPage() {
             </button>
           )
         })}
-
-        <div className="ml-auto flex items-center gap-5">
-          {expertSorts.map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => setSort(item.id)}
-              className={cn(
-                'cursor-pointer text-[13px] leading-[22px] transition-colors',
-                sort === item.id ? 'text-brand' : 'text-ink'
-              )}
-            >
-              {item.label}
-            </button>
-          ))}
-        </div>
       </div>
 
       <div className="min-h-0 flex-1 px-8 pb-8">
@@ -121,12 +96,6 @@ export default function ExpertsPage() {
               <p className="text-ink/70 line-clamp-2 min-h-[38px] text-[12px] leading-[19px]">
                 {expert.desc}
               </p>
-
-              <div className="flex items-center justify-end gap-4 pt-1">
-                <span className="text-sub text-[12px]">🔥 {expert.uses}</span>
-                <span className="text-sub text-[12px]">📄 {expert.likes}</span>
-                <span className="text-sub text-[12px]">⬇ {expert.downloads}</span>
-              </div>
             </button>
           ))}
         </div>
