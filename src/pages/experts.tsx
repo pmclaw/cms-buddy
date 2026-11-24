@@ -1,5 +1,6 @@
 import * as React from 'react'
 import { useNavigate, useParams } from 'react-router'
+import { ChevronLeft } from 'lucide-react'
 
 import zhaoxiaoguHead from '@/assets/smart-assistants/zhaoxiaogu-head.png'
 import zhaoxiaoguSession from '@/assets/smart-assistants/zhaoxiaogu-session.png'
@@ -77,7 +78,20 @@ export default function ExpertsPage() {
   return (
     <div className="scrollbar-slim flex h-full flex-col overflow-y-auto bg-page">
       <header className="grid h-[80px] shrink-0 grid-cols-[minmax(88px,1fr)_auto_minmax(88px,1fr)] items-center px-8">
-        <h1 className="text-ink text-[22px] leading-[32px] font-bold">专家助理</h1>
+        {selectedAssistant ? (
+          <button
+            type="button"
+            onClick={() => navigate('/experts')}
+            className="text-ink hover:text-brand inline-flex w-fit cursor-pointer items-center gap-1 text-[16px] leading-[24px] font-medium whitespace-nowrap"
+          >
+            <ChevronLeft className="size-[18px]" strokeWidth={1.8} />
+            返回专家助理
+          </button>
+        ) : (
+          <h1 className="text-ink text-[22px] leading-[32px] font-bold">
+            专家助理
+          </h1>
+        )}
         <nav
           aria-label="独立助理入口"
           className="flex items-center gap-1 rounded-full bg-[#f7f8fc] p-1"
@@ -100,7 +114,7 @@ export default function ExpertsPage() {
                   )
                 }
                 className={cn(
-                  'flex h-12 w-[176px] cursor-pointer items-center justify-between gap-2 rounded-full border px-3 text-left transition-colors',
+                  'flex h-12 w-[154px] cursor-pointer items-center justify-between gap-2 rounded-full border px-3 text-left transition-colors xl:w-[176px]',
                   isActive
                     ? 'shadow-[0_4px_14px_rgba(40,50,83,0.08)]'
                     : 'border-transparent hover:bg-white'
