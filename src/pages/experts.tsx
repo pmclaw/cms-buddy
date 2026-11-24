@@ -194,7 +194,7 @@ export default function ExpertsPage() {
                       {expert.name}
                     </span>
                     <span className="bg-ink hidden rounded-full px-3 py-1 text-[11px] whitespace-nowrap text-white group-hover:inline-block">
-                      立即召唤
+                      召唤专家
                     </span>
                   </div>
 
