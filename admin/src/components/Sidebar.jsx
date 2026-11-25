@@ -11,9 +11,11 @@ import brandLogo from '../assets/cmslogo2026.png';
 //    - Skill 技能管理
 //    - MCP 服务注册
 //    - 任务模板管理
-// 2) 运营监控管理
+// 2) 会话辅助管理
+//    - 伴随助理管理
+// 3) 运营监控管理
 //    - Buddy 运营看板 / 历史问答记录 / 自动化任务订阅 / 任务执行记录
-// 3) 系统配置管理（占位）
+// 4) 系统配置管理（占位）
 //    - 模型接入管理 / 系统提示词管理 / 权限配置管理
 const MENUS = [
   {
@@ -30,6 +32,14 @@ const MENUS = [
       { key: 'run', label: '任务执行记录', path: '/ops/run' },
       { key: 'userGroup', label: '用户组管理', path: '/user-groups' },
       { key: 'buddyParams', label: 'Buddy参数管理', path: '/buddy-params', roles: ['system_admin'] },
+    ],
+  },
+  {
+    key: 'session',
+    icon: 'spark',
+    title: '会话辅助管理',
+    children: [
+      { key: 'companion', label: '伴随助理管理', path: '/companion-assistants' },
     ],
   },
   {
@@ -57,7 +67,9 @@ export function Sidebar({ collapsed }) {
   const location = useLocation();
   const navigate = useNavigate();
   const { user } = useRole();
-  const [openKeys, setOpenKeys] = useState(['open']);
+  const [openKeys, setOpenKeys] = useState(() =>
+    (location.pathname.startsWith('/companion') ? ['open', 'session'] : ['open'])
+  );
 
   const toggle = (k) => {
     setOpenKeys((prev) => (prev.includes(k) ? prev.filter((x) => x !== k) : [...prev, k]));

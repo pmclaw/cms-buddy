@@ -2067,3 +2067,77 @@ export const autoTaskRecords = [
   // 算力通道：依赖内网数据服务（客户标签平台等）的任务走内网算力
   computeChannel: ['AR005', 'AR010'].includes(r.id) ? '内网算力' : '云上算力',
 }));
+
+// ==================== 会话辅助管理 · 伴随助理 ====================
+// 应用场景字典（需求：财管、期货、托管、营销、数字金融部、金投业务部）
+export const companionScenes = ['财管', '期货', '托管', '营销', '数字金融部', '金投业务部'];
+
+// 伴随应用（内置数据源，等价于读取「伴随应用」清单；支持多选）
+export const companionApps = [
+  { id: 'BA001', name: '知识问答' },
+  { id: 'BA002', name: '业务办理' },
+  { id: 'BA003', name: '产品推荐' },
+  { id: 'BA004', name: '活动推荐' },
+  { id: 'BA005', name: '合规质检' },
+];
+
+// 质检方案（内置数据源，等价于读取「质检方案」清单；仅限单选）
+export const qcSchemes = [
+  { id: 'QC001', name: '财管-伴随机器人质检方案' },
+  { id: 'QC002', name: '营销-伴随机器人质检方案' },
+  { id: 'QC003', name: '托管-企微群聊伴随' },
+  { id: 'QC004', name: '数字金融部-质检方案' },
+  { id: 'QC005', name: '金投-质检方案' },
+];
+
+// 伴随助理清单：appCode 由系统自动生成（10 位小写字母+数字），不可修改
+export const companionAssistants = [
+  {
+    id: 'CA001', name: '营销团队-伴随助理', appCode: 'a3e7f9c2b1',
+    scene: '财管', appIds: ['BA001'], qcSchemeId: 'QC001',
+    desc: '伴随助理说明伴随助理说明伴随助理说明伴随助理说明伴随助理说明伴随助理说明……',
+    enabled: true, creator: '林依然', createTime: '2026-08-12 10:24', updateTime: '2026-08-12 10:24',
+  },
+  {
+    id: 'CA002', name: '伴随机器人-伴随助理', appCode: '8d4f1a9e3c',
+    scene: '', appIds: ['BA001', 'BA002', 'BA003', 'BA004'], qcSchemeId: 'QC003',
+    desc: '伴随助理说明伴随助理说明伴随助理说明伴随助理说明伴随助理说明伴随助理说明……',
+    enabled: false, creator: '林依然', createTime: '2026-08-13 15:08', updateTime: '2026-08-14 09:31',
+  },
+  {
+    id: 'CA003', name: '托管运营-伴随助理', appCode: '5c2b8e1f7a',
+    scene: '托管', appIds: ['BA001', 'BA005'], qcSchemeId: 'QC003',
+    desc: '面向托管业务运营人员的伴随助理，提供净值复核、头寸核对等问题的知识问答与业务办理引导。',
+    enabled: true, creator: '赵明', createTime: '2026-08-18 09:12', updateTime: '2026-08-18 09:12',
+  },
+  {
+    id: 'CA004', name: '期货交易-伴随助理', appCode: '2f6d0a4b9e',
+    scene: '期货', appIds: ['BA002', 'BA003'], qcSchemeId: 'QC002',
+    desc: '期货业务线客户经理专属伴随助理，实时推送保证金变动与持仓风险提示，支持产品推荐与活动推荐。',
+    enabled: true, creator: '王强', createTime: '2026-08-20 14:36', updateTime: '2026-08-21 11:02',
+  },
+  {
+    id: 'CA005', name: '数字金融部-伴随助理', appCode: '7a1e9c3d5f',
+    scene: '数字金融部', appIds: ['BA001', 'BA004'], qcSchemeId: 'QC004',
+    desc: '数字金融部内部试用，覆盖活动推荐与知识问答能力，质检方案采用部门专属方案。',
+    enabled: false, creator: '李雪', createTime: '2026-08-24 16:40', updateTime: '2026-08-25 10:15',
+  },
+  {
+    id: 'CA006', name: '金投业务-伴随助理', appCode: 'c9b3e7a2d6',
+    scene: '金投业务部', appIds: ['BA003', 'BA004', 'BA005'], qcSchemeId: 'QC005',
+    desc: '金投业务部产品推荐与活动推荐场景，接入合规质检能力，避免推荐内容触发合规风险。',
+    enabled: true, creator: '江超', createTime: '2026-08-27 09:48', updateTime: '2026-08-27 09:48',
+  },
+  {
+    id: 'CA007', name: '财管投顾-伴随助理', appCode: '4e8a1d6c0b',
+    scene: '财管', appIds: ['BA001', 'BA002', 'BA003'], qcSchemeId: 'QC001',
+    desc: '财富管理部投顾团队使用，覆盖知识问答、业务办理与产品推荐，质检按财管方案执行。',
+    enabled: true, creator: '何静', createTime: '2026-09-02 11:26', updateTime: '2026-09-02 11:26',
+  },
+  {
+    id: 'CA008', name: '营销活动-伴随助理', appCode: '1d5c9f3b7e',
+    scene: '营销', appIds: ['BA004'], qcSchemeId: 'QC002',
+    desc: '营销活动专项伴随助理，仅在活动周期内启用，负责活动规则问答与活动推荐。',
+    enabled: false, creator: '林依然', createTime: '2026-09-08 16:05', updateTime: '2026-09-09 08:52',
+  },
+];

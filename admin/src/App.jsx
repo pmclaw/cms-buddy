@@ -21,6 +21,7 @@ import { BuddyDashboard } from './pages/ops/BuddyDashboard.jsx';
 import { TaskRecordList } from './pages/ops/TaskRecordList.jsx';
 import { UserGroupList } from './pages/user-groups/UserGroupList.jsx';
 import { UserGroupEdit } from './pages/user-groups/UserGroupEdit.jsx';
+import { CompanionAssistantList } from './pages/companion/CompanionAssistantList.jsx';
 import { BuddyParams } from './pages/settings/BuddyParams.jsx';
 
 export default function App() {
@@ -52,6 +53,8 @@ export default function App() {
               <Route path="user-groups" element={<UserGroupList />} />
               <Route path="user-groups/new" element={<UserGroupEdit />} />
               <Route path="user-groups/edit/:id" element={<UserGroupEdit />} />
+
+              <Route path="companion-assistants" element={<CompanionAssistantList />} />
 
               <Route path="buddy-params" element={<BuddyParams />} />
 

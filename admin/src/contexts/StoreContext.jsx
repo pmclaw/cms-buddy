@@ -7,6 +7,7 @@ import {
   mcpServices as initialMcp,
   taskTemplates as initialTemplates,
   userGroups as initialUserGroups,
+  companionAssistants as initialCompanions,
   initialSystemSettings,
 } from '../data/mock.js';
 
@@ -19,6 +20,8 @@ export function StoreProvider({ children }) {
   const [mcps, setMcps] = useState(initialMcp);
   const [templates, setTemplates] = useState(initialTemplates);
   const [userGroups, setUserGroups] = useState(initialUserGroups);
+  // 会话辅助管理 · 伴随助理
+  const [companionAssistants, setCompanionAssistants] = useState(initialCompanions);
   // 系统初始化参数（Buddy参数管理页维护）：新建空间/专家助理的默认系统提示词
   const [systemSettings, setSystemSettings] = useState(initialSystemSettings);
   // 默认Buddy空间（空间管理员设置，全局单选）：管理空间相关内容时默认选中该空间
@@ -172,6 +175,30 @@ export function StoreProvider({ children }) {
     setUserGroups((prev) => prev.filter((x) => x.id !== id));
   }, []);
 
+  // 伴随助理 CRUD
+  const upsertCompanionAssistant = useCallback((c) => {
+    setCompanionAssistants((prev) => {
+      const idx = prev.findIndex((x) => x.id === c.id);
+      if (idx >= 0) {
+        const next = [...prev];
+        next[idx] = { ...next[idx], ...c, updateTime: now() };
+        return next;
+      }
+      const id = c.id || 'CA' + String(prev.length + 1).padStart(3, '0');
+      return [...prev, { ...c, id, createTime: now(), updateTime: now() }];
+    });
+  }, []);
+
+  const deleteCompanionAssistant = useCallback((id) => {
+    setCompanionAssistants((prev) => prev.filter((x) => x.id !== id));
+  }, []);
+
+  const setCompanionEnabled = useCallback((id, enabled) => {
+    setCompanionAssistants((prev) =>
+      prev.map((c) => (c.id === id ? { ...c, enabled, updateTime: now() } : c))
+    );
+  }, []);
+
   const value = {
     tenants, upsertTenant, deleteTenant,
     defaultSpaceId, setDefaultSpaceId,
@@ -180,6 +207,7 @@ export function StoreProvider({ children }) {
     mcps, upsertMcp, deleteMcp, setToolGlobal, setMcpEnabledGlobal, setMcpToolConfig,
     templates, upsertTemplate, deleteTemplate,
     userGroups, upsertUserGroup, deleteUserGroup,
+    companionAssistants, upsertCompanionAssistant, deleteCompanionAssistant, setCompanionEnabled,
     systemSettings, saveSystemSettings,
   };
 
