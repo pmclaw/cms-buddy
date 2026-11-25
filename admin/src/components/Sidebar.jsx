@@ -67,17 +67,23 @@ export function Sidebar({ collapsed }) {
   const location = useLocation();
   const navigate = useNavigate();
   const { user } = useRole();
-  const [openKeys, setOpenKeys] = useState(() =>
-    (location.pathname.startsWith('/companion') ? ['open', 'session'] : ['open'])
-  );
+  // 默认展开当前路由所属的一级菜单（线上带 /cms-buddy/admin 前缀，故用后缀匹配）
+  const matchPath = (path) => {
+    const cur = location.pathname;
+    return cur === path || cur.endsWith(path) || cur.includes(path + '/');
+  };
+  const [openKeys, setOpenKeys] = useState(() => {
+    const opened = MENUS
+      .filter((m) => m.children.some((c) => c.path && matchPath(c.path)))
+      .map((m) => m.key);
+    return Array.from(new Set(['open', ...opened]));
+  });
 
   const toggle = (k) => {
     setOpenKeys((prev) => (prev.includes(k) ? prev.filter((x) => x !== k) : [...prev, k]));
   };
 
-  const isActive = (item) => {
-    return location.pathname === item.path || location.pathname.startsWith(item.path + '/');
-  };
+  const isActive = (item) => matchPath(item.path);
 
   // 按当前角色过滤可见菜单项（roles 未指定时对所有角色可见）
   const visibleOf = (children) =>
