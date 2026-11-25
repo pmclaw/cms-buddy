@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Icon } from './Common.jsx';
 import { useRole } from '../contexts/RoleContext.jsx';
@@ -78,6 +78,19 @@ export function Sidebar({ collapsed }) {
       .map((m) => m.key);
     return Array.from(new Set(['open', ...opened]));
   });
+
+  // 路由变化时自动展开所属一级菜单：线上深链（404 回跳）首帧 pathname 可能是站点根，需在路由就绪后再展开一次
+  useEffect(() => {
+    const opened = MENUS
+      .filter((m) => m.children.some((c) => c.path && matchPath(c.path)))
+      .map((m) => m.key);
+    if (opened.length === 0) return;
+    setOpenKeys((prev) => {
+      const next = Array.from(new Set([...prev, ...opened]));
+      return next.length === prev.length ? prev : next;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname]);
 
   const toggle = (k) => {
     setOpenKeys((prev) => (prev.includes(k) ? prev.filter((x) => x !== k) : [...prev, k]));
