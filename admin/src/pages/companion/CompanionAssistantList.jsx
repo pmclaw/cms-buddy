@@ -271,7 +271,12 @@ function CompanionDialog({ mode, initial, existingCodes, onClose, onSubmit }) {
     if (!form.name.trim()) return toast.error('请输入伴随助理名称');
     if (!form.scene) return toast.error('请选择应用场景');
     if (form.appTarget === 'single' && !form.groupId) return toast.error('请选择用户组');
-    if (form.appTarget === 'group' && form.ownerIds.length === 0) return toast.error('请至少选择一个群主');
+    if (form.appTarget === 'group') {
+      const hasOwner = form.ownerIds.length > 0;
+      const hasGroupId = !!form.wecomGroupIds.trim();
+      if (hasOwner && hasGroupId) return toast.error('群主与企微群ID不可同时填写，请二选一');
+      if (!hasOwner && !hasGroupId) return toast.error('请选择群主或填写企微群ID');
+    }
     if (form.appIds.length === 0) return toast.error('请至少选择一个伴随应用');
     if (!form.qcSchemeId) return toast.error('请选择质检方案');
     onSubmit({ ...form, name: form.name.trim() });
@@ -340,7 +345,7 @@ function CompanionDialog({ mode, initial, existingCodes, onClose, onSubmit }) {
         <FieldRow
           label="应用对象"
           required
-          hint={form.appTarget === 'group' ? '群主支持搜索多选，企微群ID每行一条' : '按用户组授权，组内用户可在企微单聊中使用'}
+          hint={form.appTarget === 'group' ? '选择群主与填写企微群ID二选一，不可同时选择' : '按用户组授权，组内用户可在企微单聊中使用'}
         >
           <div style={{ display: 'flex', gap: 12 }}>
             <select
