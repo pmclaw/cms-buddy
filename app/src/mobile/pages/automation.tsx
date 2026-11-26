@@ -7,11 +7,21 @@ import { TaskFormSheet } from '@/pages/automation-form'
 import { BottomSheet, ConfirmDialog } from '@/components/sheet'
 import { PhoneScreen, ScreenHeader, TabBar } from '@/components/screen'
 import { useToast } from '@/components/toast'
-import { templates, type AutomationTask } from '@/data/tasks'
+import {
+  automationExecutionRecords,
+  templates,
+  type AutomationTask,
+} from '@/data/tasks'
 import { useAutomation } from '@/lib/automation-store'
 import { useDrawer } from '@/lib/drawer'
 import { cn } from '@/lib/cn'
 import { useTaskDraft } from '@/lib/task-draft'
+
+const automationTabs = [
+  { id: 'mine', label: '我的', path: '/automation' },
+  { id: 'templates', label: '任务模板', path: '/automation/templates' },
+  { id: 'records', label: '执行记录', path: '/automation/records' },
+] as const
 
 export function AutomationPage() {
   const location = useLocation()
@@ -30,9 +40,15 @@ export function AutomationPage() {
   // 创建 / 编辑以弹层形式覆盖在列表之上（对齐设计稿 14/15）
   const isCreate = location.pathname === '/automation/new'
   const isEdit = location.pathname.endsWith('/edit')
-  // 顶部两个页签：我的（任务列表）/ 模板（从模板添加）
   const isTemplates = location.pathname === '/automation/templates'
+  const isRecords = location.pathname === '/automation/records'
+  const isMain = !isTemplates && !isRecords
+  const activeTab = isTemplates ? 'templates' : isRecords ? 'records' : 'mine'
   const editingTask = isEdit ? (tasks.find((item) => item.id === id) ?? null) : null
+  const executionRows = automationExecutionRecords.flatMap((record) => {
+    const task = tasks.find((item) => item.id === record.taskId)
+    return task ? [{ ...record, task }] : []
+  })
 
   const actions = menuTask
     ? [
@@ -60,7 +76,7 @@ export function AutomationPage() {
       <ScreenHeader
         title="自动化"
         onMenu={openDrawer}
-        right={isTemplates ? undefined : (
+        right={isMain ? (
           <button
             type="button"
             aria-label="刷新"
@@ -69,31 +85,33 @@ export function AutomationPage() {
           >
             <RefreshCw className="size-[19px]" strokeWidth={1.8} />
           </button>
-        )}
+        ) : undefined}
       />
 
-      <div className="flex gap-6 px-4 pb-2">
-        <button
-          type="button"
-          onClick={() => navigate('/automation')}
-          className={cn(
-            'cursor-pointer border-b-2 pb-1 text-[15px] leading-[22px]',
-            isTemplates ? 'text-sub border-transparent' : 'text-brand border-brand font-medium'
-          )}
-        >
-          我的
-        </button>
-        <button
-          type="button"
-          onClick={() => navigate('/automation/templates')}
-          className={cn(
-            'cursor-pointer border-b-2 pb-1 text-[15px] leading-[22px]',
-            isTemplates ? 'text-brand border-brand font-medium' : 'text-sub border-transparent'
-          )}
-        >
-          模板
-        </button>
-      </div>
+      <nav
+        aria-label="自动化视图"
+        className="flex items-center justify-center gap-5 px-4 pb-2"
+      >
+        {automationTabs.map((tab) => {
+          const active = activeTab === tab.id
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              aria-current={active ? 'page' : undefined}
+              onClick={() => navigate(tab.path)}
+              className={cn(
+                'cursor-pointer border-b-2 pb-1 text-[15px] leading-[22px]',
+                active
+                  ? 'text-brand border-brand font-medium'
+                  : 'text-sub border-transparent'
+              )}
+            >
+              {tab.label}
+            </button>
+          )
+        })}
+      </nav>
 
       <div className="scrollbar-none min-h-0 flex-1 overflow-y-auto px-4 pt-1 pb-28">
         {isTemplates ? (
@@ -117,6 +135,35 @@ export function AutomationPage() {
               </button>
             ))}
           </div>
+        ) : isRecords ? (
+          <div className="overflow-hidden rounded-[14px] bg-white">
+            {executionRows.map((record) => {
+              const running = record.status === 'running'
+              return (
+                <button
+                  key={record.id}
+                  type="button"
+                  aria-label={`${record.task.title}，${record.at}，${running ? '执行中' : '执行成功'}`}
+                  onClick={() => navigate(`/automation/${record.taskId}/detail`)}
+                  className="active:bg-ink/5 flex h-16 w-full items-center gap-3 border-b border-[rgba(40,50,83,0.05)] px-4 text-left last:border-0"
+                >
+                  <span className="text-ink min-w-0 flex-1 truncate text-[13px] leading-[20px] font-medium">
+                    {record.task.title}
+                  </span>
+                  <span className="text-sub flex shrink-0 items-center gap-1.5 text-[10px] leading-[14px] tabular-nums">
+                    {record.at}
+                    <span
+                      aria-hidden
+                      className={cn(
+                        'size-[5px] rounded-full',
+                        running ? 'bg-brand' : 'bg-[#28c76f]'
+                      )}
+                    />
+                  </span>
+                </button>
+              )
+            })}
+          </div>
         ) : (
           <div className="flex flex-col gap-2.5">
             {tasks.map((task) => (
@@ -132,7 +179,7 @@ export function AutomationPage() {
       </div>
 
       {/* 新建任务入口 */}
-      {isTemplates ? null : (
+      {isMain ? (
         <button
           type="button"
           aria-label="创建任务"
@@ -141,7 +188,7 @@ export function AutomationPage() {
         >
           <Plus className="size-[26px]" strokeWidth={2.2} />
         </button>
-      )}
+      ) : null}
 
       <TabBar active="automation" />
 

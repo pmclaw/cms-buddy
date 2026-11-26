@@ -153,6 +153,28 @@ export const taskRecords = [
   { at: '03-13 20:00', ok: true },
 ]
 
+export type AutomationExecutionRecord = {
+  id: string
+  taskId: string
+  at: string
+  status: 'running' | 'success'
+}
+
+/** 自动化频道「执行记录」页签的全量执行记录 */
+export const automationExecutionRecords: AutomationExecutionRecord[] = [
+  { id: 'r1', taskId: 't1', at: '11-04 14:30', status: 'running' },
+  { id: 'r2', taskId: 't1', at: '11-04 14:25', status: 'success' },
+  { id: 'r3', taskId: 't2', at: '11-04 08:00', status: 'success' },
+  { id: 'r4', taskId: 't2', at: '11-03 17:56', status: 'success' },
+  { id: 'r5', taskId: 't3', at: '11-03 08:00', status: 'success' },
+  { id: 'r6', taskId: 't4', at: '11-02 14:15', status: 'success' },
+  { id: 'r7', taskId: 't5', at: '11-02 14:20', status: 'success' },
+  { id: 'r8', taskId: 't6', at: '11-02 14:15', status: 'success' },
+  { id: 'r9', taskId: 't7', at: '11-02 14:20', status: 'success' },
+  { id: 'r10', taskId: 't2', at: '11-02 14:10', status: 'success' },
+  { id: 'r11', taskId: 't3', at: '11-02 14:05', status: 'success' },
+]
+
 export type Template = {
   id: string
   name: string

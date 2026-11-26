@@ -38,6 +38,7 @@ export default function MobileApp() {
                       <Route path="/skills/:id" element={<SkillDetailPage />} />
                       <Route path="/automation" element={<AutomationPage />} />
                       <Route path="/automation/templates" element={<AutomationPage />} />
+                      <Route path="/automation/records" element={<AutomationPage />} />
                       <Route path="/automation/new" element={<AutomationPage />} />
                       <Route path="/automation/:id/edit" element={<AutomationPage />} />
                       <Route
