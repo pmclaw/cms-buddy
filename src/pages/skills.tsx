@@ -5,7 +5,6 @@ import FigmaIcon from '@/components/figma-icon'
 import SearchInput from '@/components/search-input'
 import SkillCard from '@/components/skill-card'
 import SkillDetailDialog from '@/components/skill-detail-dialog'
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { assets } from '@/data/assets'
 import { skillCategories, skills, type Skill } from '@/data/skills'
 import { cn } from 'cn'
@@ -13,7 +12,6 @@ import { cn } from 'cn'
 export default function SkillsPage() {
   const navigate = useNavigate()
   const [keyword, setKeyword] = React.useState('')
-  const [tab, setTab] = React.useState('all')
   const [category, setCategory] = React.useState<string | null>(null)
   const [activeSkill, setActiveSkill] = React.useState<Skill | null>(null)
   /** 安装启用状态：以数据初始值为准，本次会话内可切换 */
@@ -26,9 +24,8 @@ export default function SkillsPage() {
       skill.name.toLowerCase().includes(keyword.trim().toLowerCase()) ||
       skill.desc.toLowerCase().includes(keyword.trim().toLowerCase()) ||
       skill.owner.toLowerCase().includes(keyword.trim().toLowerCase())
-    const matchTab = tab === 'all' ? true : Boolean(skill.featured)
     const matchCategory = category ? skill.category === category : true
-    return matchKeyword && matchTab && matchCategory
+    return matchKeyword && matchCategory
   })
 
   return (
@@ -43,23 +40,14 @@ export default function SkillsPage() {
         />
       </header>
 
-      <div className="px-8 pb-4">
-        <Tabs value={tab} onValueChange={setTab}>
-          <TabsList>
-            <TabsTrigger value="all">全部</TabsTrigger>
-            <TabsTrigger value="featured">官方精选</TabsTrigger>
-          </TabsList>
-        </Tabs>
-      </div>
-
       <div className="flex flex-wrap items-center gap-2 px-8 pt-1 pb-5">
-        {skillCategories.map((item) => {
-          const active = category === item.id
+        {[{ id: 'all', label: '全部' }, ...skillCategories].map((item) => {
+          const active = item.id === 'all' ? category === null : category === item.id
           return (
             <button
               key={item.id}
               type="button"
-              onClick={() => setCategory(active ? null : item.id)}
+              onClick={() => setCategory(item.id === 'all' || active ? null : item.id)}
               className={cn(
                 'flex cursor-pointer items-center justify-center rounded-[8px] border px-3 py-1.5 text-[12px] leading-[20px] transition-colors',
                 active
@@ -81,6 +69,7 @@ export default function SkillsPage() {
                 key={skill.id}
                 skill={skill}
                 onOpen={() => setActiveSkill(skill)}
+                onTry={() => navigate('/', { state: { skill: skill.name } })}
               />
             ))}
           </div>
