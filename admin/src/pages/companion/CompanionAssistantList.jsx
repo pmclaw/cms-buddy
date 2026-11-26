@@ -9,7 +9,20 @@ import { Pagination } from '../../components/Pagination.jsx';
 import { Modal } from '../../components/Overlay.jsx';
 import { Toggle } from '../../components/Toggle.jsx';
 import { Checkbox } from '../../components/Checkbox.jsx';
-import { companionScenes, companionApps, qcSchemes } from '../../data/mock.js';
+import { companionScenes, companionApps, qcSchemes, orgUsers } from '../../data/mock.js';
+
+// 应用对象类型：企微单聊（按用户组授权）/ 企微群聊（按群主 + 企微群ID）
+const APP_TARGETS = [
+  { value: 'single', label: '企微单聊' },
+  { value: 'group', label: '企微群聊' },
+];
+
+// 群主候选：后台组织架构中的用户（按姓名/部门搜索）
+const OWNER_OPTIONS = orgUsers.map((u) => ({
+  id: u.id,
+  name: u.name,
+  sub: u.deptName,
+}));
 
 // app_code：系统自动生成，10 位小写字母 + 数字，全局唯一，不对外开放修改
 const CODE_CHARS = 'abcdef0123456789';
@@ -220,25 +233,45 @@ export function CompanionAssistantList() {
 function CompanionDialog({ mode, initial, existingCodes, onClose, onSubmit }) {
   const isEdit = mode === 'edit';
   const toast = useToast();
+  const { userGroups } = useStore();
 
   const [form, setForm] = useState(() => (initial ? {
     ...initial,
     appIds: [...(initial.appIds || [])],
+    appTarget: initial.appTarget || 'single',
+    groupId: initial.groupId || '',
+    ownerIds: [...(initial.ownerIds || [])],
+    wecomGroupIds: initial.wecomGroupIds || '',
   } : {
     name: '',
     appCode: genAppCode(existingCodes),
     scene: '',
     appIds: [],
     qcSchemeId: '',
+    appTarget: 'single',
+    groupId: '',
+    ownerIds: [],
+    wecomGroupIds: '',
     desc: '',
     enabled: true,
   }));
 
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
 
+  // 切换应用对象时清空另一分支的选择，避免脏数据提交
+  const changeTarget = (v) => setForm((f) => ({
+    ...f,
+    appTarget: v,
+    groupId: v === 'single' ? f.groupId : '',
+    ownerIds: v === 'group' ? f.ownerIds : [],
+    wecomGroupIds: v === 'group' ? f.wecomGroupIds : '',
+  }));
+
   const submit = () => {
     if (!form.name.trim()) return toast.error('请输入伴随助理名称');
     if (!form.scene) return toast.error('请选择应用场景');
+    if (form.appTarget === 'single' && !form.groupId) return toast.error('请选择用户组');
+    if (form.appTarget === 'group' && form.ownerIds.length === 0) return toast.error('请至少选择一个群主');
     if (form.appIds.length === 0) return toast.error('请至少选择一个伴随应用');
     if (!form.qcSchemeId) return toast.error('请选择质检方案');
     onSubmit({ ...form, name: form.name.trim() });
@@ -303,6 +336,58 @@ function CompanionDialog({ mode, initial, existingCodes, onClose, onSubmit }) {
           </div>
         </FieldRow>
 
+        {/* 应用对象：同一行两个下拉（单聊 → 用户组 / 群聊 → 群主多选 + 企微群ID） */}
+        <FieldRow
+          label="应用对象"
+          required
+          hint={form.appTarget === 'group' ? '群主支持搜索多选，企微群ID每行一条' : '按用户组授权，组内用户可在企微单聊中使用'}
+        >
+          <div style={{ display: 'flex', gap: 12 }}>
+            <select
+              className="select"
+              value={form.appTarget}
+              onChange={(e) => changeTarget(e.target.value)}
+              style={{ flex: '0 0 200px' }}
+            >
+              {APP_TARGETS.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
+            </select>
+
+            {form.appTarget === 'single' ? (
+              <select
+                className="select"
+                value={form.groupId}
+                onChange={(e) => set('groupId', e.target.value)}
+                style={{ flex: 1 }}
+              >
+                <option value="">请选择用户组</option>
+                {userGroups.map((g) => <option key={g.id} value={g.id}>{g.name}</option>)}
+              </select>
+            ) : (
+              <div style={{ flex: 1 }}>
+                <AppMultiSelect
+                  value={form.ownerIds}
+                  options={OWNER_OPTIONS}
+                  onChange={(ids) => set('ownerIds', ids)}
+                  placeholder="请选择群主"
+                  searchable
+                  searchPlaceholder="搜索群主姓名/部门"
+                />
+              </div>
+            )}
+          </div>
+
+          {form.appTarget === 'group' && (
+            <textarea
+              className="input"
+              rows={4}
+              placeholder="请填写企微群ID，每行一条信息"
+              value={form.wecomGroupIds}
+              onChange={(e) => set('wecomGroupIds', e.target.value)}
+              style={{ width: '100%', resize: 'vertical', marginTop: 10 }}
+            />
+          )}
+        </FieldRow>
+
         {/* 描述 */}
         <FieldRow label="描述" hint="100个字符以内" last>
           <textarea
@@ -336,9 +421,12 @@ function FieldRow({ label, required, hint, last, children }) {
   );
 }
 
-// 伴随应用多选下拉（触发器外观与 .select 一致，面板内为复选列表）
-function AppMultiSelect({ value, options, onChange, placeholder = '请选择伴随应用' }) {
+// 伴随应用 / 群主 多选下拉（触发器外观与 .select 一致，面板内为复选列表；searchable 时带关键词搜索）
+function AppMultiSelect({
+  value, options, onChange, placeholder = '请选择伴随应用', searchable = false, searchPlaceholder = '搜索',
+}) {
   const [open, setOpen] = useState(false);
+  const [kw, setKw] = useState('');
   const ref = useRef(null);
 
   useEffect(() => {
@@ -354,10 +442,15 @@ function AppMultiSelect({ value, options, onChange, placeholder = '请选择伴�
     onChange(value.includes(id) ? value.filter((x) => x !== id) : [...value, id]);
   };
 
+  const k = kw.trim().toLowerCase();
+  const shown = k
+    ? options.filter((o) => o.name.toLowerCase().includes(k) || (o.sub || '').toLowerCase().includes(k))
+    : options;
+
   return (
     <div ref={ref} style={{ position: 'relative' }}>
       <div
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => { setOpen((v) => { if (!v) setKw(''); return !v; }); }}
         style={{
           display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 6,
           minHeight: 34, padding: '5px 30px 5px 12px', position: 'relative',
@@ -400,9 +493,24 @@ function AppMultiSelect({ value, options, onChange, placeholder = '请选择伴�
           position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 60, marginTop: 4,
           background: '#fff', border: '1px solid #E5E7EB', borderRadius: 6,
           boxShadow: '0 8px 24px rgba(15,23,42,0.14)', padding: '6px 0',
-          maxHeight: 220, overflow: 'auto',
+          maxHeight: 260, overflow: 'auto',
         }}>
-          {options.map((o) => {
+          {searchable && (
+            <div style={{ padding: '0 8px 6px' }}>
+              <input
+                className="input"
+                autoFocus
+                placeholder={searchPlaceholder}
+                value={kw}
+                onChange={(e) => setKw(e.target.value)}
+                style={{ width: '100%', height: 30, fontSize: 12 }}
+              />
+            </div>
+          )}
+          {shown.length === 0 && (
+            <div style={{ padding: '10px 12px', fontSize: 12, color: '#9CA3AF' }}>未找到匹配项</div>
+          )}
+          {shown.map((o) => {
             const checked = value.includes(o.id);
             return (
               <div
@@ -416,6 +524,7 @@ function AppMultiSelect({ value, options, onChange, placeholder = '请选择伴�
               >
                 <Checkbox checked={checked} onChange={() => toggle(o.id)} />
                 <span>{o.name}</span>
+                {o.sub && <span style={{ fontSize: 11, color: '#9CA3AF' }}>{o.sub}</span>}
               </div>
             );
           })}
