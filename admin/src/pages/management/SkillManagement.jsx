@@ -350,6 +350,8 @@ export function SkillManagement() {
                             if (!isPlatform) {
                               items.push({ key: 'authUser', label: '授权用户', onClick: () => setUserAuthTarget(s) });
                             }
+                            // 下载技能：入口先占位，暂不实现交互逻辑
+                            items.push({ key: 'download', label: '下载技能', onClick: () => {} });
                             // 复制技能：仅对已上架 + 当前用户有权限的资源可见
                             const listed = s.enabled !== false && s.status !== '已下架';
                             const canCopy = isPlatform || s.creatorTenant === user.tenantId;
