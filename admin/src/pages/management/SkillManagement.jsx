@@ -10,7 +10,6 @@ import { ImageUploader } from '../../components/ImageUploader.jsx';
 import { ChatbotDialog } from '../../components/ChatbotDialog.jsx';
 import { AuthorizeSpaceDialog } from '../../components/AuthorizeSpaceDialog.jsx';
 import { AuthorizeUserDialog } from '../../components/AuthorizeUserDialog.jsx';
-import { AuthSettingsSection } from '../../components/AuthSettingsSection.jsx';
 import { Pagination } from '../../components/Pagination.jsx';
 import { SelectCombobox } from '../../components/SelectCombobox.jsx';
 import { Tooltip } from '../../components/Tooltip.jsx';
@@ -1116,25 +1115,6 @@ function SkillEditDialog({ initial, isPlatform, onClose, onSubmit, readOnly }) {
               )}
             </div>
 
-            {/* 授权设置：开放范围与共享授权策略 */}
-            <div style={{ marginTop: 26, paddingTop: 18, borderTop: '1px solid #F2F4F7' }}>
-              <div style={{ fontSize: 14, fontWeight: 600, color: '#1F2937', marginBottom: readOnly ? 6 : 12 }}>
-                授权设置{readOnly && <span style={{ fontSize: 12, fontWeight: 400, color: '#9CA3AF', marginLeft: 8 }}>（当前为只读查看模式）</span>}
-              </div>
-              <AuthSettingsSection
-                resourceType="技能"
-                resource={{
-                  id: form.id,
-                  name: form.name,
-                  openScope: form.openScope,
-                  openTenants: form.openTenants || [],
-                }}
-                allowSysAuth={form.allowSysAuth !== false}
-                readOnly={readOnly}
-                onChange={set}
-              />
-            </div>
-
             {/* Agenthub 同步信息：仅 Agenthub 来源技能展示 */}
             {isSkillhub && (
               <div style={{ marginTop: 22, paddingTop: 18, borderTop: '1px solid #F2F4F7' }}>
@@ -1150,79 +1130,9 @@ function SkillEditDialog({ initial, isPlatform, onClose, onSubmit, readOnly }) {
               </div>
             )}
 
-            {/* 技能目录：技能包完整目录结构（只读） */}
-            <div style={{ marginTop: 22, paddingTop: 18, borderTop: '1px solid #F2F4F7' }}>
-              <div style={{ fontSize: 14, fontWeight: 600, color: '#1F2937', marginBottom: 6 }}>技能目录</div>
-              <div style={{ fontSize: 12, color: '#9CA3AF', marginBottom: 12 }}>
-                根目录：{form.code || form.name || 'skill'}/（当前技能包的完整目录结构，仅查看，不可点击）
-              </div>
-              <div style={{
-                border: '1px solid #E5E7EB', borderRadius: 8, padding: '14px 16px',
-                background: '#FAFBFC', fontFamily: 'monospace', fontSize: 12.5, lineHeight: 1.9,
-                color: '#4B5563', maxHeight: 240, overflow: 'auto',
-              }}>
-                <DirTree tree={buildSkillTree(form)} />
-              </div>
-            </div>
       </div>
     </Modal>
   );
-}
-
-// ========== 浏览技能：目录结构（模拟数据） ==========
-function buildSkillTree(form) {
-  const root = form.code || form.name || 'skill';
-  return {
-    name: root,
-    type: 'dir',
-    children: [
-      { name: 'SKILL.md', type: 'file' },
-      { name: 'prompt.md', type: 'file' },
-      { name: 'requirements.txt', type: 'file' },
-      {
-        name: 'config', type: 'dir', children: [
-          { name: 'settings.yaml', type: 'file' },
-          { name: 'rules.json', type: 'file' },
-        ],
-      },
-      {
-        name: 'tools', type: 'dir', children: [
-          { name: 'search.py', type: 'file' },
-          { name: 'qa_engine.py', type: 'file' },
-        ],
-      },
-      {
-        name: 'references', type: 'dir', children: [
-          { name: 'business_rules.md', type: 'file' },
-          { name: 'compliance.md', type: 'file' },
-        ],
-      },
-    ],
-  };
-}
-
-function DirTree({ tree }) {
-  const render = (node, depth, isLast) => {
-    const indent = depth * 22;
-    const prefix = depth === 0 ? '' : (isLast ? '└── ' : '├── ');
-    return (
-      <div key={node.name}>
-        <div style={{ paddingLeft: indent }}>
-          <span style={{ color: '#9CA3AF' }}>{prefix}</span>
-          <span style={{ marginRight: 4 }}>{node.type === 'dir' ? '📁' : '📄'}</span>
-          <span style={{
-            color: node.type === 'dir' ? '#1F2937' : '#6B7280',
-            fontWeight: node.type === 'dir' ? 600 : 400,
-          }}>
-            {node.name}
-          </span>
-          {node.type === 'dir' && <span style={{ color: '#9CA3AF', fontSize: 11 }}>/</span>}
-        </div>
-        {node.children && node.children.map((c, i) => render(c, depth + 1, i === node.children.length - 1))}
-      </div>
-    );
-  };
-  return <div>{render(tree, 0, true)}</div>;
 }
 
 // ========== 其他信息：两列指标卡片 ==========
