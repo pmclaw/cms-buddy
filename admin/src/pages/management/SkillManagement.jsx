@@ -944,6 +944,11 @@ function SkillEditDialog({ initial, isPlatform, onClose, onSubmit, readOnly }) {
                                 style={{ fontSize: 12, color: '#9CA3AF', cursor: 'pointer' }}
                               >移除</span>
                             )}
+                            {/* 下载：紧随「移除」之后；mock 环境暂不做实际下载逻辑 */}
+                            <span
+                              onClick={() => {}}
+                              style={{ fontSize: 12, color: '#1677FF', cursor: 'pointer' }}
+                            >下载</span>
                           </div>
                         ))}
                       </div>
