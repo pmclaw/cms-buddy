@@ -6,6 +6,7 @@ import { Icon, Empty, Confirm } from '../../components/Common.jsx';
 import { Tag } from '../../components/Tag.jsx';
 import { Toggle } from '../../components/Toggle.jsx';
 import { Modal } from '../../components/Overlay.jsx';
+import { Checkbox } from '../../components/Checkbox.jsx';
 import { ImageUploader } from '../../components/ImageUploader.jsx';
 import { ChatbotDialog } from '../../components/ChatbotDialog.jsx';
 import { AuthorizeSpaceDialog } from '../../components/AuthorizeSpaceDialog.jsx';
@@ -55,6 +56,10 @@ export function SkillManagement() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [openMenuId, setOpenMenuId] = useState(null); // 三点操作菜单当前打开行
+  // 批量选择：勾选多个技能后统一授权用户（仅空间管理员视角提供）
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [batchAuthOpen, setBatchAuthOpen] = useState(false);
+  const [floatPos, setFloatPos] = useState(null); // 「批量授权用户」浮层坐标（跟随首个勾选行的复选框）
 
   // 点击页面其它区域关闭三点菜单
   useEffect(() => {
@@ -133,6 +138,68 @@ export function SkillManagement() {
   const total = filtered.length;
   const paged = filtered.slice((page - 1) * pageSize, page * pageSize);
 
+  // ===== 批量选择（空间管理员视角；系统管理员的用户级授权按既有口径收敛，不提供该入口）=====
+  const showSelect = !isPlatform;
+  const pagedIds = paged.map((s) => s.id);
+  const allPagedSelected = pagedIds.length > 0 && pagedIds.every((id) => selectedIds.includes(id));
+  const selectedSkills = useMemo(
+    () => skills.filter((s) => selectedIds.includes(s.id)),
+    [skills, selectedIds]
+  );
+
+  const toggleSelectRow = (id) => {
+    setSelectedIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+  };
+  // 表头复选框：全选/取消全选当前页
+  const toggleSelectAll = () => {
+    setSelectedIds((prev) => (
+      allPagedSelected
+        ? prev.filter((id) => !pagedIds.includes(id))
+        : Array.from(new Set([...prev, ...pagedIds]))
+    ));
+  };
+
+  // 浮层定位：贴在「首个已勾选行的复选框」右侧；跨页时贴到表头复选框右侧
+  useEffect(() => {
+    if (!showSelect || selectedIds.length === 0) {
+      setFloatPos(null);
+      return;
+    }
+    const compute = () => {
+      const firstId = paged.find((s) => selectedIds.includes(s.id))?.id;
+      const anchor = firstId
+        ? document.querySelector(`tr[data-skill-row="${firstId}"] .row-checkbox`)
+        : document.querySelector('.skill-head-checkbox');
+      if (!anchor) {
+        setFloatPos(null);
+        return;
+      }
+      const r = anchor.getBoundingClientRect();
+      setFloatPos({ top: r.top + r.height / 2, left: r.right + 14 });
+    };
+    compute();
+    window.addEventListener('scroll', compute, true);
+    window.addEventListener('resize', compute);
+    return () => {
+      window.removeEventListener('scroll', compute, true);
+      window.removeEventListener('resize', compute);
+    };
+  }, [showSelect, selectedIds, paged]);
+
+  // 批量授权弹窗的数据源：可选空间 = 各技能已授权空间的交集（用户授权按空间分别设置）
+  const batchAuthResource = useMemo(() => {
+    const spacesOf = (s) => (s.openScope === 'tenant' ? (s.openTenants || []) : tenants.map((t) => t.id));
+    let inter = tenants.map((t) => t.id);
+    selectedSkills.forEach((s) => { inter = inter.filter((id) => spacesOf(s).includes(id)); });
+    return {
+      id: '__batch__',
+      name: `${selectedSkills.length} 个技能`,
+      openScope: 'tenant',
+      openTenants: inter,
+      userAuth: null,
+    };
+  }, [selectedSkills, tenants]);
+
   const handleSubmit = (form) => {
     upsertSkill(form);
     toast.success(editing?.id ? '修改成功' : '添加成功');
@@ -149,6 +216,7 @@ export function SkillManagement() {
     setSpaceFilter('');
     setAuthSpaceFilter('');
     setOpenMenuId(null);
+    setSelectedIds([]);
   }, []);
 
   return (
@@ -184,7 +252,7 @@ export function SkillManagement() {
             ].map((t) => (
               <div
                 key={t.k}
-                onClick={() => { setViewTab(t.k); setPage(1); }}
+                onClick={() => { setViewTab(t.k); setPage(1); setSelectedIds([]); }}
                 style={{
                   padding: '10px 24px', cursor: 'pointer', fontSize: 14, fontWeight: 500,
                   color: viewTab === t.k ? '#E89E57' : '#6B7280',
@@ -234,7 +302,7 @@ export function SkillManagement() {
               onChange={(e) => { setKeyword(e.target.value); setPage(1); }}
               style={{ maxWidth: 240 }}
             />
-            <button className="btn btn-default" onClick={() => { setKeyword(''); setCategory(''); setChannelFilter(''); setSpaceFilter(''); setAuthSpaceFilter(''); setPage(1); }}>
+            <button className="btn btn-default" onClick={() => { setKeyword(''); setCategory(''); setChannelFilter(''); setSpaceFilter(''); setAuthSpaceFilter(''); setPage(1); setSelectedIds([]); }}>
               <Icon name="refresh" size={12} />
               重置
             </button>
@@ -247,6 +315,13 @@ export function SkillManagement() {
             <table className="table">
               <thead>
                 <tr>
+                  {showSelect && (
+                    <th width={44}>
+                      <span className="skill-head-checkbox" style={{ display: 'inline-flex' }}>
+                        <Checkbox checked={allPagedSelected} onChange={toggleSelectAll} />
+                      </span>
+                    </th>
+                  )}
                   <th width={90}>ID</th>
                   <th width={120}>技能名称</th>
                   <th width={140}>技能所在目录</th>
@@ -264,13 +339,23 @@ export function SkillManagement() {
               <tbody>
                 {filtered.length === 0 && (
                   <tr>
-                    <td colSpan={(isPlatform || viewTab === 'mine') ? 12 : 11}>
+                    <td colSpan={((isPlatform || viewTab === 'mine') ? 12 : 11) + (showSelect ? 1 : 0)}>
                       <Empty icon="🧩" tip={viewTab === 'center' ? '暂无平台开放资源' : viewTab === 'granted' ? '暂无其他空间授权给你的技能' : '暂无技能数据，请先添加'} />
                     </td>
                   </tr>
                 )}
                 {paged.map((s) => (
-                  <tr key={s.id}>
+                  <tr key={s.id} data-skill-row={s.id}>
+                    {showSelect && (
+                      <td>
+                        <span className="row-checkbox" style={{ display: 'inline-flex' }}>
+                          <Checkbox
+                            checked={selectedIds.includes(s.id)}
+                            onChange={() => toggleSelectRow(s.id)}
+                          />
+                        </span>
+                      </td>
+                    )}
                     <td style={{ fontFamily: 'monospace', color: '#9CA3AF' }}>{s.id}</td>
                     <td style={{ color: '#E89E57', fontWeight: 500, cursor: 'pointer' }} onClick={() => setChatbotSkill(s)}>{s.name}</td>
                     <td style={{ fontFamily: 'monospace', fontSize: 12, color: '#6B7280' }}>{s.code}</td>
@@ -416,6 +501,29 @@ export function SkillManagement() {
         </div>
       </div>
 
+      {/* 批量选择浮层：跟随首个已勾选行的复选框出现，「批量授权用户」按钮置于其右侧；取消全部勾选即消失 */}
+      {showSelect && selectedIds.length > 0 && floatPos && (
+        <div
+          style={{
+            position: 'fixed', top: floatPos.top, left: floatPos.left,
+            transform: 'translateY(-50%)', zIndex: 70,
+            display: 'flex', alignItems: 'center', gap: 10,
+            background: '#fff', border: '1px solid #F3E3D0', borderRadius: 999,
+            boxShadow: '0 6px 18px rgba(0,0,0,0.12)', padding: '5px 6px 5px 14px',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          <span style={{ fontSize: 12, color: '#6B7280' }}>
+            已选 <strong style={{ color: '#E89E57' }}>{selectedIds.length}</strong> 个技能
+          </span>
+          <button
+            className="btn btn-primary"
+            style={{ height: 28, padding: '0 14px', fontSize: 12 }}
+            onClick={() => setBatchAuthOpen(true)}
+          >批量授权用户</button>
+        </div>
+      )}
+
       {/* 编辑 / 添加弹窗 */}
       {editing && (
         <SkillEditDialog
@@ -471,6 +579,22 @@ export function SkillManagement() {
             upsertSkill({ ...userAuthTarget, userAuth });
             toast.success(`技能「${userAuthTarget.name}」用户授权已更新`);
             setUserAuthTarget(null);
+          }}
+        />
+      )}
+
+      {/* 批量授权用户：与单条授权弹窗同一套交互；确定后清空选中，取消则保留选中 */}
+      {batchAuthOpen && (
+        <AuthorizeUserDialog
+          resource={batchAuthResource}
+          resourceType="技能"
+          title={`批量授权用户 - 技能（共 ${selectedSkills.length} 个）`}
+          onClose={() => setBatchAuthOpen(false)}
+          onSubmit={(userAuth) => {
+            selectedSkills.forEach((s) => upsertSkill({ ...s, userAuth }));
+            toast.success(`已为 ${selectedSkills.length} 个技能批量更新用户授权`);
+            setBatchAuthOpen(false);
+            setSelectedIds([]);
           }}
         />
       )}

@@ -20,7 +20,7 @@ import { useStore } from '../contexts/StoreContext.jsx';
 //  - scopeTenantId：把可选空间锁定为指定的单个 Buddy 空间（不做「已管理 ∩ 已授权」交集）
 //  - switchItems：在弹窗顶部渲染若干切换开关配置项
 //      [{ key, label, desc, checked, onChange }]，切换即时生效（与列表中的关联/启用操作协同）
-export function AuthorizeUserDialog({ resource, resourceType, onClose, onSubmit, scopeTenantId, switchItems = [] }) {
+export function AuthorizeUserDialog({ resource, resourceType, onClose, onSubmit, scopeTenantId, switchItems = [], title }) {
   const { user } = useRole();
   const { tenants } = useStore();
 
@@ -64,7 +64,7 @@ export function AuthorizeUserDialog({ resource, resourceType, onClose, onSubmit,
   return (
     <Modal
       open
-      title={`授权用户 - ${resourceType}「${resource.name}」`}
+      title={title || `授权用户 - ${resourceType}「${resource.name}」`}
       onClose={onClose}
       width="wide"
       footer={
