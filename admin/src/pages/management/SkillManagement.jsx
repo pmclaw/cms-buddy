@@ -688,15 +688,16 @@ function SkillEditDialog({ initial, isPlatform, onClose, onSubmit, readOnly }) {
     enabled: true,
     openScope: 'all',
     openTenants: [],
-    source: '招小顾',
-    category: skillCategories[0],
+    source: '',
+    category: '',
     creator: user.fullName || '系统管理员',
     creatorTenant: user.tenantId || null,
     icon: '',
-    editMode: 'online',
+    // 新建技能默认「上传压缩包模式」；编辑存量技能（内容为在线编写）默认「在线编辑模式」
+    editMode: initial?.editMode || (initial?.id ? 'online' : 'upload'),
     skillContent: '',
-    businessOwner: '数字化办公室',
-    cloudCompute: '支持',
+    businessOwner: '',
+    cloudCompute: '',
     computeChannel: '云上算力',
     mcpIds: [],
     mcpToolMap: {},
@@ -706,7 +707,6 @@ function SkillEditDialog({ initial, isPlatform, onClose, onSubmit, readOnly }) {
     welcome: '',
     ...initial,
   }));
-  const [tab, setTab] = useState('base');
 
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
 
@@ -781,28 +781,32 @@ function SkillEditDialog({ initial, isPlatform, onClose, onSubmit, readOnly }) {
     }));
   };
 
-  const tabs = [
-    { k: 'base', label: '基础信息' },
-    { k: 'edit', label: '技能编辑' },
-    { k: 'browse', label: '浏览技能' },
-    { k: 'auth', label: '授权设置' },
-  ];
-  if (isSkillhub) tabs.push({ k: 'meta', label: '其他信息' });
-  const activeTab = tabs.some((t) => t.k === tab) ? tab : 'base';
+  // 选择/拖入技能压缩包（仅记录文件名与大小，不做真实解压）
+  const handleZipFile = (file) => {
+    if (!file || readOnly) return;
+    set('skillContent', `[已上传压缩包] ${file.name} (${(file.size / 1024).toFixed(1)} KB)`);
+  };
 
   const submit = () => {
-    if (!form.name) {
-      toast.error('请填写技能名称');
-      return false;
-    }
-    if (!form.mcpIds || form.mcpIds.length === 0) {
-      toast.error('请关联至少一个 MCP 服务');
-      setTab('base');
-      return false;
+    // 必填校验顺序与表单展示顺序一致
+    const requiredList = [
+      ['category', '请选择技能分类'],
+      ['name', '请输入技能名称'],
+      ['cloudCompute', '请选择云上算力'],
+      ['businessOwner', '请选择业务归属方'],
+      ['source', '请选择来源渠道'],
+      ['desc', '请输入技能描述'],
+      ['remark', '请输入技能使用说明/提问示例'],
+    ];
+    for (const [k, msg] of requiredList) {
+      if (!String(form[k] || '').trim()) {
+        toast.error(msg);
+        return false;
+      }
     }
     // 用户自定义的来源渠道 / 业务归属方写入字典
-    addDictItem(platformSources, form.source);
-    addDictItem(businessOwners, form.businessOwner);
+    if (form.source) addDictItem(platformSources, form.source);
+    if (form.businessOwner) addDictItem(businessOwners, form.businessOwner);
     onSubmit({
       ...form,
       code: form.code || genSkillCode(form.name),
@@ -816,7 +820,7 @@ function SkillEditDialog({ initial, isPlatform, onClose, onSubmit, readOnly }) {
       open
       title={readOnly ? `技能详情 - ${initial?.name || ''}` : (initial?.id && !initial?.__copy ? '编辑技能' : '添加技能')}
       onClose={onClose}
-      width={900}
+      width={1040}
       footer={
         readOnly ? (
           <button className="btn btn-primary" onClick={onClose}>关闭</button>
@@ -828,39 +832,9 @@ function SkillEditDialog({ initial, isPlatform, onClose, onSubmit, readOnly }) {
         )
       }
     >
-      <div style={{ display: 'flex', gap: 0, minHeight: 460 }}>
-        {/* 左侧 Tab */}
-        <div style={{
-          width: 110, borderRight: '1px solid #F2F4F7', flexShrink: 0,
-          display: 'flex', flexDirection: 'column', background: '#FBFCFD',
-        }}>
-          {tabs.map((t) => {
-            const active = activeTab === t.k;
-            return (
-              <button
-                key={t.k}
-                type="button"
-                onClick={() => setTab(t.k)}
-                style={{
-                  display: 'block', width: '100%', textAlign: 'left',
-                  padding: '12px 14px', cursor: 'pointer', fontSize: 13,
-                  fontFamily: 'inherit', background: 'none', border: 'none',
-                  borderLeft: '3px solid ' + (active ? '#E89E57' : 'transparent'),
-                  color: active ? '#E89E57' : '#4B5563',
-                  background: active ? '#FBF1E5' : 'transparent',
-                  fontWeight: active ? 500 : 400,
-                }}
-                onMouseEnter={(e) => { if (!active) { e.currentTarget.style.background = '#F5F6F8'; } }}
-                onMouseLeave={(e) => { if (!active) { e.currentTarget.style.background = 'transparent'; } }}
-              >{t.label}</button>
-            );
-          })}
-        </div>
-
-        {/* 右侧表单 */}
-        <div style={{ flex: 1, padding: 16, maxHeight: 480, overflow: 'auto' }}>
-          {activeTab === 'base' && (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px 18px' }}>
+      <div>
+        {/* 统一视图：不再使用左侧页签，所有配置项在同一弹窗内顺序排布 */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '18px 24px' }}>
               {/* 通过AgentHub创建：独占一行，位于基本信息表单上方 */}
               <Field label="通过AgentHub创建" full>
                 <AgentHubSkillSelect
@@ -872,19 +846,43 @@ function SkillEditDialog({ initial, isPlatform, onClose, onSubmit, readOnly }) {
                   onClear={clearHubSkill}
                 />
               </Field>
-              <Field label="技能名称" required>
-                <input className="input" value={form.name || ''} onChange={(e) => set('name', e.target.value)} disabled={readOnly} />
-              </Field>
-              <Field label="所属分类" required>
-                <select className="select" value={form.category} onChange={(e) => set('category', e.target.value)} disabled={readOnly}>
+
+              {/* 第一行：技能分类 / 技能名称 / 云上算力 */}
+              <Field label="技能分类" required>
+                <select className="select" value={form.category || ''} onChange={(e) => set('category', e.target.value)} disabled={readOnly}>
+                  <option value="">请选择</option>
                   {skillCategories.map((c) => <option key={c}>{c}</option>)}
                 </select>
               </Field>
+              <Field label="技能名称" required>
+                <input
+                  className="input" value={form.name || ''} placeholder="请输入技能名称"
+                  onChange={(e) => set('name', e.target.value)} disabled={readOnly}
+                />
+              </Field>
+              <Field label="云上算力" required>
+                <select className="select" value={form.cloudCompute || ''} onChange={(e) => set('cloudCompute', e.target.value)} disabled={readOnly}>
+                  <option value="">请选择</option>
+                  <option value="支持">支持</option>
+                  <option value="不支持">不支持</option>
+                </select>
+              </Field>
+
+              {/* 第二行：业务归属方 / 来源渠道（第三列留空） */}
+              <Field label="业务归属方" required>
+                <SelectCombobox
+                  value={form.businessOwner || ''}
+                  options={businessOwners}
+                  placeholder="请选择"
+                  disabled={readOnly}
+                  onChange={(v) => set('businessOwner', v)}
+                />
+              </Field>
               <Field label="来源渠道" required>
                 <SelectCombobox
-                  value={form.source}
+                  value={form.source || ''}
                   options={platformSources}
-                  placeholder="选择或输入新的来源渠道"
+                  placeholder="请选择"
                   disabled={readOnly || isSkillhub}
                   onChange={(v) => set('source', v)}
                 />
@@ -894,22 +892,8 @@ function SkillEditDialog({ initial, isPlatform, onClose, onSubmit, readOnly }) {
                   </div>
                 )}
               </Field>
-              <Field label="业务归属方" required>
-                <SelectCombobox
-                  value={form.businessOwner || ''}
-                  options={businessOwners}
-                  placeholder="选择或输入新的业务归属方"
-                  disabled={readOnly}
-                  onChange={(v) => set('businessOwner', v)}
-                />
-              </Field>
-              <Field label="云上算力" required>
-                <select className="select" value={form.cloudCompute || '支持'} onChange={(e) => set('cloudCompute', e.target.value)} disabled={readOnly}>
-                  <option value="支持">支持</option>
-                  <option value="不支持">不支持</option>
-                </select>
-              </Field>
-              <Field label="关联MCP工具" required full>
+
+              <Field label="关联MCP工具" full>
                 <MCPToolSelect
                   mcps={mcps}
                   mcpIds={form.mcpIds || []}
@@ -919,93 +903,204 @@ function SkillEditDialog({ initial, isPlatform, onClose, onSubmit, readOnly }) {
                   readOnly={readOnly}
                 />
               </Field>
-              {/* 欢迎语：非必填，多行文本，位于技能描述上方 */}
-              <Field label="欢迎语" full>
-                <textarea
-                  className="input" rows={3} value={form.welcome || ''}
-                  onChange={(e) => set('welcome', e.target.value)}
-                  placeholder="请输入欢迎语，用户进入该技能时将展示此内容"
-                  disabled={readOnly}
+
+              {/* 技能欢迎语：非必填，最多 255 字 */}
+              <Field label="技能欢迎语" full>
+                <CounterTextarea
+                  value={form.welcome || ''} max={255} rows={3} disabled={readOnly}
+                  placeholder="请输入" onChange={(v) => set('welcome', v)}
                 />
               </Field>
+
               <Field label="技能描述" required full>
-                <textarea
-                  className="input" rows={4} value={form.desc || ''}
-                  onChange={(e) => set('desc', e.target.value)}
-                  placeholder="详细描述技能能力、调用场景、参数说明等"
-                  disabled={readOnly}
+                <CounterTextarea
+                  value={form.desc || ''} max={3000} rows={4} disabled={readOnly}
+                  placeholder="请输入" onChange={(v) => set('desc', v)}
                 />
               </Field>
-              <Field label="技能使用说明/任务指令示例" full>
-                <textarea
-                  className="input" rows={3} value={form.remark || ''}
-                  onChange={(e) => set('remark', e.target.value)}
-                  placeholder="填写技能的使用说明、任务指令示例等"
-                  disabled={readOnly}
+
+              <Field label="技能使用说明/提问示例" required full>
+                <CounterTextarea
+                  value={form.remark || ''} max={3000} rows={3} disabled={readOnly}
+                  placeholder="请输入" onChange={(v) => set('remark', v)}
                 />
               </Field>
-              <Field label="技能图标" full>
-                <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start' }}>
-                  {readOnly ? (
-                    <div style={{
-                      width: 80, height: 80, borderRadius: '50%',
-                      border: '1px solid #E5E7EB', background: '#F9FAFB',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      overflow: 'hidden', flexShrink: 0,
-                    }}>
-                      {form.icon ? (
-                        <img src={form.icon} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+
+              {/* 技能创建方式：上传压缩包模式 / 在线编辑模式 */}
+              <Field label="技能创建方式" full>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 28 }}>
+                  {[
+                    { k: 'upload', label: '上传压缩包模式' },
+                    { k: 'online', label: '在线编辑模式' },
+                  ].map((m) => (
+                    <label
+                      key={m.k}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: 8, fontSize: 13,
+                        color: '#4B5563', cursor: readOnly ? 'default' : 'pointer',
+                      }}
+                    >
+                      <input
+                        type="radio"
+                        name="skill-create-mode"
+                        checked={form.editMode === m.k}
+                        onChange={() => set('editMode', m.k)}
+                        disabled={readOnly}
+                        style={{ width: 15, height: 15, margin: 0, accentColor: '#E89E57', cursor: readOnly ? 'default' : 'pointer' }}
+                      />
+                      <span>{m.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </Field>
+
+              {/* 上传压缩包：左侧拖拽/点击上传区 + 右侧压缩包规范 */}
+              <div style={{ gridColumn: '1 / -1', marginTop: -4 }}>
+                {form.editMode === 'upload' ? (
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, alignItems: 'stretch' }}>
+                    <div
+                      onClick={() => { if (!readOnly) document.getElementById('skill-zip-input')?.click(); }}
+                      onDragOver={(e) => { if (!readOnly) e.preventDefault(); }}
+                      onDrop={(e) => {
+                        if (readOnly) return;
+                        e.preventDefault();
+                        handleZipFile(e.dataTransfer?.files?.[0]);
+                      }}
+                      style={{
+                        border: '1px dashed #E5E7EB', borderRadius: 4, background: '#FCFCFD',
+                        minHeight: 150, display: 'flex', flexDirection: 'column',
+                        alignItems: 'center', justifyContent: 'center', gap: 8,
+                        cursor: readOnly ? 'default' : 'pointer', textAlign: 'center', padding: 16,
+                      }}
+                      onMouseEnter={(e) => { if (!readOnly) e.currentTarget.style.borderColor = '#E89E57'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#E5E7EB'; }}
+                    >
+                      {form.skillContent && form.skillContent.startsWith('[已上传压缩包]') ? (
+                        <>
+                          <Icon name="doc" size={26} color="#E89E57" />
+                          <div style={{ fontSize: 13, color: '#4B5563' }}>{form.skillContent.replace('[已上传压缩包] ', '')}</div>
+                          <div style={{ fontSize: 12, color: '#9CA3AF' }}>已上传，可重新上传覆盖</div>
+                        </>
                       ) : (
-                        <Icon name="package" size={32} color="#D1D5DB" />
+                        <div style={{ fontSize: 13, color: '#4B5563' }}>
+                          将文件拖至此处，或
+                          <span style={{ color: '#1677FF', marginLeft: 4 }}>点击上传</span>
+                        </div>
                       )}
+                      <input
+                        id="skill-zip-input"
+                        type="file"
+                        accept=".zip"
+                        hidden
+                        onChange={(e) => handleZipFile(e.target.files?.[0])}
+                      />
                     </div>
-                  ) : (
-                    <ImageUploader
-                      value={form.icon || ''}
-                      onChange={(v) => set('icon', v)}
-                      shape="avatar"
-                      height={80}
-                    />
-                  )}
-                  <div style={{ fontSize: 12, color: '#9CA3AF', paddingTop: 4 }}>
-                    上传技能的展示图标，将在技能列表和对话界面中展示。
-                    <br />建议使用 PNG 格式，透明背景，尺寸 64x64px。
+                    <div style={{ fontSize: 12.5, color: '#6B7280', lineHeight: 2 }}>
+                      <div>1、支持文件类型：zip</div>
+                      <div>2、zip文件大小限制：10MB以内，单文件不超过1MB</div>
+                      <div>3、压缩包必须包含 skill.md 文件，且技能文档书写规范</div>
+                      <div>4、文件数量限制：一次上传1个文件</div>
+                      <div>5、请确保所上传技能符合公司合规安全管理要求，无恶意指令或代码</div>
+                    </div>
                   </div>
-                </div>
-              </Field>
-              <Field label="上架状态">
-                <div style={{ display: 'flex', gap: 24, alignItems: 'center' }}>
-                  <Toggle
-                    checked={form.enabled}
-                    onChange={(v) => { set('enabled', v); set('status', v ? '已上架' : '未上架'); }}
-                    disabled={readOnly || skillOffline}
-                  />
-                  {skillOffline && (
-                    <span style={{ fontSize: 12, color: '#EF4444' }}>该技能已下线，上架状态不可修改</span>
+                ) : (
+                  <div>
+                    {isSkillhub && (
+                      <div style={{
+                        padding: 10, background: '#FBF1E5', border: '1px solid #F7E3CC',
+                        borderRadius: 6, fontSize: 12, color: '#B87136', marginBottom: 12,
+                        display: 'flex', alignItems: 'center', gap: 6,
+                      }}>
+                        <Icon name="doc" size={12} color="#B87136" />
+                        该技能由 Agenthub 同步，仅可查看技能相关信息，不可编辑
+                      </div>
+                    )}
+                    <MarkdownEditor
+                      value={form.skillContent || ''}
+                      onChange={(v) => set('skillContent', v)}
+                      readOnly={readOnly || isSkillhub}
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* 上传图标 */}
+              <Field label="上传图标" full>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  {readOnly ? (
+                    form.icon ? (
+                      <img src={form.icon} alt="" style={{ width: 28, height: 28, borderRadius: 4, objectFit: 'cover' }} />
+                    ) : (
+                      <span style={{ fontSize: 13, color: '#9CA3AF' }}>未上传</span>
+                    )
+                  ) : (
+                    <>
+                      <span
+                        onClick={() => document.getElementById('skill-icon-input')?.click()}
+                        style={{ fontSize: 13, color: '#1677FF', cursor: 'pointer' }}
+                      >浏览文件</span>
+                      {form.icon && (
+                        <>
+                          <img src={form.icon} alt="" style={{ width: 28, height: 28, borderRadius: 4, objectFit: 'cover', border: '1px solid #F2F4F7' }} />
+                          <span
+                            onClick={() => set('icon', '')}
+                            style={{ fontSize: 12, color: '#9CA3AF', cursor: 'pointer' }}
+                          >移除</span>
+                        </>
+                      )}
+                      <input
+                        id="skill-icon-input"
+                        type="file"
+                        accept="image/*"
+                        hidden
+                        onChange={(e) => {
+                          const f = e.target.files?.[0];
+                          if (!f) return;
+                          const reader = new FileReader();
+                          reader.onload = () => set('icon', String(reader.result || ''));
+                          reader.readAsDataURL(f);
+                        }}
+                      />
+                    </>
                   )}
                 </div>
               </Field>
-              {/* 是否入驻到技能库：与上架状态并列一行（右列），系统管理员与空间管理员均可设置。
-                  说明文案改为 label 后的小 i 图标悬停 tips 展示。 */}
-              <Field
-                label={
-                  <>
-                    是否入驻到技能库
-                    <Tooltip text="入驻后，所有空间管理员可在「技能库」中查看并测试该技能" />
-                  </>
-                }
-              >
-                <div style={{ display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap' }}>
-                  <Toggle
-                    checked={!!form.inSkillLibrary}
-                    onChange={(v) => set('inSkillLibrary', v)}
-                    disabled={readOnly}
-                  />
-                </div>
-              </Field>
-              {/* 所属空间：与上架状态并列一行；查看详情（readOnly）时不展示，仅编辑时保留 */}
+
+              {/* 上架状态 / 是否入驻到技能库：两列并排 */}
+              <div style={{ gridColumn: '1 / -1', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '18px 24px' }}>
+                <Field label="上架状态">
+                  <div style={{ display: 'flex', gap: 24, alignItems: 'center' }}>
+                    <Toggle
+                      checked={form.enabled}
+                      onChange={(v) => { set('enabled', v); set('status', v ? '已上架' : '未上架'); }}
+                      disabled={readOnly || skillOffline}
+                    />
+                    {skillOffline && (
+                      <span style={{ fontSize: 12, color: '#EF4444' }}>该技能已下线，上架状态不可修改</span>
+                    )}
+                  </div>
+                </Field>
+                {/* 是否入驻到技能库：系统管理员与空间管理员均可设置，说明文案以 i 图标 tips 展示 */}
+                <Field
+                  label={
+                    <>
+                      是否入驻到技能库
+                      <Tooltip text="入驻后，所有空间管理员可在「技能库」中查看并测试该技能" />
+                    </>
+                  }
+                >
+                  <div style={{ display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap' }}>
+                    <Toggle
+                      checked={!!form.inSkillLibrary}
+                      onChange={(v) => set('inSkillLibrary', v)}
+                      disabled={readOnly}
+                    />
+                  </div>
+                </Field>
+              </div>
+              {/* 所属空间：查看详情（readOnly）时不展示，仅编辑时保留 */}
               {!isPlatform && !readOnly && (
-                <Field label="所属空间">
+                <Field label="所属空间" full>
                   <select
                     className="select"
                     style={{ maxWidth: 360 }}
@@ -1020,171 +1115,11 @@ function SkillEditDialog({ initial, isPlatform, onClose, onSubmit, readOnly }) {
                 </Field>
               )}
             </div>
-          )}
 
-          {activeTab === 'edit' && (
-            <div>
-              {isSkillhub ? (
-                <>
-                  <div style={{
-                    padding: 10, background: '#FBF1E5', border: '1px solid #F7E3CC',
-                    borderRadius: 6, fontSize: 12, color: '#B87136', marginBottom: 12,
-                    display: 'flex', alignItems: 'center', gap: 6,
-                  }}>
-                    <Icon name="doc" size={12} color="#B87136" />
-                    该技能由 Agenthub 同步，仅可查看技能相关信息，不可编辑
-                  </div>
-                  <MarkdownEditor
-                    value={form.skillContent || ''}
-                    onChange={() => {}}
-                    readOnly
-                  />
-                </>
-              ) : (
-                <>
-                  <div style={{ marginBottom: 16 }}>
-                    <div style={{ fontSize: 13, color: '#4B5563', marginBottom: 10 }}>选择编辑模式：</div>
-                    <div style={{ display: 'flex', gap: 12 }}>
-                      {[
-                        { k: 'online', label: '在线编辑模式', desc: '通过在线编辑器编写技能提示词与逻辑' },
-                        { k: 'upload', label: '上传技能压缩包', desc: '直接上传已打包的技能压缩包文件' },
-                      ].map((m) => (
-                        <label
-                          key={m.k}
-                          style={{
-                            display: 'flex', flexDirection: 'column', gap: 4,
-                            padding: '14px 18px', border: '1px solid ' + (form.editMode === m.k ? '#E89E57' : '#E5E7EB'),
-                            background: form.editMode === m.k ? '#FBF1E5' : '#fff',
-                            color: form.editMode === m.k ? '#B87136' : '#4B5563',
-                            borderRadius: 8, cursor: readOnly ? 'default' : 'pointer', fontSize: 13, flex: 1,
-                            fontWeight: form.editMode === m.k ? 500 : 400,
-                            opacity: readOnly ? 0.7 : 1,
-                          }}
-                        >
-                          <input
-                            type="radio" name="editMode"
-                            style={{ display: 'none' }}
-                            checked={form.editMode === m.k}
-                            onChange={() => set('editMode', m.k)}
-                            disabled={readOnly}
-                          />
-                          <div style={{ fontSize: 14, fontWeight: 500 }}>{m.label}</div>
-                          <div style={{ fontSize: 12, color: '#9CA3AF' }}>{m.desc}</div>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-
-                  {form.editMode === 'online' ? (
-                    <MarkdownEditor
-                      value={form.skillContent || ''}
-                      onChange={(v) => set('skillContent', v)}
-                      readOnly={readOnly}
-                    />
-                  ) : (
-                    <div>
-                      <div style={{ fontSize: 13, color: '#4B5563', marginBottom: 8 }}>上传技能压缩包</div>
-                      {readOnly ? (
-                        <div style={{
-                          padding: '14px 16px', background: '#F8F9FB',
-                          border: '1px solid #E5E7EB', borderRadius: 8,
-                          fontSize: 13, color: '#6B7280',
-                        }}>
-                          {form.skillContent || '未上传压缩包'}
-                        </div>
-                      ) : (
-                        <>
-                          <div
-                            style={{
-                              border: '2px dashed #E5E7EB', borderRadius: 8,
-                              padding: '40px 20px', textAlign: 'center', cursor: 'pointer',
-                              background: '#FAFBFC', transition: 'all 0.2s',
-                            }}
-                            onClick={() => document.getElementById('skill-upload-input')?.click()}
-                            onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#E89E57'; e.currentTarget.style.background = '#FBF1E5'; }}
-                            onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#E5E7EB'; e.currentTarget.style.background = '#FAFBFC'; }}
-                          >
-                            <div style={{ fontSize: 36, color: '#D1D5DB', marginBottom: 8 }}>
-                              <Icon name="doc" size={36} color="#D1D5DB" />
-                            </div>
-                            <div style={{ fontSize: 14, color: '#4B5563', fontWeight: 500, marginBottom: 4 }}>
-                              点击或拖拽文件到此区域上传
-                            </div>
-                            <div style={{ fontSize: 12, color: '#9CA3AF' }}>
-                              支持 .zip / .tar.gz 格式，压缩包内需包含 SKILL.md 配置文件
-                            </div>
-                            <input
-                              id="skill-upload-input"
-                              type="file"
-                              accept=".zip,.tar.gz,.tgz"
-                              hidden
-                              onChange={(e) => {
-                                const file = e.target.files?.[0];
-                                if (file) {
-                                  set('skillContent', `[已上传压缩包] ${file.name} (${(file.size / 1024).toFixed(1)} KB)`);
-                                }
-                              }}
-                            />
-                          </div>
-                          {form.skillContent && form.skillContent.startsWith('[已上传压缩包]') && (
-                            <div style={{
-                              marginTop: 12, padding: '10px 14px',
-                              background: '#F0FDF4', border: '1px solid #BBF7D0',
-                              borderRadius: 6, fontSize: 13, color: '#15803D',
-                              display: 'flex', alignItems: 'center', gap: 8,
-                            }}>
-                              <Icon name="check" size={14} color="#15803D" />
-                              {form.skillContent}
-                            </div>
-                          )}
-                        </>
-                      )}
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
-          )}
-
-          {activeTab === 'browse' && (
-            <div>
-              <div style={{ fontSize: 13, color: '#4B5563', marginBottom: 4 }}>
-                当前技能包的完整目录结构（仅查看，不可点击）
-              </div>
-              <div style={{ fontSize: 12, color: '#9CA3AF', marginBottom: 12 }}>
-                根目录：{form.code || form.name || 'skill'}/
-              </div>
-              <div style={{
-                border: '1px solid #E5E7EB', borderRadius: 8, padding: '14px 16px',
-                background: '#FAFBFC', fontFamily: 'monospace', fontSize: 12.5, lineHeight: 1.9,
-                color: '#4B5563', maxHeight: 380, overflow: 'auto',
-              }}>
-                <DirTree tree={buildSkillTree(form)} />
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'meta' && (
-            <div>
-              <div style={{ fontSize: 13, color: '#4B5563', marginBottom: 4 }}>
-                来自 Agenthub 同步的相关信息
-              </div>
-              <div style={{ fontSize: 12, color: '#9CA3AF', marginBottom: 16 }}>
-                该技能的发布与运营数据，仅供参考
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                <MetaItem label="版本号" value={form.version || '-'} />
-                <MetaItem label="下载量" value={form.downloads != null ? Number(form.downloads).toLocaleString() : '-'} />
-                <MetaItem label="评分" value={form.rating != null ? `${form.rating} / 5` : '-'} />
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'auth' && (
-            <div>
-              <div style={{ marginBottom: 12, fontSize: 12, color: '#9CA3AF', lineHeight: 1.6 }}>
-                配置该技能的开放范围与共享授权策略，保存后立即生效。
-                {readOnly && '（当前为只读查看模式）'}
+            {/* 授权设置：开放范围与共享授权策略 */}
+            <div style={{ marginTop: 26, paddingTop: 18, borderTop: '1px solid #F2F4F7' }}>
+              <div style={{ fontSize: 14, fontWeight: 600, color: '#1F2937', marginBottom: readOnly ? 6 : 12 }}>
+                授权设置{readOnly && <span style={{ fontSize: 12, fontWeight: 400, color: '#9CA3AF', marginLeft: 8 }}>（当前为只读查看模式）</span>}
               </div>
               <AuthSettingsSection
                 resourceType="技能"
@@ -1199,8 +1134,36 @@ function SkillEditDialog({ initial, isPlatform, onClose, onSubmit, readOnly }) {
                 onChange={set}
               />
             </div>
-          )}
-        </div>
+
+            {/* Agenthub 同步信息：仅 Agenthub 来源技能展示 */}
+            {isSkillhub && (
+              <div style={{ marginTop: 22, paddingTop: 18, borderTop: '1px solid #F2F4F7' }}>
+                <div style={{ fontSize: 14, fontWeight: 600, color: '#1F2937', marginBottom: 6 }}>Agenthub 同步信息</div>
+                <div style={{ fontSize: 12, color: '#9CA3AF', marginBottom: 12 }}>
+                  该技能的发布与运营数据，仅供参考
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+                  <MetaItem label="版本号" value={form.version || '-'} />
+                  <MetaItem label="下载量" value={form.downloads != null ? Number(form.downloads).toLocaleString() : '-'} />
+                  <MetaItem label="评分" value={form.rating != null ? `${form.rating} / 5` : '-'} />
+                </div>
+              </div>
+            )}
+
+            {/* 技能目录：技能包完整目录结构（只读） */}
+            <div style={{ marginTop: 22, paddingTop: 18, borderTop: '1px solid #F2F4F7' }}>
+              <div style={{ fontSize: 14, fontWeight: 600, color: '#1F2937', marginBottom: 6 }}>技能目录</div>
+              <div style={{ fontSize: 12, color: '#9CA3AF', marginBottom: 12 }}>
+                根目录：{form.code || form.name || 'skill'}/（当前技能包的完整目录结构，仅查看，不可点击）
+              </div>
+              <div style={{
+                border: '1px solid #E5E7EB', borderRadius: 8, padding: '14px 16px',
+                background: '#FAFBFC', fontFamily: 'monospace', fontSize: 12.5, lineHeight: 1.9,
+                color: '#4B5563', maxHeight: 240, overflow: 'auto',
+              }}>
+                <DirTree tree={buildSkillTree(form)} />
+              </div>
+            </div>
       </div>
     </Modal>
   );
@@ -1277,6 +1240,23 @@ function MetaItem({ label, value }) {
 // ========== 关联 MCP 工具二级下拉（复选框：勾选 MCP 服务默认全选工具，勾选工具自动选中所属服务） ==========
 function MCPToolSelect({ mcps, mcpIds, mcpToolMap, onChangeMcpIds, onChangeMcpToolMap, readOnly }) {
   const [open, setOpen] = useState(false);
+  const [kw, setKw] = useState('');
+
+  // 按关键词过滤 MCP 服务与工具（一级服务名、二级工具名/标识均可命中）
+  const kwText = kw.trim().toLowerCase();
+  const shownMcps = useMemo(() => {
+    if (!kwText) return mcps;
+    return mcps
+      .map((m) => {
+        const tools = (m.tools || []).filter(
+          (t) => String(t.label || '').toLowerCase().includes(kwText) || String(t.name || '').toLowerCase().includes(kwText)
+        );
+        const nameHit = String(m.name || '').toLowerCase().includes(kwText);
+        if (!nameHit && tools.length === 0) return null;
+        return { ...m, tools: nameHit ? (m.tools || []) : tools };
+      })
+      .filter(Boolean);
+  }, [mcps, kwText]);
 
   // 勾选/取消 MCP 服务：勾选时默认全选其下工具
   const toggleMcp = (m) => {
@@ -1319,26 +1299,38 @@ function MCPToolSelect({ mcps, mcpIds, mcpToolMap, onChangeMcpIds, onChangeMcpTo
       >
         <span>
           {mcpIds.length === 0
-            ? '请选择关联的 MCP 服务与工具'
+            ? '请选择（支持搜索，按MCP服务二级结构）'
             : `已选择 ${mcpIds.length} 个 MCP 服务 / ${selectedToolsCount} 个工具`}
         </span>
-        <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <span style={{ fontSize: 11, color: '#9CA3AF' }}>{open ? '收起' : '展开'}</span>
-          <Icon name="chevronDown" size={12} color="#9CA3AF" />
-        </span>
+        <Icon name="chevronDown" size={12} color="#9CA3AF" />
       </div>
 
       {open && (
         <div style={{
           border: '1px solid #E5E7EB', borderRadius: 6, marginTop: 6,
-          maxHeight: 280, overflow: 'auto', background: '#fff',
+          background: '#fff',
         }}>
+          <div style={{ padding: '8px 10px', borderBottom: '1px solid #F2F4F7' }}>
+            <input
+              className="input"
+              value={kw}
+              placeholder="搜索 MCP 服务或工具"
+              onChange={(e) => setKw(e.target.value)}
+              onClick={(e) => e.stopPropagation()}
+            />
+          </div>
+          <div style={{ maxHeight: 250, overflow: 'auto' }}>
+          {shownMcps.length === 0 && kwText && (
+            <div style={{ padding: 16, textAlign: 'center', fontSize: 12, color: '#9CA3AF' }}>
+              未找到匹配的 MCP 服务或工具
+            </div>
+          )}
           {mcps.length === 0 && (
             <div style={{ padding: 16, textAlign: 'center', fontSize: 12, color: '#9CA3AF' }}>
               暂无 MCP 服务
             </div>
           )}
-          {mcps.map((m) => {
+          {shownMcps.map((m) => {
             const checked = mcpIds.includes(m.id);
             const tools = m.tools || [];
             const selectedTools = mcpToolMap[m.id] || [];
@@ -1376,6 +1368,7 @@ function MCPToolSelect({ mcps, mcpIds, mcpToolMap, onChangeMcpIds, onChangeMcpTo
               </div>
             );
           })}
+          </div>
         </div>
       )}
     </div>
@@ -1389,6 +1382,27 @@ function Field({ label, required, children, full }) {
         {required && <span style={{ color: '#EF4444' }}>*</span>} {label}
       </div>
       {children}
+    </div>
+  );
+}
+
+// 带字数统计的多行文本框：右下角显示「已输入 / 上限」
+function CounterTextarea({ value, onChange, max = 3000, rows = 4, placeholder = '请输入', disabled }) {
+  const len = String(value || '').length;
+  return (
+    <div>
+      <textarea
+        className="input"
+        rows={rows}
+        maxLength={max}
+        value={value || ''}
+        placeholder={placeholder}
+        disabled={disabled}
+        onChange={(e) => onChange(e.target.value)}
+      />
+      <div style={{ textAlign: 'right', fontSize: 12, color: '#9CA3AF', marginTop: 4 }}>
+        {len} / {max}
+      </div>
     </div>
   );
 }

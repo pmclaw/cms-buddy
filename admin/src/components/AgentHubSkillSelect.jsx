@@ -11,7 +11,7 @@ export function AgentHubSkillSelect({
   onChange,
   onClear,
   disabled,
-  placeholder = '请选择 Agenthub 同步的技能',
+  placeholder = '请选择AgentHub同步的技能',
   defaultCount = 6,
 }) {
   const [open, setOpen] = useState(false);
