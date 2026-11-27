@@ -864,18 +864,6 @@ function SkillEditDialog({ initial, isPlatform, onClose, onSubmit, readOnly }) {
       <div>
         {/* 统一视图：不再使用左侧页签，所有配置项在同一弹窗内顺序排布 */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '18px 24px' }}>
-              {/* 通过AgentHub创建：独占一行，位于基本信息表单上方 */}
-              <Field label="通过AgentHub创建" full>
-                <AgentHubSkillSelect
-                  value={selectedHubSkill}
-                  options={agenthubSkills}
-                  defaultCount={6}
-                  disabled={readOnly || isEdit}
-                  onChange={applyHubSkill}
-                  onClear={clearHubSkill}
-                />
-              </Field>
-
               {/* 第一行：技能分类 / 技能名称 / 云上算力 */}
               <Field label="技能分类" required>
                 <select className="select" value={form.category || ''} onChange={(e) => set('category', e.target.value)} disabled={readOnly}>
@@ -966,7 +954,7 @@ function SkillEditDialog({ initial, isPlatform, onClose, onSubmit, readOnly }) {
                 </Field>
               )}
 
-              {/* 第二行：业务归属方 / 来源渠道（第三列留空） */}
+              {/* 第二行：业务归属方 / 来源渠道 / 通过AgentHub创建 */}
               <Field label="业务归属方" required>
                 <SelectCombobox
                   value={form.businessOwner || ''}
@@ -989,6 +977,17 @@ function SkillEditDialog({ initial, isPlatform, onClose, onSubmit, readOnly }) {
                     该技能由 Agenthub 同步，来源渠道不可修改
                   </div>
                 )}
+              </Field>
+              {/* 通过AgentHub创建：紧跟「来源渠道」在同一行 */}
+              <Field label="通过AgentHub创建">
+                <AgentHubSkillSelect
+                  value={selectedHubSkill}
+                  options={agenthubSkills}
+                  defaultCount={6}
+                  disabled={readOnly || isEdit}
+                  onChange={applyHubSkill}
+                  onClear={clearHubSkill}
+                />
               </Field>
 
               <Field label="关联MCP工具" full>
