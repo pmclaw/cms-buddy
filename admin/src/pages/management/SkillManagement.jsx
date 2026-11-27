@@ -951,6 +951,10 @@ function SkillEditDialog({ initial, isPlatform, onClose, onSubmit, readOnly }) {
       ['desc', '请输入技能描述'],
       ['remark', '请输入技能使用说明/提问示例'],
     ];
+    // 云上算力 = 支持 时，合规论证说明为必填（紧跟「云上算力」之后校验）
+    if (form.cloudCompute === '支持') {
+      requiredList.splice(3, 0, ['complianceNote', '请填写合规论证说明']);
+    }
     for (const [k, msg] of requiredList) {
       if (!String(form[k] || '').trim()) {
         toast.error(msg);
@@ -1011,7 +1015,7 @@ function SkillEditDialog({ initial, isPlatform, onClose, onSubmit, readOnly }) {
 
               {/* 合规论证说明：仅「云上算力 = 支持」时展示（说明文本 + 材料上传） */}
               {form.cloudCompute === '支持' && (
-                <Field label="合规论证说明" full>
+                <Field label="合规论证说明" full required>
                   <div style={{ border: '1px solid #F2F4F7', borderRadius: 8, padding: '14px 16px', background: '#FCFCFD' }}>
                     <CounterTextarea
                       value={form.complianceNote || ''} max={2000} rows={3} disabled={readOnly}
