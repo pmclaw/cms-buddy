@@ -674,6 +674,14 @@ function genSkillCode(name) {
   return slug || raw;
 }
 
+// 文件大小展示：B / KB / MB
+function fmtFileSize(size) {
+  const n = Number(size || 0);
+  if (n >= 1024 * 1024) return `${(n / 1024 / 1024).toFixed(1)} MB`;
+  if (n >= 1024) return `${(n / 1024).toFixed(1)} KB`;
+  return `${n} B`;
+}
+
 // ========== 添加/编辑技能弹窗 ==========
 function SkillEditDialog({ initial, isPlatform, onClose, onSubmit, readOnly }) {
   const { user } = useRole();
@@ -697,6 +705,8 @@ function SkillEditDialog({ initial, isPlatform, onClose, onSubmit, readOnly }) {
     skillContent: '',
     businessOwner: '',
     cloudCompute: '',
+    complianceNote: '',
+    complianceFiles: [],
     computeChannel: '云上算力',
     mcpIds: [],
     mcpToolMap: {},
@@ -786,6 +796,26 @@ function SkillEditDialog({ initial, isPlatform, onClose, onSubmit, readOnly }) {
     set('skillContent', `[已上传压缩包] ${file.name} (${(file.size / 1024).toFixed(1)} KB)`);
   };
 
+  // 合规论证材料：支持 jpg / jpeg / png 图片与 zip 压缩包，单个文件 ≤10MB，可多选（仅记录文件名与大小）
+  const COMPLIANCE_EXT = /\.(jpe?g|png|zip)$/i;
+  const handleComplianceFiles = (fileList) => {
+    if (readOnly) return;
+    const list = Array.from(fileList || []);
+    if (!list.length) return;
+    if (list.some((f) => !COMPLIANCE_EXT.test(f.name))) {
+      toast.error('仅支持 jpg/jpeg/png 图片与 zip 压缩包');
+      return;
+    }
+    if (list.some((f) => f.size > 10 * 1024 * 1024)) {
+      toast.error('单个文件大小需在 10MB 以内');
+      return;
+    }
+    setForm((f) => ({
+      ...f,
+      complianceFiles: [...(f.complianceFiles || []), ...list.map((x) => ({ name: x.name, size: x.size }))],
+    }));
+  };
+
   const submit = () => {
     // 必填校验顺序与表单展示顺序一致
     const requiredList = [
@@ -866,6 +896,75 @@ function SkillEditDialog({ initial, isPlatform, onClose, onSubmit, readOnly }) {
                   <option value="不支持">不支持</option>
                 </select>
               </Field>
+
+              {/* 合规论证说明：仅「云上算力 = 支持」时展示（说明文本 + 材料上传） */}
+              {form.cloudCompute === '支持' && (
+                <Field label="合规论证说明" full>
+                  <div style={{ border: '1px solid #F2F4F7', borderRadius: 8, padding: '14px 16px', background: '#FCFCFD' }}>
+                    <CounterTextarea
+                      value={form.complianceNote || ''} max={2000} rows={3} disabled={readOnly}
+                      placeholder="请填写支持云上算力的合规论证说明"
+                      onChange={(v) => set('complianceNote', v)}
+                    />
+                    <div style={{ fontSize: 13, color: '#4B5563', margin: '14px 0 8px' }}>
+                      上传合规论证材料
+                      <span style={{ fontSize: 12, color: '#9CA3AF', marginLeft: 8 }}>
+                        支持 jpg / jpeg / png 图片与 zip 压缩包，单个文件不超过 10MB
+                      </span>
+                    </div>
+                    {!readOnly && (
+                      <div
+                        onClick={() => document.getElementById('skill-compliance-input')?.click()}
+                        onDragOver={(e) => e.preventDefault()}
+                        onDrop={(e) => { e.preventDefault(); handleComplianceFiles(e.dataTransfer?.files); }}
+                        style={{
+                          border: '1px dashed #E5E7EB', borderRadius: 4, background: '#fff',
+                          padding: '14px 16px', textAlign: 'center', fontSize: 13, color: '#4B5563',
+                          cursor: 'pointer', transition: 'border-color .2s',
+                        }}
+                        onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#E89E57'; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#E5E7EB'; }}
+                      >
+                        将文件拖至此处，或
+                        <span style={{ color: '#1677FF', marginLeft: 4 }}>点击上传</span>
+                        <input
+                          id="skill-compliance-input"
+                          type="file"
+                          accept=".jpg,.jpeg,.png,.zip"
+                          multiple
+                          hidden
+                          onChange={(e) => { handleComplianceFiles(e.target.files); e.target.value = ''; }}
+                        />
+                      </div>
+                    )}
+                    {(form.complianceFiles || []).length > 0 ? (
+                      <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                        {(form.complianceFiles || []).map((f, i) => (
+                          <div
+                            key={`${f.name}-${i}`}
+                            style={{
+                              display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#4B5563',
+                              background: '#fff', border: '1px solid #F2F4F7', borderRadius: 4, padding: '6px 10px',
+                            }}
+                          >
+                            <Icon name="doc" size={14} color="#E89E57" />
+                            <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.name}</span>
+                            <span style={{ fontSize: 12, color: '#9CA3AF' }}>{fmtFileSize(f.size)}</span>
+                            {!readOnly && (
+                              <span
+                                onClick={() => set('complianceFiles', (form.complianceFiles || []).filter((_, idx) => idx !== i))}
+                                style={{ fontSize: 12, color: '#9CA3AF', cursor: 'pointer' }}
+                              >移除</span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      readOnly && <div style={{ fontSize: 13, color: '#9CA3AF' }}>未上传材料</div>
+                    )}
+                  </div>
+                </Field>
+              )}
 
               {/* 第二行：业务归属方 / 来源渠道（第三列留空） */}
               <Field label="业务归属方" required>

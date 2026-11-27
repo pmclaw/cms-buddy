@@ -630,6 +630,11 @@ export const skills = [
     source: '招小顾',
     computeChannel: '云上算力',
     cloudCompute: '支持',
+    complianceNote: '本技能仅检索公开研报与行情数据，不涉及客户敏感信息；模型推理不回流客户数据，输出内容已接入内容合规过滤。',
+    complianceFiles: [
+      { name: '合规评估报告-个股诊断.png', size: 348160 },
+      { name: '数据安全承诺函.zip', size: 862208 },
+    ],
     businessOwner: '数字化办公室',
     mcpIds: ['M001'],
     mcpToolMap: { M001: ['get_stock_quote', 'get_fund_info', 'search_research_report'] },
