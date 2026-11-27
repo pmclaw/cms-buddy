@@ -18,6 +18,10 @@ import { RoleSwitcher } from '../../components/RoleSwitcher.jsx';
 import { AgentHubSkillSelect } from '../../components/AgentHubSkillSelect.jsx';
 import { skillCategories, platformSources, businessOwners, addDictItem, agenthubSyncedSkills } from '../../data/mock.js';
 
+// 算力通道：技能运行所在的算力通道（云上算力 / 内网算力）；存量数据无该字段时按云上算力兼容
+const COMPUTE_CHANNELS = ['云上算力', '内网算力'];
+const computeChannelOf = (s) => (s.computeChannel === '内网算力' ? '内网算力' : '云上算力');
+
 export function SkillManagement() {
   const { user } = useRole();
   const { skills, tenants, upsertSkill, deleteSkill } = useStore();
@@ -39,7 +43,7 @@ export function SkillManagement() {
 
   const [keyword, setKeyword] = useState('');
   const [category, setCategory] = useState('');
-  const [sourceFilter, setSourceFilter] = useState('');
+  const [channelFilter, setChannelFilter] = useState(''); // 算力通道：'' | 云上算力 | 内网算力
   const [spaceFilter, setSpaceFilter] = useState(''); // 「所属空间」筛选：''=全部 / 'system'=系统 / 其余为空间 ID
   const [authSpaceFilter, setAuthSpaceFilter] = useState(''); // 「授权空间」筛选：''=全部 / 其余为空间 ID（归属该空间 或 被授权给该空间）
   const [editing, setEditing] = useState(null);
@@ -92,7 +96,7 @@ export function SkillManagement() {
       if (s.source === 'Agenthub') return false;
       const matchK = !k || s.name.toLowerCase().includes(k);
       const matchC = !category || s.category === category;
-      const matchS = !sourceFilter || s.source === sourceFilter;
+      const matchS = !channelFilter || computeChannelOf(s) === channelFilter;
       const matchT = !spaceFilter || (spaceFilter === 'system' ? !s.creatorTenant : s.creatorTenant === spaceFilter);
       const matchG = !authSpaceFilter || (
         s.creatorTenant === authSpaceFilter ||
@@ -125,7 +129,7 @@ export function SkillManagement() {
       }
     }
     return list;
-  }, [skills, keyword, category, sourceFilter, spaceFilter, authSpaceFilter, isPlatform, viewTab, user]);
+  }, [skills, keyword, category, channelFilter, spaceFilter, authSpaceFilter, isPlatform, viewTab, user]);
 
   const total = filtered.length;
   const paged = filtered.slice((page - 1) * pageSize, page * pageSize);
@@ -142,7 +146,7 @@ export function SkillManagement() {
     setPage(1);
     setKeyword('');
     setCategory('');
-    setSourceFilter('');
+    setChannelFilter('');
     setSpaceFilter('');
     setAuthSpaceFilter('');
     setOpenMenuId(null);
@@ -219,9 +223,9 @@ export function SkillManagement() {
               {tenants.map((t) => <option key={t.id} value={t.id}>{t.brandName}</option>)}
             </select>
             {isPlatform && (
-              <select className="select" value={sourceFilter} onChange={(e) => { setSourceFilter(e.target.value); setPage(1); }} style={{ maxWidth: 140 }}>
-                <option value="">全部来源</option>
-                {platformSources.map((s) => <option key={s}>{s}</option>)}
+              <select className="select" value={channelFilter} onChange={(e) => { setChannelFilter(e.target.value); setPage(1); }} style={{ maxWidth: 140 }}>
+                <option value="">算力通道</option>
+                {COMPUTE_CHANNELS.map((c) => <option key={c}>{c}</option>)}
               </select>
             )}
             <input
@@ -231,7 +235,7 @@ export function SkillManagement() {
               onChange={(e) => { setKeyword(e.target.value); setPage(1); }}
               style={{ maxWidth: 240 }}
             />
-            <button className="btn btn-default" onClick={() => { setKeyword(''); setCategory(''); setSourceFilter(''); setSpaceFilter(''); setAuthSpaceFilter(''); setPage(1); }}>
+            <button className="btn btn-default" onClick={() => { setKeyword(''); setCategory(''); setChannelFilter(''); setSpaceFilter(''); setAuthSpaceFilter(''); setPage(1); }}>
               <Icon name="refresh" size={12} />
               重置
             </button>
@@ -248,10 +252,10 @@ export function SkillManagement() {
                   <th width={120}>技能名称</th>
                   <th width={140}>技能所在目录</th>
                   <th width={110}>技能分类</th>
+                  <th width={110}>算力通道</th>
                   {(isPlatform || viewTab === 'mine') && <th width={90}>上架状态</th>}
                   <th width={150}>授权空间</th>
                   <th width={110}>所属空间</th>
-                  <th width={110}>来源渠道</th>
                   <th width={110}>业务归属方</th>
                   <th width={100}>更新人</th>
                   <th width={140}>更新时间</th>
@@ -272,6 +276,11 @@ export function SkillManagement() {
                     <td style={{ color: '#E89E57', fontWeight: 500, cursor: 'pointer' }} onClick={() => setChatbotSkill(s)}>{s.name}</td>
                     <td style={{ fontFamily: 'monospace', fontSize: 12, color: '#6B7280' }}>{s.code}</td>
                     <td><Tag color="info">{s.category}</Tag></td>
+                    <td style={{
+                      fontSize: 12,
+                      color: computeChannelOf(s) === '云上算力' ? '#EF4444' : '#6B7280',
+                      fontWeight: computeChannelOf(s) === '云上算力' ? 500 : 400,
+                    }}>{computeChannelOf(s)}</td>
                     {(isPlatform || viewTab === 'mine') && (
                       <td>
                         {/* 需求3：列表中出现的技能均可直接操作上下架（系统管理员覆盖系统平台技能与空间技能）。
@@ -297,12 +306,6 @@ export function SkillManagement() {
                       )}
                     </td>
                     <td>{renderOwnedCell(s.creatorTenant)}</td>
-                    <td style={{ fontSize: 12, color: '#6B7280' }}>
-                      {s.source}
-                      {s.source === 'Agenthub' && s.status === '已下架' && (
-                        <div style={{ fontSize: 12, color: '#EF4444', marginTop: 2 }}>已下线</div>
-                      )}
-                    </td>
                     <td style={{ fontSize: 12, color: '#6B7280' }}>{s.businessOwner || '—'}</td>
                     <td style={{ fontSize: 12, color: '#6B7280' }}>{s.creator || '—'}</td>
                     <td style={{ fontSize: 12, color: '#9CA3AF' }}>{s.updateTime}</td>
@@ -692,6 +695,7 @@ function SkillEditDialog({ initial, isPlatform, onClose, onSubmit, readOnly }) {
     skillContent: '',
     businessOwner: '数字化办公室',
     cloudCompute: '支持',
+    computeChannel: '云上算力',
     mcpIds: [],
     mcpToolMap: {},
     spaceOnlyVisible: false,
