@@ -1,5 +1,5 @@
 // 会话辅助管理 · 伴随助理管理
-// 列表（名称查询 / 启用状态切换 / 编辑 / 删除）+ 添加·编辑弹窗（名称 / app_code / 应用场景 / 关联伴随服务 / 描述）
+// 列表（名称查询 / 启用状态切换 / 编辑 / 删除）+ 添加·编辑弹窗（名称 / app_code / 应用场景 / 关联伴随服务 / 应用对象 / 描述）
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useStore } from '../../contexts/StoreContext.jsx';
 import { useToast } from '../../contexts/ToastContext.jsx';
@@ -9,20 +9,7 @@ import { Pagination } from '../../components/Pagination.jsx';
 import { Modal } from '../../components/Overlay.jsx';
 import { Toggle } from '../../components/Toggle.jsx';
 import { Checkbox } from '../../components/Checkbox.jsx';
-import { companionScenes, companionApps, qcSchemes, orgUsers } from '../../data/mock.js';
-
-// 应用对象类型：企微单聊（按用户组授权）/ 企微群聊（按群主 + 企微群ID）
-const APP_TARGETS = [
-  { value: 'single', label: '企微单聊' },
-  { value: 'group', label: '企微群聊' },
-];
-
-// 群主候选：后台组织架构中的用户（按姓名/部门搜索）
-const OWNER_OPTIONS = orgUsers.map((u) => ({
-  id: u.id,
-  name: u.name,
-  sub: u.deptName,
-}));
+import { companionScenes, companionApps, qcSchemes } from '../../data/mock.js';
 
 // app_code：系统自动生成，10 位小写字母 + 数字，全局唯一，不对外开放修改
 const CODE_CHARS = 'abcdef0123456789';
@@ -238,9 +225,8 @@ function CompanionDialog({ mode, initial, existingCodes, onClose, onSubmit }) {
   const [form, setForm] = useState(() => (initial ? {
     ...initial,
     appIds: [...(initial.appIds || [])],
-    appTarget: initial.appTarget || 'single',
     groupId: initial.groupId || '',
-    ownerIds: [...(initial.ownerIds || [])],
+    groupGroupId: initial.groupGroupId || '',
     wecomGroupIds: initial.wecomGroupIds || '',
   } : {
     name: '',
@@ -248,9 +234,8 @@ function CompanionDialog({ mode, initial, existingCodes, onClose, onSubmit }) {
     scene: '',
     appIds: [],
     qcSchemeId: '',
-    appTarget: 'single',
     groupId: '',
-    ownerIds: [],
+    groupGroupId: '',
     wecomGroupIds: '',
     desc: '',
     enabled: true,
@@ -258,24 +243,15 @@ function CompanionDialog({ mode, initial, existingCodes, onClose, onSubmit }) {
 
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
 
-  // 切换应用对象时清空另一分支的选择，避免脏数据提交
-  const changeTarget = (v) => setForm((f) => ({
-    ...f,
-    appTarget: v,
-    groupId: v === 'single' ? f.groupId : '',
-    ownerIds: v === 'group' ? f.ownerIds : [],
-    wecomGroupIds: v === 'group' ? f.wecomGroupIds : '',
-  }));
-
   const submit = () => {
     if (!form.name.trim()) return toast.error('请输入伴随助理名称');
     if (!form.scene) return toast.error('请选择应用场景');
-    if (form.appTarget === 'single' && !form.groupId) return toast.error('请选择用户组');
-    if (form.appTarget === 'group') {
-      const hasOwner = form.ownerIds.length > 0;
-      const hasGroupId = !!form.wecomGroupIds.trim();
-      if (hasOwner && hasGroupId) return toast.error('群主与企微群ID不可同时填写，请二选一');
-      if (!hasOwner && !hasGroupId) return toast.error('请选择群主或填写企微群ID');
+    // 应用对象：单聊用户组 / 群聊用户组 / 群聊ID 三项至少填写一项
+    const hasSingleGroup = !!form.groupId;
+    const hasGroupGroup = !!form.groupGroupId;
+    const hasGroupIds = !!String(form.wecomGroupIds || '').trim();
+    if (!hasSingleGroup && !hasGroupGroup && !hasGroupIds) {
+      return toast.error('请至少填写单聊用户组、群聊用户组、群聊ID 中的一项');
     }
     if (form.appIds.length === 0) return toast.error('请至少选择一个伴随应用');
     if (!form.qcSchemeId) return toast.error('请选择质检方案');
@@ -341,56 +317,41 @@ function CompanionDialog({ mode, initial, existingCodes, onClose, onSubmit }) {
           </div>
         </FieldRow>
 
-        {/* 应用对象：同一行两个下拉（单聊 → 用户组 / 群聊 → 群主多选 + 企微群ID） */}
+        {/* 应用对象：单聊用户组 / 群聊用户组并列，下方直接填写群聊ID（三项至少填一项） */}
         <FieldRow
           label="应用对象"
           required
-          hint={form.appTarget === 'group' ? '选择群主与填写企微群ID二选一，不可同时选择' : '按用户组授权，组内用户可在企微单聊中使用'}
+          hint="单聊用户组、群聊用户组、群聊ID 至少填写一项"
         >
           <div style={{ display: 'flex', gap: 12 }}>
             <select
               className="select"
-              value={form.appTarget}
-              onChange={(e) => changeTarget(e.target.value)}
-              style={{ flex: '0 0 200px' }}
+              value={form.groupId || ''}
+              onChange={(e) => set('groupId', e.target.value)}
+              style={{ flex: 1 }}
             >
-              {APP_TARGETS.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
+              <option value="">请选择单聊用户组</option>
+              {userGroups.map((g) => <option key={g.id} value={g.id}>{g.name}</option>)}
             </select>
-
-            {form.appTarget === 'single' ? (
-              <select
-                className="select"
-                value={form.groupId}
-                onChange={(e) => set('groupId', e.target.value)}
-                style={{ flex: 1 }}
-              >
-                <option value="">请选择用户组</option>
-                {userGroups.map((g) => <option key={g.id} value={g.id}>{g.name}</option>)}
-              </select>
-            ) : (
-              <div style={{ flex: 1 }}>
-                <AppMultiSelect
-                  value={form.ownerIds}
-                  options={OWNER_OPTIONS}
-                  onChange={(ids) => set('ownerIds', ids)}
-                  placeholder="请选择群主"
-                  searchable
-                  searchPlaceholder="搜索群主姓名/部门"
-                />
-              </div>
-            )}
+            <select
+              className="select"
+              value={form.groupGroupId || ''}
+              onChange={(e) => set('groupGroupId', e.target.value)}
+              style={{ flex: 1 }}
+            >
+              <option value="">请选择群聊用户组</option>
+              {userGroups.map((g) => <option key={g.id} value={g.id}>{g.name}</option>)}
+            </select>
           </div>
 
-          {form.appTarget === 'group' && (
-            <textarea
-              className="input"
-              rows={4}
-              placeholder="请填写企微群ID，每行一条信息"
-              value={form.wecomGroupIds}
-              onChange={(e) => set('wecomGroupIds', e.target.value)}
-              style={{ width: '100%', resize: 'vertical', marginTop: 10 }}
-            />
-          )}
+          <textarea
+            className="input"
+            rows={4}
+            placeholder="请填写企微群ID，每行一条信息"
+            value={form.wecomGroupIds || ''}
+            onChange={(e) => set('wecomGroupIds', e.target.value)}
+            style={{ width: '100%', resize: 'vertical', marginTop: 10 }}
+          />
         </FieldRow>
 
         {/* 描述 */}
